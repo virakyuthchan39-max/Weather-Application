@@ -1,0 +1,18 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&family=Isometra&display=swap');
+
+@import 'tailwindcss';
+
+
+@theme {
+
+  --font-welcome: "Figtree", sans-serif;
+  --font-isometra: "Isometra", sans-serif;
+
+  --animate-account: account-animation 1s ease-in-out forwards;
+  
+  @keyframes account-animation {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+}
