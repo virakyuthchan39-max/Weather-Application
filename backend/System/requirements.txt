@@ -1,0 +1,11 @@
+fastapi
+fastapi[standard]
+sqlmodel
+sqlalchemy
+python-jose[cryptography]
+python-dotenv
+uvicorn
+pydantic
+passlib[bcrypt]
+contextlib
+slowapi

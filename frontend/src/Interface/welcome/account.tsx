@@ -27,7 +27,7 @@ const Account: React.FC = memo(() => {
       setIsTransitioning(true);
 
       const leavingWelcome = view === 'welcome';
-      const outDuration = leavingWelcome ? 900 : 700; // must match CSS
+      const outDuration = leavingWelcome ? 1000 : 700; // must match CSS
 
       setAnimClass(leavingWelcome ? 'anim-out-welcome' : 'anim-out-form');
 

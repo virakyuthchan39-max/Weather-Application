@@ -50,7 +50,7 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, 
                             max-[500px]:w-80"
   const reuse_label:string = "mb-1 block text-md font-semibold text-gray-300"
   return (
-    <div className="block border font-welcome mx-auto w-full max-w-md rounded-2xl  bg-black/40 p-8 text-white shadow-2xl backdrop-blur-[-1px]
+    <div className="block font-welcome mx-auto w-full max-w-md rounded-2xl  bg-black/40 p-8 text-white shadow-2xl backdrop-blur-[-1px]
 
       ">
       <h2 className="flex -mb-10 text-nowrap text-center text-3xl pl-20 font-bold text-cyan-400
@@ -147,7 +147,7 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, 
         <button
           type="button"
           onClick={handleSwitch}
-          className="font-bold  italic text-cyan-400 hover:underline animate-pulse transition-all duration-300"
+          className="font-bold  italic text-cyan-400   hover:text-blue-900 hover:underline animate-pulse transition-all duration-300"
         >
           Continue to Sign Up
         </button>
@@ -157,7 +157,7 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, 
           <button
           type="button"
           onClick={handleToHome}
-           className="font-bold px-32 italic text-nowrap text-cyan-400 mt-4 hover:underline animate-pulse transition-all duration-300
+           className="font-bold px-32 italic text-nowrap  hover:text-blue-900 text-cyan-400 mt-4 hover:underline animate-pulse transition-all duration-300
            max-[500px]:px-32
            max-[450px]:px-30
            max-[400px]:px-20

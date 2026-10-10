@@ -161,7 +161,7 @@ export const SignUp: React.FC<SignUpProps> = ({ onSwitchToLogin, onSwitchToHome,
         <button
           type="button"
           onClick={handleSwitch}
-           className="font-bold  italic text-cyan-400 hover:underline animate-pulse transition-all duration-300"
+           className="font-bold  italic text-cyan-400 hover:underline hover:text-blue-900 animate-pulse transition-all duration-300"
         >
           Continue to Login
         </button>
@@ -171,6 +171,7 @@ export const SignUp: React.FC<SignUpProps> = ({ onSwitchToLogin, onSwitchToHome,
           type="button"
           onClick={handleToHome}
            className="font-bold px-35 text-nowrap italic text-cyan-400 mt-4 hover:underline animate-pulse transition-all duration-300
+           hover:text-blue-900
            max-[500px]:px-32
            max[450px]:px-30
            max-[400px]:px-20
