@@ -89,6 +89,7 @@ const Account: React.FC<AccountProps> = memo(({ onSignUp, onLogin }) => {
             <img
               src={AnimeThankful}
               onClick= {handleAnimeClick}
+            
               className="absolute top-20 left-70 animate-pulse transition-all duration-300 w-65 h-auto opacity-90 drop-shadow-red-900/90 drop-shadow-lg/100 hover:scale-95 cursor-pointer active:scale-90 max-[800px]:w-60 max-[800px]:left-80 max-[800px]:top-20 m-2 max-[600px]:w-50 max-[600px]:left-70 max-[500px]:relative max-[500px]:left-10 max-[500px]:top-0"
               alt="Anime Thankful"
             />

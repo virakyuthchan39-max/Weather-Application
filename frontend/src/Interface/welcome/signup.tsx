@@ -5,10 +5,11 @@ import SignupEmoji from "/public/Icon/Welcome/account_emoji2.avif"
 
 interface SignUpProps {
   onSwitchToLogin: () => void;
+  onSwitchToHome: () => void;
   onSubmit?: (data: Record<string, string>) => void;
 }
 
-export const SignUp: React.FC<SignUpProps> = ({ onSwitchToLogin, onSubmit }) => {
+export const SignUp: React.FC<SignUpProps> = ({ onSwitchToLogin, onSwitchToHome, onSubmit }) => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -30,7 +31,7 @@ export const SignUp: React.FC<SignUpProps> = ({ onSwitchToLogin, onSubmit }) => 
       playButtonSound();
       onSwitchToLogin();
     }
-   const reuse_button_logo:string = "flex h-12 w-12 items-center drop-shadow-lg/50 drop-shadow-blue-600 justify-center border-b-4 border-gray-500 rounded-full bg-white transition-all \
+  const reuse_button_logo:string = "flex h-12 w-12 items-center drop-shadow-lg/50 drop-shadow-blue-600 justify-center border-b-4 border-gray-500 rounded-full bg-white transition-all \
   hover:scale-110 hover:duration-150 \
   active:scale-95 active:border-b-0 active:translate-y-2 hover:duration:-100"
   const reuse_form:string = "w-full rounded-lg drop-shadow-lg/90 drop-shadow-blue-600  border border-white/20 bg-white/10 px-4 py-2 text-white placeholder-gray-400 \
@@ -39,11 +40,11 @@ export const SignUp: React.FC<SignUpProps> = ({ onSwitchToLogin, onSubmit }) => 
 
   return (
      <div className="block font-welcome mx-auto w-full max-w-md rounded-2xl  bg-black/40 p-8 text-white shadow-2xl backdrop-blur-[-1px]
-     max-[500px]:w-[80%] max-[500px]:ml-1 ">
+      max-[500px]:ml-1 ">
       <h2 className="flex -mb-10 text-center text-3xl pl-20 font-bold text-cyan-400
         max-[500px]:text-2xl max-[500px]:text-nowrap max-[500px]:pl-15 max-[500px]:justify-between
         max-[600px]:pl-20
-        max-[400px]:pl-10
+        max-[400px]:pl-12
       ">
         Welcome Back
         <img src ={SignupEmoji} className = "w-25 h-25 relative drop-shadow-lg/80 -top-8 right-4 \
@@ -159,7 +160,18 @@ export const SignUp: React.FC<SignUpProps> = ({ onSwitchToLogin, onSubmit }) => 
         >
           Continue to Login
         </button>
-      </p>
+       <span className = "block mt-4 text-xl text-white italic">or</span>
+       </p>
+          <button
+          type="button"
+          onClick={onSwitchToHome}
+           className="font-bold px-32 text-nowrap italic text-cyan-400 mt-4 hover:underline animate-pulse transition-all duration-300
+           max-[500px]:px-18
+           max-[400px]:px-20
+           "
+        >
+          Go to back home
+        </button>
     </div>
   );
 };

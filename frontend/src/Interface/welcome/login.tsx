@@ -45,11 +45,13 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSubmit }) => {
   const reuse_label:string = "mb-1 block text-md font-semibold text-gray-300"
   return (
     <div className="block font-welcome mx-auto w-full max-w-md rounded-2xl  bg-black/40 p-8 text-white shadow-2xl backdrop-blur-[-1px]
-    max-[500px]:w-[80%] max-[500px]:ml-1 ">
+     max-[500px]:ml-1 ">
       <h2 className="flex -mb-10 text-center text-3xl pl-20 font-bold text-cyan-400
         max-[500px]:text-2xl max-[500px]:text-nowrap max-[500px]:pl-15 max-[500px]:justify-between
         max-[600px]:pl-20
-        max-[400px]:pl-10
+        max-[450px]:pl-10
+        max-[400px]:pl-14
+
       ">
         Welcome Back
         <img src ={LoginEmoji} className = "w-25 h-25 relative drop-shadow-lg/80 -top-8 right-4 \
@@ -58,6 +60,8 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSubmit }) => {
         </h2>
     <h2 className="mb-6 pr-3 text-center text-3xl font-bold text-cyan-400
      max-[500px]:text-2xl
+    max-[450px]:pl-10
+    max-[400px]:pl-6
      ">
         Login Account</h2>
 
@@ -141,6 +145,19 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSubmit }) => {
           Continue to Sign Up
         </button>
       </p>
+      <span className = "block mt-4 text-xl text-center text-white italic">or</span>
+      
+          <button
+          type="button"
+          onClick={handleSwitch}
+           className="font-bold px-32 italic text-cyan-400 mt-4 hover:underline animate-pulse transition-all duration-300
+           max-[500px]:px-18
+           max-[400px]:px-20
+           "
+        >
+          Go to back home
+        </button>
+      
     </div>
   );
 };

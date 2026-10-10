@@ -10,7 +10,7 @@ export const App: React.FC = () => {
 
   const handleSignUp = () => setCurrentView('signup');
   const handleLogin = () => setCurrentView('login');
-
+  const handleWelcome = () => setCurrentView("welcome")
 
   return (
     <main className="flex min-h-screen w-full items-center justify-center bg-slate-950">
@@ -19,7 +19,7 @@ export const App: React.FC = () => {
       )}
 
       {currentView === 'signup' && (
-        <SignUp onSwitchToLogin={handleLogin} />
+        <SignUp onSwitchToLogin={handleLogin} onSwitchToHome={handleWelcome} />
       )}
 
       {currentView === 'login' && (
