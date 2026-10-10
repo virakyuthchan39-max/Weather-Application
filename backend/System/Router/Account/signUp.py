@@ -43,7 +43,7 @@ def full_name(first:str,Last:str):
 
 
 @router.post("/createAccount",status_code= status.HTTP_201_CREATED,response_model =CreateSchemaResponse)
-async def CreateUser(userAccount:CreateUserRequest,db:Annotated[AsyncSession,Depends(get_session)]):
+async def Create_User(userAccount:CreateUserRequest,db:Annotated[AsyncSession,Depends(get_session)]):
     """
       ***Account Creation user Operation!***
       Here! in this operation, they require most of username , gmail and password for access the application here
@@ -57,11 +57,11 @@ async def CreateUser(userAccount:CreateUserRequest,db:Annotated[AsyncSession,Dep
     final_query = query.first()
     if final_query:
         raise HTTPException(detail= "This email already used!",status_code = status.HTTP_400_BAD_REQUEST)
-
-    add_user_db = UserSignIn(username=full_name(userAccount.first_name,userAccount.last_name),password=hashed_pwd,gmail=userAccount.gmail,create_at= datetime.now(timezone.utc),is_active=True,role= "user")
+    username = full_name(userAccount.first_name,userAccount.last_name)
+    add_user_db = UserSignIn(username=username,password=hashed_pwd,gmail=userAccount.gmail,create_at= datetime.now(timezone.utc),is_active=True,role= "user")
     db.add(add_user_db)
     await db.commit()
-
+    await db.refresh(add_user_db)
 
     token = create_access_token({
         "sub": str(add_user_db.id),
@@ -69,5 +69,5 @@ async def CreateUser(userAccount:CreateUserRequest,db:Annotated[AsyncSession,Dep
         "role": add_user_db.role,
     })
 
-    result_response= CreateSchema(id=add_user_db.id, username=add_user_db.username, gmail=add_user_db.gmail, create_at= datetime.now(timezone.utc), is_active=True, role= "user")
+    result_response= CreateSchema(id=add_user_db.id, full_name=add_user_db.username, gmail=add_user_db.gmail, create_at= datetime.now(timezone.utc), is_active=True, role= "user")
     return CreateSchemaResponse(detail = "This user create account successfully! ✅", access_token=token, user_info=result_response)

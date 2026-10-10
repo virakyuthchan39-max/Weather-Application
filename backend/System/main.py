@@ -35,9 +35,6 @@ app.add_middleware(
 app.include_router(Account_Router,tags=["Account Operation"])
 
 
-@app.get("/")
-def read_root():
-    return {"message": "Weather App Backend is running successfully!"}
 
 if __name__ == "__main__":
     run(app, host="0.0.0.0", port=8000)

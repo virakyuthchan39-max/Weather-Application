@@ -15,7 +15,7 @@ export const playAnimeClick =() =>{
 export const playButtonSound = () => {
   const audio = new Audio(SFX_PATH);
   audio.currentTime = 0;
-  audio.volume = 0.5
+  audio.volume = 0.7
   audio.play().catch(() => {});
 };
 

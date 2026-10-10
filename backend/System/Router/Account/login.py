@@ -37,7 +37,7 @@ router = APIRouter()
 
 
 @router.post("/loginAccount",status_code= status.HTTP_201_CREATED,response_model =LoginSchemaResponse)
-async def loginUser(userAccount:LoginUserRequest,db:Annotated[AsyncSession,Depends(get_session)]):
+async def login_User(userAccount:LoginUserRequest,db:Annotated[AsyncSession,Depends(get_session)]):
     """
       ***Login Account user Operation!***
       Here! in this operation, they require most of gmail and password for access the application here
@@ -54,7 +54,8 @@ async def loginUser(userAccount:LoginUserRequest,db:Annotated[AsyncSession,Depen
 
     add_user_db = UserLogin(username=final_query.username,register_id=final_query.id,gmail=final_query.gmail,login_at= datetime.now(timezone.utc),is_active=True,role= "user")
     db.add(add_user_db)
-    await db.commit()
+    await db.commit() 
+    await db.refresh(add_user_db)
 
 
     token = create_access_token({
@@ -63,5 +64,5 @@ async def loginUser(userAccount:LoginUserRequest,db:Annotated[AsyncSession,Depen
         "role": add_user_db.role,
     })
 
-    result_response= LoginSchema(id=add_user_db.id, full_name=final_query.username, gmail=userAccount.gmail, login_at= datetime.now(timezone.utc), is_active=True, role= "user")
+    result_response= LoginSchema(id=add_user_db.id, full_name=add_user_db.username, gmail=userAccount.gmail, login_at= datetime.now(timezone.utc), is_active=True, role= "user")
     return LoginSchemaResponse(detail = "This user login account successfully! ✅", access_token=token, user_info=result_response)

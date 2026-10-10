@@ -1,7 +1,10 @@
-import React, { memo, useState, useEffect, useCallback } from 'react';
+import React, { memo, useState, useEffect, useCallback, useRef} from 'react';
 import BackgroundMusic from '../../Effect_Sevice/background_music.tsx';
 import { playButtonSound, playAnimeClick } from '../../Effect_Sevice/sound_effect';
 import AnimeThankful from "/public/Icon/Welcome/Kita.avif";
+import AnimeShock from "/public/Icon/Welcome/kita_shock.avif"
+import AnimeMad from "/public/Icon/Welcome/Kita_mad.avif"
+import AnimeSign from "/public/Icon/Welcome/Kita_sign.avif"
 import SignUp from './signup';
 import Login from './login';
 import "./account.css";
@@ -13,6 +16,49 @@ const Account: React.FC = memo(() => {
   const [showContent, setShowContent] = useState(false);
   const [animClass, setAnimClass] = useState('');
   const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const [animeCount, setAnimeCount] = useState(0);
+  const [animeImg, setAnimeImg] = useState(AnimeThankful);
+  const signTimerRef = useRef<number | null>(null);
+
+  const handleAnimeClick = () => {
+  playAnimeClick();
+  setAnimeCount((prev) => {
+    const next = prev + 1;
+    if (next >= 5)      setAnimeImg(AnimeMad);
+    else if (next >= 1) setAnimeImg(AnimeShock);
+    return next;
+  });
+  };
+
+  // idle 1s → (mad path: sign → 1s → thankful) | (shock path: thankful)
+  useEffect(() => {
+  if (animeCount === 0) return;
+
+  const t = setTimeout(() => {
+    if (animeCount >= 5) {
+      // was mad → show sign for 1s, then reset
+      setAnimeImg(AnimeSign);
+      signTimerRef.current = window.setTimeout(() => {
+        setAnimeCount(0);
+        setAnimeImg(AnimeThankful);
+        signTimerRef.current = null;
+      }, 1000);
+    } else {
+      // was shock (or less) → reset immediately
+      setAnimeCount(0);
+      setAnimeImg(AnimeThankful);
+    }
+  }, 1000);
+
+  return () => {
+    clearTimeout(t);
+    if (signTimerRef.current !== null) {
+      clearTimeout(signTimerRef.current);
+      signTimerRef.current = null;
+    }
+  };
+  }, [animeCount]);
 
   // initial 1s delay before welcome card appears
   useEffect(() => {
@@ -75,14 +121,15 @@ const Account: React.FC = memo(() => {
           {/* ---------- WELCOME VIEW ---------- */}
           {view === 'welcome' && (
             <div className="relative mx-4 w-full max-w-xl rounded-2xl border-white/10 bg-black/40 p-8 shadow-2xl backdrop-blur-[-1px] md:p-10 animate-account">
-              <h1 className="mb-2 text-2xl font-extrabold tracking-tight animate-pulse transition-all duration-2500 text-cyan-400">
+              <h1 className="mb-2 text-nowrap text-2xl font-extrabold tracking-tight animate-pulse transition-all duration-2500 text-cyan-400
+              max-[500px]:text-xl">
                 ☀ Welcome to Weather Application
               </h1>
 
-              <div className="mb-4 block items-center space-x-2 text-sm font-semibold tracking-wide text-sky-300">
+              <div className="mb-4 block items-center  space-x-2 text-sm font-semibold tracking-wide text-sky-300">
              
-                <p className="mb-1 flex ">
-                  <p className= "animate-spin transition-all duration-2000 mr-2">★</p>
+                <p className="mt-3 mb-1 max-[400px]:text-nowrap flex">
+                  <p className= "animate-spin transition-all duration-2000 mr-2 hover:text-3xl hover:relative hover:-top-2 hover:-py-4 hover:border-0  hover:outline-none cursor-pointer">★</p>
                   Introduction about Web Application</p>
                 <ul className="pl-5 space-y-1">
                   <li>Publish: <strong><time dateTime="2026-10-15">15 October 2026</time></strong></li>
@@ -92,14 +139,26 @@ const Account: React.FC = memo(() => {
                 </ul>
 
                 <img
-                  src={AnimeThankful}
-                  onClick={playAnimeClick}
-                  className="absolute top-20 left-70 animate-pulse transition-all duration-300 w-65 h-auto opacity-90 drop-shadow-red-900/90 drop-shadow-lg/100 hover:scale-95 cursor-pointer active:scale-90 max-[800px]:w-60 max-[800px]:left-80 max-[800px]:top-20 m-2 max-[600px]:w-50 max-[600px]:left-70 max-[500px]:relative max-[500px]:left-10 max-[500px]:top-0"
-                  alt="Anime Thankful"
-                />
+                      src={animeImg}
+                      onClick={handleAnimeClick}
+                      className={`absolute top-20 left-70 h-auto opacity-90 drop-shadow-red-900/90 drop-shadow-lg/100 hover:scale-95 cursor-pointer active:scale-90
+                        max-[800px]:top-20 m-2
+                        max-[500px]:relative max-[500px]:top-0 max-[500px]:left-10
 
+                        ${
+                          animeImg === AnimeShock
+                            ? "w-30 max-[1200px]:w-46 max-[1200px]:left-80 max-[800px]:scale-90 max-[800px]:top-20 max-[800px]:w-45 max-[800px]:left-78 max-[600px]:w-45 max-[600px]:scale-90 max-[500px]:w-40"
+                            : animeImg === AnimeMad
+                            ? "w-30 max-[1200px]:w-46 max-[1200px]:left-80 max-[800px]:w-40 max-[800px]:left-79 max-[600px]:w-45 max-[500px]:w-40"
+                            : animeImg === AnimeSign
+                            ? "w-30 max-[1200px]:w-46 max-[1200px]:left-80 max-[800px]:w-50 max-[800px]:top-30 max-[800px]:left-75 max-[600px]:w-45 max-[500px]:w-40"
+                            : "w-65 max-[800px]:w-60 max-[600px]:w-50 max-[500px]:w-50"
+                        }
+                      `}
+                      alt="Anime"
+                    />
                 <p className="mt-3 mb-1 flex">
-                    <p className= "animate-spin transition-all duration-2000 mr-2">★</p>
+                    <p className= "animate-spin transition-all duration-2000 hover:text-3xl hover:relative hover:-top-2 hover:-py-4 hover:border-0  hover:outline-none cursor-pointer mr-2">★</p>
                     Click the links to learn more</p>
 
                 <nav className="border-b-2 pb-5 pl-5">

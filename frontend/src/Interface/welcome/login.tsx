@@ -62,7 +62,7 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, 
       ">
         Welcome Back
         <img src ={LoginEmoji} className = "w-25 h-25 relative drop-shadow-lg/80 -top-8 right-4 \
-        max-[500px]:w-20 max-[500px]:h-20 max-[500px]:-top-6 max-[500px]:right-2 max-[450px]:right-6 \
+        max-[500px]:w-20 max-[500px]:h-20 max-[500px]:-top-6 max-[500px]:right-2 max-[450px]:right-3 \
         "/>
         </h2>
     <h2 className="mb-6 pr-3 text-center text-3xl font-bold text-cyan-400
