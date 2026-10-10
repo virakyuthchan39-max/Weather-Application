@@ -6,10 +6,11 @@ import LoginEmoji from "/public/Icon/Welcome/account_emoji.avif"
 
 interface LoginProps {
   onSwitchToSignUp: () => void;
+  onSwitchToHome: () => void
   onSubmit?: (data: Record<string, string>) => void;
 }
 
-export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSubmit }) => {
+export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, onSubmit }) => {
 
   const [formData, setFormData] = useState({
     email: '',
@@ -33,6 +34,10 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSubmit }) => {
     playButtonSound();
     onSwitchToSignUp();
   }
+  const handleToHome = () =>{
+     playButtonSound(),
+     onSwitchToHome()
+  }
 
 
 
@@ -40,22 +45,24 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSubmit }) => {
   const reuse_button_logo:string = "flex h-12 w-12 items-center drop-shadow-lg/50 drop-shadow-blue-600 justify-center border-b-4 border-gray-500 rounded-full bg-white transition-all \
                                     hover:scale-110 hover:duration-150 \
                                     active:scale-95 active:border-b-0 active:translate-y-2 hover:duration:-100"
-  const reuse_form:string = "w-full drop-shadow-lg/60 drop-shadow-blue-600 rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-white placeholder-gray-400 \
-                            focus:border-cyan-400 focus:drop-shadow-cyan-600 focus:drop-shadow-lg/60 focus:outline-none focus:border-3"
+  const reuse_form:string = "w-100 max-w-full drop-shadow-lg/60 drop-shadow-blue-600 rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-white placeholder-gray-400 \
+                            focus:border-cyan-400 focus:drop-shadow-cyan-600 focus:drop-shadow-lg/60 focus:outline-none focus:border-3 \
+                            max-[500px]:w-80"
   const reuse_label:string = "mb-1 block text-md font-semibold text-gray-300"
   return (
-    <div className="block font-welcome mx-auto w-full max-w-md rounded-2xl  bg-black/40 p-8 text-white shadow-2xl backdrop-blur-[-1px]
-     max-[500px]:ml-1 ">
-      <h2 className="flex -mb-10 text-center text-3xl pl-20 font-bold text-cyan-400
-        max-[500px]:text-2xl max-[500px]:text-nowrap max-[500px]:pl-15 max-[500px]:justify-between
+    <div className="block border font-welcome mx-auto w-full max-w-md rounded-2xl  bg-black/40 p-8 text-white shadow-2xl backdrop-blur-[-1px]
+
+      ">
+      <h2 className="flex -mb-10 text-nowrap text-center text-3xl pl-20 font-bold text-cyan-400
+        max-[500px]:text-2xl  max-[500px]:pl-15 max-[500px]:justify-between
         max-[600px]:pl-20
-        max-[450px]:pl-10
+        max-[450px]:pl-25
         max-[400px]:pl-14
 
       ">
         Welcome Back
         <img src ={LoginEmoji} className = "w-25 h-25 relative drop-shadow-lg/80 -top-8 right-4 \
-        max-[500px]:w-20 max-[500px]:h-20 max-[500px]:-top-6 max-[500px]:right-2 \
+        max-[500px]:w-20 max-[500px]:h-20 max-[500px]:-top-6 max-[500px]:right-2 max-[450px]:right-6 \
         "/>
         </h2>
     <h2 className="mb-6 pr-3 text-center text-3xl font-bold text-cyan-400
@@ -149,9 +156,10 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSubmit }) => {
       
           <button
           type="button"
-          onClick={handleSwitch}
-           className="font-bold px-32 italic text-cyan-400 mt-4 hover:underline animate-pulse transition-all duration-300
-           max-[500px]:px-18
+          onClick={handleToHome}
+           className="font-bold px-32 italic text-nowrap text-cyan-400 mt-4 hover:underline animate-pulse transition-all duration-300
+           max-[500px]:px-32
+           max-[450px]:px-30
            max-[400px]:px-20
            "
         >
