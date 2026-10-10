@@ -1,0 +1,13 @@
+services:
+    frontend:
+       build:
+         context: ./frontend
+         dockerfile: dockerfile.frontend
+       container_name: Frontend_Application
+       volumes:
+        - ./frontend:/app
+        - /app/node_modules
+       ports:
+       - "5173:5173"  
+       environment:
+         - FRONTEND_URL=http://0.0.0.0:5173
