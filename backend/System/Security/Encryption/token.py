@@ -5,13 +5,23 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from dotenv import load_dotenv
 import os
+from pathlib import Path
 
-load_dotenv(".env.secret")
+# ទាញយក Path នៃ Folder បច្ចុប្បន្ន
+root_dir = Path(__file__).resolve().parents[2]
+env_path = root_dir / "DevOp" / ".env.secret"
+
+# Load តាមរយៈ Path ដែលបានកំណត់ច្បាស់លាស់
+load_dotenv(dotenv_path=env_path)
 
 SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM  = os.getenv("ALGORITHM", "HS256")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
 EXPIRE_MIN = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
 
+
+
+if not SECRET_KEY:
+    raise ValueError(f"SECRET_KEY is still missing! Checked path: {env_path}")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/loginAccount")
 
 

@@ -19,7 +19,7 @@ async def lifespan(app: FastAPI):
     finally:
         await engine.dispose()
 
-app = FastAPI(lifespan=lifespan,prefix="v1/weatherApplication/")
+app = FastAPI(lifespan=lifespan,prefix="/v1/weatherApplication/")
 
 app.add_middleware(
     CORSMiddleware,

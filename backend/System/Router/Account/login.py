@@ -21,7 +21,7 @@ class LoginSchema(BaseModel):
     id: int
     full_name: Annotated[str,Field(default=None,max_length=40,min_length=5)]
     gmail: EmailStr
-    login_at: Annotated[str,Field(default_factory=lambda:datetime.now(timezone.utc))]
+    login_at: Annotated[datetime,Field(default_factory=lambda:datetime.now(timezone.utc))]
     is_active:Annotated[bool,Field(default=True)]
     role:Annotated[str,Field(default="user")]
 
@@ -52,7 +52,7 @@ async def loginUser(userAccount:LoginUserRequest,db:Annotated[AsyncSession,Depen
     if not verify_password(userAccount.password, final_query.password):
         raise HTTPException(detail="Invalid password or email. Please try again!", status_code = status.HTTP_400_BAD_REQUEST)
 
-    add_user_db = UserLogin(full_name=final_query.full_name,register_id=final_query.id,gmail=userAccount.gmail,login_at= datetime.now(timezone.utc),is_active=True,role= "user")
+    add_user_db = UserLogin(username=final_query.username,register_id=final_query.id,gmail=final_query.gmail,login_at= datetime.now(timezone.utc),is_active=True,role= "user")
     db.add(add_user_db)
     await db.commit()
 
@@ -63,5 +63,5 @@ async def loginUser(userAccount:LoginUserRequest,db:Annotated[AsyncSession,Depen
         "role": add_user_db.role,
     })
 
-    result_response= LoginSchema(id=add_user_db.id, full_name=final_query.full_name, gmail=userAccount.gmail, login_at= datetime.now(timezone.utc), is_active=True, role= "user")
+    result_response= LoginSchema(id=add_user_db.id, full_name=final_query.username, gmail=userAccount.gmail, login_at= datetime.now(timezone.utc), is_active=True, role= "user")
     return LoginSchemaResponse(detail = "This user login account successfully! ✅", access_token=token, user_info=result_response)
