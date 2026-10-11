@@ -9,3 +9,5 @@ pydantic
 passlib[bcrypt]
 contextlib
 slowapi
+google-auth
+requests

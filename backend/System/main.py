@@ -4,13 +4,18 @@ from contextlib import asynccontextmanager
 from uvicorn import run
 
 from Database.database import create_table, engine
-from Database.model import UserSignIn, UserLogin
+from Database.model import (UserSignIn, UserLogin,
+                            FacebookSignIn,UserFacebookLogin,
+                            GoogleSignIn,UserGoogleLogin,
+                            GithubSignIn,UserGithubLogin)
+
 
 
 # import the module
 from Router.Account.account_route import router as Account_Router
-
-
+from Security.ThirdParty.google.google_route import router as Google_Router
+# from Security.ThirdParty.facebook.facebook_route import router as Facebook_Router
+# from Security.ThirdParty.github.github_route import router as Github_Router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await create_table()
@@ -33,7 +38,9 @@ app.add_middleware(
 
 # including the router
 app.include_router(Account_Router,tags=["Account Operation"])
-
+app.include_router(Google_Router)
+# app.include_router(Facebook_Router)
+# app.include_router(Github_Router)
 
 
 if __name__ == "__main__":

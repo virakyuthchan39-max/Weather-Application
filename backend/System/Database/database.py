@@ -2,18 +2,25 @@ import os
 from dotenv import load_dotenv
 from sqlmodel import SQLModel
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from pathlib import Path
 
-load_dotenv(".env.service")
+root_dir = Path(__file__).resolve().parents[1]
+env_path = root_dir / "DevOp" / ".env.service"
 
-DATABASE_USER = os.getenv("DATABASE_USER", "root")
-DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD", "WeatherRootPassword")
-DATABASE_HOST = os.getenv("DATABASE_HOST","127.0.0.1")
-DATABASE_PORT = int(os.getenv("DATABASE_PORT", "3306"))
-DATABASE_NAME = os.getenv("DATABASE_NAME", "weather_application")
-DATABASE_GUEST_PORT = os.getenv("DATABASE_GUEST_PORT","3306")
+# Load តាមរយៈ Path ដែលបានកំណត់ច្បាស់លាស់
+load_dotenv(dotenv_path=env_path)
 
-DATABASE_URL = f"mysql+aiomysql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_GUEST_PORT}/{DATABASE_NAME}"
 
+DATABASE_USER = os.getenv("DATABASE_USERNAME")
+DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
+DATABASE_HOST = os.getenv("DATABASE_HOST")
+DATABASE_PORT = int(os.getenv("DATABASE_PORT","3306"))
+DATABASE_NAME = os.getenv("DATABASE_NAME")
+# DATABASE_GUEST_PORT = os.getenv("DATABASE_GUEST_PORT")
+
+DATABASE_URL = f"mysql+aiomysql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"
+if not DATABASE_HOST:
+    ValueError(f"Error: {env_path}")
 engine = create_async_engine(DATABASE_URL, echo=False, future=True)
 AsyncLocalSession = async_sessionmaker(expire_on_commit=False, class_=AsyncSession, bind=engine)
 

@@ -1,0 +1,116 @@
+import os
+from fastapi import APIRouter, Depends, HTTPException, status
+from datetime import datetime, timezone
+from pydantic import BaseModel
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+from typing import Annotated, Optional
+from Database.database import get_session
+from Database.model import GoogleSignIn, UserGoogleLogin
+from pathlib import Path
+from dotenv import load_dotenv
+
+router = APIRouter()
+
+root_dir = Path(__file__).resolve().parents[3]
+env_path = root_dir / "DevOp" / ".env.secret"
+
+load_dotenv(dotenv_path=env_path)
+
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
+
+class GoogleTokenRequest(BaseModel):
+    token: str
+
+class GoogleSchema(BaseModel):
+    id: int
+    username: str
+    password: str = "GooglePassword"
+    gmail: str    
+    role: str
+    is_active: bool 
+    login_at: datetime
+
+class GoogleSchemaResponse(BaseModel):
+    detail: str = "Google'user login successfully!✅"
+    user_info: GoogleSchema
+
+@router.post("/google_login", response_model=GoogleSchemaResponse)
+async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, Depends(get_session)]):
+    try:
+        # Verify Google ID Token
+        idinfo = id_token.verify_oauth2_token(
+            payload.token, 
+            google_requests.Request(), 
+            GOOGLE_CLIENT_ID
+        )
+
+        email = idinfo.get("email")
+        name = idinfo.get("name", "Google User")
+
+        if not email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail="Invalid Google token: email not found."
+            )
+
+        # Check if user exists in database
+        statement = select(GoogleSignIn).where(GoogleSignIn.gmail == email)
+        result = await db.scalars(statement)
+        user = result.first()
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Account not found. Please sign up first."
+            )
+
+        if not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User account is deactivated."
+            )
+
+        
+        current_time = datetime.now(timezone.utc)
+        query = await db.scalars(select(UserGoogleLogin).where(UserGoogleLogin.gmail == payload))
+        final_query = query.first()
+        if final_query:
+            final_query.login_at = current_time
+            db.add(final_query)
+        else:
+            add_google_user = UserGoogleLogin(
+                google_id=user.id,
+                login_at=current_time,
+                username=user.username.title(),
+                gmail=user.gmail,
+                role=user.role,
+                is_active=user.is_active
+            ) 
+            
+        db.add(add_google_user)
+        await db.commit()
+        
+
+     
+        result_response = GoogleSchema(
+            id=user.id,
+            username=user.username.title(),
+            gmail=user.gmail,
+            role=user.role,        
+            is_active=user.is_active, 
+            login_at=current_time
+        )
+        
+        return GoogleSchemaResponse(
+            detail="Google'user login successfully!✅",
+            user_info=result_response
+        )
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Token verification failed: {str(e)}"
+        )
