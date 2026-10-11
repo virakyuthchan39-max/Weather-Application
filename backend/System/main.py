@@ -15,7 +15,7 @@ from Database.model import (UserSignIn, UserLogin,
 from Router.Account.account_route import router as Account_Router
 from Security.ThirdParty.google.google_route import router as Google_Router
 # from Security.ThirdParty.facebook.facebook_route import router as Facebook_Router
-# from Security.ThirdParty.github.github_route import router as Github_Router
+from Security.ThirdParty.github.github_route import router as Github_Router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await create_table()
@@ -40,7 +40,7 @@ app.add_middleware(
 app.include_router(Account_Router,tags=["Account Operation"])
 app.include_router(Google_Router)
 # app.include_router(Facebook_Router)
-# app.include_router(Github_Router)
+app.include_router(Github_Router)
 
 
 if __name__ == "__main__":
