@@ -1,0 +1,59 @@
+services:
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: dockerfile.frontend
+        container_name: ${FRONTEND_CONTAINER_NAME}
+        volumes:
+            - ./frontend:/app
+            - /app/node_modules
+        ports:
+            - "${FRONTEND_PORT}:5173"  
+        environment:
+            - FRONTEND_URL=http://localhost:${FRONTEND_PORT}
+        depends_on:
+            - backend
+
+    backend:
+        build:
+            context: ./backend/System/
+            dockerfile: dockerfile.backend
+        container_name: ${BACKEND_CONTAINER_NAME}
+        volumes:
+            - ./backend/System:/app  
+          
+        ports:
+            - "${BACKEND_PORT}:8000"  
+        environment:
+            - BACKEND_URL=http://0.0.0.0:${BACKEND_PORT}
+            - DATABASE_HOST=${DATABASE_CONTAINER_HOST}
+            - DATABASE_CONTAINER_PORT=${DATABASE_CONTAINER_PORT}
+            - DATABASE_USER=${DATABASE_USERNAME}
+            - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+            - DATABASE_NAME=${DATABASE_NAME}
+            - REDIS_URL=${REDIS_CONTAINER_URL}
+        depends_on:
+            - database 
+            - memory-cache
+
+    database:
+        image: mysql:8.4
+        container_name: ${DATABASE_CONTAINER_NAME}
+        restart: always
+        ports:
+            - "${DATABASE_CONTAINER_PORT}:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
+            MYSQL_DATABASE: ${DATABASE_NAME}
+            MYSQL_PASSWORD: ${DATABASE_PASSWORD}
+        volumes:
+            - mysql_data:/var/lib/mysql
+    memory-cache: 
+         image: redis:7-alpine
+         container_name: ${REDIS_CONTAINER_NAME}
+         ports:
+         - "${REDIS_PORT}:6379"
+         restart: always
+volumes:
+  mysql_data:
+    driver: local
