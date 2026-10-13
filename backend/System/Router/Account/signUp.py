@@ -11,12 +11,13 @@ from Database.database import get_session
 from Security.Encryption.hash import hash_password
 from Security.Encryption.token import create_access_token
 
+import asyncio
 
 class CreateUserRequest(BaseModel):
-    first_name: Annotated[str,Field(default=None,max_length=20,min_length=3)]
-    last_name: Annotated[str,Field(default=None,max_length=20,min_length=3)]
+    first_name: Annotated[str,Field(max_length=20,min_length=3)]
+    last_name: Annotated[str,Field(max_length=20,min_length=3)]
     gmail: EmailStr
-    password: Annotated[str,Field(default=None,min_length=8,max_length=400)]
+    password: Annotated[str,Field(min_length=8,max_length=72)]
 
 
 class CreateSchema(BaseModel):
@@ -34,32 +35,43 @@ class CreateSchemaResponse(BaseModel):
     token_type: str = "bearer"
     user_info: CreateSchema
 
-
 router = APIRouter()
-
 
 def full_name(first:str,Last:str):
     return f"{first} {Last}"
 
-
-@router.post("/createAccount",status_code= status.HTTP_201_CREATED,response_model =CreateSchemaResponse)
-async def Create_User(userAccount:CreateUserRequest,db:Annotated[AsyncSession,Depends(get_session)]):
+@router.post("/createAccount", status_code=status.HTTP_201_CREATED, response_model=CreateSchemaResponse)
+async def Create_User(
+    userAccount: CreateUserRequest,
+    db: Annotated[AsyncSession, Depends(get_session)],
+):
     """
-      ***Account Creation user Operation!***
-      Here! in this operation, they require most of username , gmail and password for access the application here
-      ***Username*** would be combind with first name and last name  and also the string 
-      ***Gmail*** would be EmailStr
-      ***Password*** would be Str and at least 8 character range.
+          ***Account Creation user Operation!***
+          Here! in this operation, they require most of username , gmail and password for access the application here
+          ***Username*** would be combind with first name and last name  and also the string 
+          ***Gmail*** would be EmailStr
+          ***Password*** would be Str and at least 8 character range.
     """
+    query = await db.scalars(select(UserSignIn).where(UserSignIn.gmail == userAccount.gmail))
+    if query.first():
+        raise HTTPException(
+            detail="This email already used!",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
 
     hashed_pwd = hash_password(userAccount.password)
-    query = await db.scalars(select(UserSignIn).where(UserSignIn.gmail == userAccount.gmail))
-    final_query = query.first()
-    if final_query:
-        raise HTTPException(detail= "This email already used!",status_code = status.HTTP_400_BAD_REQUEST)
-    username = full_name(userAccount.first_name,userAccount.last_name)
-    add_user_db = UserSignIn(username=username,password=hashed_pwd,gmail=userAccount.gmail,create_at= datetime.now(timezone.utc),is_active=True,role= "user")
+    username = full_name(userAccount.first_name, userAccount.last_name)
+
+    add_user_db = UserSignIn(
+        username=username,
+        password=hashed_pwd,
+        gmail=userAccount.gmail,
+        create_at=datetime.now(timezone.utc),
+        is_active=True,
+        role="user",
+    )
     db.add(add_user_db)
+    await asyncio.sleep(1.5)
     await db.commit()
     await db.refresh(add_user_db)
 
@@ -69,5 +81,18 @@ async def Create_User(userAccount:CreateUserRequest,db:Annotated[AsyncSession,De
         "role": add_user_db.role,
     })
 
-    result_response= CreateSchema(id=add_user_db.id, full_name=add_user_db.username, gmail=add_user_db.gmail, create_at= datetime.now(timezone.utc), is_active=True, role= "user")
-    return CreateSchemaResponse(detail = "This user create account successfully! ✅", access_token=token, user_info=result_response)
+    result_response = CreateSchema(
+        id=add_user_db.id,
+        full_name=add_user_db.username,
+        gmail=add_user_db.gmail,
+        create_at=add_user_db.create_at,
+        is_active=add_user_db.is_active,
+        role=add_user_db.role,
+    )
+    return CreateSchemaResponse(
+        detail="This user create account successfully! ✅",
+        access_token=token,
+        user_info=result_response,
+    )
+
+    

@@ -35,13 +35,36 @@ class GithubSchemaResponse(BaseModel):
     detail: str = "Github user sign in successfully! ✅"
     user_info: GithubSchema
 
-@router.post("/Github_signin", response_model=GithubSchemaResponse)
+
+#sub dependencie
+async def exchange_code_for_token(code: str) -> str:
+    async with httpx.AsyncClient() as client:
+        res = await client.post(
+            "https://github.com/login/oauth/access_token",
+            headers={"Accept": "application/json"},
+            data={
+                "client_id": GITHUB_CLIENT_ID,
+                "client_secret": GITHUB_CLIENT_SECRET,
+                "code": code,
+            },
+        )
+        data = res.json()
+        if "access_token" not in data:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"GitHub code exchange failed: {data}",
+            )
+        return data["access_token"]
+
+
+
+@router.post("/github_signin", response_model=GithubSchemaResponse)
 async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, Depends(get_session)]):
     try:
-        # 1. ប្រើប្រាស់ Access Token ដើម្បីស្នើសុំព័ត៌មាន User ផ្ទាល់ពី GitHub API
+        access_token = await exchange_code_for_token(payload.token)
         async with httpx.AsyncClient() as client:
             headers = {
-                "Authorization": f"Bearer {payload.token}",
+                "Authorization": f"Bearer {access_token}",
                 "Accept": "application/vnd.github+json"
             }
             
@@ -79,7 +102,7 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
         if not user:
             # បើមិនទាន់មាន ធ្វើការ Register ថ្មី
             user = GithubSignIn(
-                username=str(username).title(),
+                username=username,
                 gmail=email,
                 is_active=True,
                 role="user",

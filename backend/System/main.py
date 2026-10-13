@@ -14,7 +14,7 @@ from Database.model import (UserSignIn, UserLogin,
 # import the module
 from Router.Account.account_route import router as Account_Router
 from Security.ThirdParty.google.google_route import router as Google_Router
-# from Security.ThirdParty.facebook.facebook_route import router as Facebook_Router
+from Security.ThirdParty.facebook.facebook_route import router as Facebook_Router
 from Security.ThirdParty.github.github_route import router as Github_Router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -24,7 +24,10 @@ async def lifespan(app: FastAPI):
     finally:
         await engine.dispose()
 
-app = FastAPI(lifespan=lifespan,prefix="/v1/weatherApplication/")
+app = FastAPI(
+    title="Weather Application ~ Oragnization/Operation",
+    lifespan=lifespan,
+    prefix="/v1/weatherApplication/")
 
 app.add_middleware(
     CORSMiddleware,
@@ -39,7 +42,7 @@ app.add_middleware(
 # including the router
 app.include_router(Account_Router,tags=["Account Operation"])
 app.include_router(Google_Router)
-# app.include_router(Facebook_Router)
+app.include_router(Facebook_Router)
 app.include_router(Github_Router)
 
 

@@ -1,7 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import "./account.css"
-import { playButtonSound } from '../../Effect_Sevice/sound_effect';
-import LoginEmoji from "/public/Icon/Welcome/account_emoji.avif"
+import { playButtonSound } from '../../Effect_Service/sound_effect';
+import LoginEmoji from "/Icon/Welcome/account_emoji.avif"
+import { loginAccount, saveToken, type LoginUserRequest } from '../../Effect_Service/Api/service/fetch';
+// fetch the google login auth
+import { googleLogin,requestGoogleIdToken } from '../../Effect_Service/Api/ThirdParty/google_fetch';
+import { facebookLogin, requestFacebookToken } from '../../Effect_Service/Api/ThirdParty/facebook_fetch';
+// fetch the github login auth
+import {
+  startGithubOAuth,
+  getGithubCodeFromUrl,
+  clearGithubCodeFromUrl,
+  githubLogin,
+} from '../../Effect_Service/Api/ThirdParty/github_fetch';
+
 
 
 interface LoginProps {
@@ -22,12 +34,27 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, 
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (onSubmit) {
-    
-        onSubmit(formData)
-    };
+    setErrorMsg('');
+    setLoading(true);
+    try {
+      const payload: LoginUserRequest = {
+        gmail: formData.email,
+        password: formData.password,
+      };
+      const res = await loginAccount(payload);
+      saveToken(res.access_token);
+      onSubmit?.(formData);
+      // TODO: navigate to home/dashboard
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
   };
   const handleSwitch = ()=>{
 
@@ -39,7 +66,71 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, 
      onSwitchToHome()
   }
 
+  //  google submit information (sign in)
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleError, setGoogleError] = useState('');
+  //  handle google submit (login)
+  const handleGoogleLogin = async () => {
+  playButtonSound();
+  setGoogleError('');
+  setGoogleLoading(true);
+  try {
+    const googleToken = await requestGoogleIdToken();
+    const res = await googleLogin(googleToken);
+    saveToken(res.access_token);
+    // TODO: navigate to home/dashboard
+  } catch (err) {
+    setGoogleError(err instanceof Error ? err.message : 'Something went wrong');
+  } finally {
+    setGoogleLoading(false);
+  }
+};
+ const [githubLoading, setGithubLoading] = useState(false);
+ const [githubError, setGithubError] = useState('');
 
+  const handleGithubLogin = () => {
+    playButtonSound();
+    startGithubOAuth();
+  };
+
+  useEffect(() => {
+    const code = getGithubCodeFromUrl();
+    if (!code) return;
+
+    const run = async () => {
+      setGithubLoading(true);
+      try {
+        const res = await githubLogin(code);
+        saveToken(res.access_token);
+        clearGithubCodeFromUrl();
+        // TODO: navigate to home/dashboard
+      } catch (err) {
+        setGithubError(err instanceof Error ? err.message : 'Something went wrong');
+      } finally {
+        setGithubLoading(false);
+      }
+    };
+    run();
+  }, []);
+
+    const [facebookLoading, setFacebookLoading] = useState(false);
+    const [facebookError, setFacebookError] = useState('');
+
+    const handleFacebookLogin = async () => {
+      playButtonSound();
+      setFacebookError('');
+      setFacebookLoading(true);
+      try {
+        const fbToken = await requestFacebookToken();
+        const res = await facebookLogin(fbToken);
+        saveToken(res.access_token);
+        // TODO: navigate to home/dashboard
+      } catch (err) {
+        setFacebookError(err instanceof Error ? err.message : 'Something went wrong');
+      } finally {
+        setFacebookLoading(false);
+      }
+    };
 
 
   const reuse_button_logo:string = "flex h-12 w-12 items-center drop-shadow-lg/50 drop-shadow-blue-600 justify-center border-b-4 border-gray-500 rounded-full bg-white transition-all \
@@ -74,23 +165,25 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, 
 
       {/* Social Login Section */}
       <div className="mb-6 flex justify-center border-b-4 pb-4 border-dashed gap-4">
-        <button
+       <button
           type="button"
-          onClick={playButtonSound}
+          disabled={googleLoading}
+          onClick={handleGoogleLogin}
           className={reuse_button_logo}
         >
           <img src="/Icon/Google logo.avif" alt="Google" className="h-8 w-8 object-contain" />
         </button>
-        <button
+       <button
           type="button"
-          onClick={playButtonSound}
+          disabled={githubLoading}
+          onClick={handleGithubLogin}
           className={reuse_button_logo}
         >
-          <img src="/Icon/Github logo.avif" alt="GitHub" className="h-20 w-20 object-contain" />
+          <img src="/Icon/Github logo.avif" alt="GitHub" className="h-12 w-12 object-contain" />
         </button>
         <button
           type="button"
-         onClick={playButtonSound}
+         onClick={handleFacebookLogin}
          className={reuse_button_logo}
         >
           <img src="/Icon/Facebook logo.avif" alt="Facebook" className="h-8 w-8 object-contain" />
@@ -129,15 +222,22 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, 
           />
         </div>
         
-        <button
-          type="submit"
-          onClick = {playButtonSound}
-          className=" block items-center mt-8 w-[60%] mx-auto rounded-lg bg-green-800 py-3 text-xl text-white font-bold border-b-8 border-green-900 transition-all \
-          hover:bg-green-400 hover:border-b-6 hover:translate-y-2 hover:duration-300 hover:delay-150 hover:drop-shadow-green-500 hover:drop-shadow-lg/30 \
-          active:scale-[0.98] active:border-b-0 active:translate-y-4 active:bg-green-400 active:text-blue-500 active:duration-100"
-        >
-          Login
-        </button>
+        {errorMsg && (
+              <p className="text-center text-sm font-semibold text-red-400">{errorMsg}</p>
+            )}
+         
+
+            <button
+              type="submit"
+              disabled={loading}
+              onClick={playButtonSound}
+              className="block items-center mt-8 w-[60%] mx-auto rounded-lg bg-green-800 py-3 text-xl text-white font-bold border-b-8 border-green-900 transition-all \
+              hover:bg-green-400 hover:border-b-6 hover:translate-y-2 hover:duration-300 hover:delay-150 hover:drop-shadow-green-500 hover:drop-shadow-lg/30 \
+              active:scale-[0.98] active:border-b-0 active:translate-y-4 active:bg-green-400 active:text-blue-500 active:duration-100 \
+              disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Logging in…' : 'Login'}
+            </button>
        
       </form>
 

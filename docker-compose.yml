@@ -1,13 +1,52 @@
 services:
     frontend:
-       build:
-         context: ./frontend
-         dockerfile: dockerfile.frontend
-       container_name: Frontend_Application
-       volumes:
-        - ./frontend:/app
-        - /app/node_modules
-       ports:
-       - "5173:5173"  
-       environment:
-         - FRONTEND_URL=http://0.0.0.0:5173
+        build:
+            context: ./frontend
+            dockerfile: dockerfile.frontend
+        container_name: ${FRONTEND_CONTAINER_NAME}
+        volumes:
+            - ./frontend:/app
+            - /app/node_modules
+        ports:
+            - "${FRONTEND_PORT}:5173"  
+        environment:
+            - FRONTEND_URL=http://0.0.0.0:${FRONTEND_PORT}
+        depends_on:
+            - backend
+
+    backend:
+        build:
+            context: ./backend/System/
+            dockerfile: dockerfile.backend
+        container_name: ${BACKEND_CONTAINER_NAME}
+        volumes:
+            - ./backend/System:/app  
+          
+        ports:
+            - "${BACKEND_PORT}:8000"  
+        environment:
+            - BACKEND_URL=http://0.0.0.0:${BACKEND_PORT}
+            - DATABASE_HOST=${DATABASE_CONTAINER_HOST}
+            - DATABASE_CONTAINER_PORT=${DATABASE_CONTAINER_PORT}
+            - DATABASE_USER=${DATABASE_USERNAME}
+            - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+            - DATABASE_NAME=${DATABASE_NAME}
+        depends_on:
+            - database 
+
+    database:
+        image: mysql:8.4
+        container_name: ${DATABASE_CONTAINER_NAME}
+        restart: always
+        ports:
+            - "${DATABASE_CONTAINER_PORT}:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
+            MYSQL_DATABASE: ${DATABASE_NAME}
+            MYSQL_PASSWORD: ${DATABASE_PASSWORD}
+        volumes:
+            - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
+    driver: local

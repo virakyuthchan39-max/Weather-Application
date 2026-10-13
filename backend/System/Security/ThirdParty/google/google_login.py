@@ -11,7 +11,7 @@ from Database.database import get_session
 from Database.model import GoogleSignIn, UserGoogleLogin
 from pathlib import Path
 from dotenv import load_dotenv
-
+import asyncio
 router = APIRouter()
 
 root_dir = Path(__file__).resolve().parents[3]
@@ -19,7 +19,7 @@ env_path = root_dir / "DevOp" / ".env.secret"
 
 load_dotenv(dotenv_path=env_path)
 
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID","")
 
 class GoogleTokenRequest(BaseModel):
     token: str
@@ -53,7 +53,7 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
         if not email:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, 
-                detail="Invalid Google token: email not found."
+                detail="This email not found in our application! Please go to signing up here !."
             )
 
         # Check if user exists in database
@@ -75,8 +75,9 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
 
         
         current_time = datetime.now(timezone.utc)
-        query = await db.scalars(select(UserGoogleLogin).where(UserGoogleLogin.gmail == payload))
+        query = await db.scalars(select(UserGoogleLogin).where(UserGoogleLogin.gmail == email))
         final_query = query.first()
+        # ✅ ត្រូវ
         if final_query:
             final_query.login_at = current_time
             db.add(final_query)
@@ -87,10 +88,10 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
                 username=user.username.title(),
                 gmail=user.gmail,
                 role=user.role,
-                is_active=user.is_active
-            ) 
-            
-        db.add(add_google_user)
+                is_active=user.is_active,
+            )
+            db.add(add_google_user)
+        await asyncio.sleep(0.4)    
         await db.commit()
         
 

@@ -11,6 +11,7 @@ from Database.database import get_session
 from Database.model import GoogleSignIn
 from dotenv import load_dotenv
 from pathlib import Path
+import asyncio
 
 root_dir = Path(__file__).resolve().parents[3]
 env_path = root_dir / "DevOp" / ".env.api"
@@ -61,9 +62,10 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
     
         add_google_user = GoogleSignIn(username=str(name).title(),gmail=email,is_active=True,role="user",create_at=datetime.now(timezone.utc),password="GooglePassword")    
         db.add(add_google_user)
+        await asyncio.sleep(0.4)
         await db.commit()
-         
-        result_response  = GoogleSchema(username=str(name).title(),gmail=email,role= "user",is_active = user.is_active,create_at=datetime.now(timezone.utc))
+        
+        result_response  = GoogleSchema(username=str(name).title(),gmail=email,role= "user",is_active = add_google_user.is_active,create_at=datetime.now(timezone.utc))
         return GoogleSchemaResponse(detail = "Google'user sign in successfully!✅",user_info=result_response)
     except ValueError as e:
         raise HTTPException(

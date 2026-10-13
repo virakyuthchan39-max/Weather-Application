@@ -10,12 +10,14 @@
   --font-isometra: "Isometra", sans-serif;
 
   --animate-account: account-animation 1s ease-in-out forwards;
-  
+
   @keyframes account-animation {
     0% { opacity: 0; }
     100% { opacity: 1; }
   }
+
 }
+
 
 @keyframes fadeOutView { from {opacity:1} to {opacity:0} }
 @keyframes fadeInView { from {opacity:0} to {opacity:1} }

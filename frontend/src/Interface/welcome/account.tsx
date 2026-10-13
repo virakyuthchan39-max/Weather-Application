@@ -1,10 +1,10 @@
 import React, { memo, useState, useEffect, useCallback, useRef} from 'react';
-import BackgroundMusic from '../../Effect_Sevice/background_music.tsx';
-import { playButtonSound, playAnimeClick } from '../../Effect_Sevice/sound_effect';
-import AnimeThankful from "/public/Icon/Welcome/Kita.avif";
-import AnimeShock from "/public/Icon/Welcome/kita_shock.avif"
-import AnimeMad from "/public/Icon/Welcome/Kita_mad.avif"
-import AnimeSign from "/public/Icon/Welcome/Kita_sign.avif"
+import BackgroundMusic from '../../Effect_Service/background_music.tsx';
+import { playButtonSound, playAnimeClick } from '../../Effect_Service/sound_effect.tsx';
+import AnimeThankful from "/Icon/Welcome/Kita.avif";
+import AnimeShock from "/Icon/Welcome/kita_shock.avif"
+import AnimeMad from "/Icon/Welcome/Kita_mad.avif"
+import AnimeSign from "/Icon/Welcome/Kita_sign.avif"
 import SignUp from './signup';
 import Login from './login';
 import "./account.css";
@@ -129,7 +129,7 @@ const Account: React.FC = memo(() => {
               <div className="mb-4 block items-center  space-x-2 text-sm font-semibold tracking-wide text-sky-300">
              
                 <p className="mt-3 mb-1 max-[400px]:text-nowrap flex">
-                  <p className= "animate-spin transition-all duration-2000 mr-2 hover:text-3xl hover:relative hover:-top-2 hover:-py-4 hover:border-0  hover:outline-none cursor-pointer">★</p>
+                  <span className= "animate-spin transition-all duration-2000 mr-2 hover:text-3xl hover:relative hover:-top-2 hover:-py-4 hover:border-0  hover:outline-none cursor-pointer">★</span>
                   Introduction about Web Application</p>
                 <ul className="pl-5 space-y-1">
                   <li>Publish: <strong><time dateTime="2026-10-15">15 October 2026</time></strong></li>
@@ -141,24 +141,33 @@ const Account: React.FC = memo(() => {
                 <img
                       src={animeImg}
                       onClick={handleAnimeClick}
-                      className={`absolute top-20 left-70 h-auto opacity-90 drop-shadow-red-900/90 drop-shadow-lg/100 hover:scale-95 cursor-pointer active:scale-90
+                      className={`absolute top-20 left-70 h-auto opacity-90 drop-shadow-red-900/90 drop-shadow-lg/100  cursor-pointer active:scale-99
                         max-[800px]:top-20 m-2
                         max-[500px]:relative max-[500px]:top-0 max-[500px]:left-10
 
                         ${
                           animeImg === AnimeShock
-                            ? "w-30 max-[1200px]:w-46 max-[1200px]:left-80 max-[800px]:scale-90 max-[800px]:top-20 max-[800px]:w-45 max-[800px]:left-78 max-[600px]:w-45 max-[600px]:scale-90 max-[500px]:w-40"
+                            ? "w-30 max-[1200px]:w-45 max-[1200px]:left-80 max-[1200px]:top-23 max-[1200px]:scale-90 \
+                            max-[800px]:active:scale-89 max-[800px]:top-20.5 max-[800px]:w-45 max-[800px]:left-77.5 \
+                            max-[600px]:w-37 max-[600px]:top-22 max-[600px]:left-76.5 \
+                            max-[500px]:w-37 max-[500px]:left-13 max-[500px]:m-5 "
                             : animeImg === AnimeMad
-                            ? "w-30 max-[1200px]:w-46 max-[1200px]:left-80 max-[800px]:w-40 max-[800px]:left-79 max-[600px]:w-45 max-[500px]:w-40"
+                            ? "w-30 max-[1200px]:w-46 max-[1200px]:left-79 max-[1200px]:top-18 \
+                            max-[800px]:w-40 max-[800px]:left-79 \
+                            max-[600px]:w-33 max-[600px]:top-22.5 max-[600px]:left-77.5 \
+                            max-[500px]:w-33 max-[500px]:-top-2 max-[500px]:left-12 max-[500px]:m-6 "
                             : animeImg === AnimeSign
-                            ? "w-30 max-[1200px]:w-46 max-[1200px]:left-80 max-[800px]:w-50 max-[800px]:top-30 max-[800px]:left-75 max-[600px]:w-45 max-[500px]:w-40"
-                            : "w-65 max-[800px]:w-60 max-[600px]:w-50 max-[500px]:w-50"
+                            ? "w-30 max-[1200px]:w-46 max[1200px]:h-auto max-[1200px]:scale-110 max-[1200px]:left-80 max-[1200px]:top-36 \
+                            max-[800px]:scale-90 max-[800px]:w-50 max-[800px]:top-33 max-[800px]:left-75 \
+                            max-[600px]:w-42 max-[600px]:left-75 max-[600px]:top-31 \
+                            max-[500px]:w-40 max-[500px]:my-10.5 max-[500px]:mx-5 max-[500px]:top-3 max-[500px]:right-30 "
+                            : "w-65 max-[800px]:w-60 max-[600px]:w-50 max-[500px]:w-50 "
                         }
                       `}
                       alt="Anime"
                     />
                 <p className="mt-3 mb-1 flex">
-                    <p className= "animate-spin transition-all duration-2000 hover:text-3xl hover:relative hover:-top-2 hover:-py-4 hover:border-0  hover:outline-none cursor-pointer mr-2">★</p>
+                    <span className= "animate-spin transition-all duration-2000 hover:text-3xl hover:relative hover:-top-2 hover:-py-4 hover:border-0  hover:outline-none cursor-pointer mr-2">★</span>
                     Click the links to learn more</p>
 
                 <nav className="border-b-2 pb-5 pl-5">

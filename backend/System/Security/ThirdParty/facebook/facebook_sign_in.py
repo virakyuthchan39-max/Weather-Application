@@ -1,75 +1,103 @@
-# from fastapi import APIRouter
+import os
+from fastapi import APIRouter, Depends, HTTPException, status
+from datetime import datetime, timezone
+from pydantic import BaseModel, EmailStr
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
+import httpx
+from typing import Annotated
+from Database.database import get_session
+from Database.model import FacebookSignIn
+from dotenv import load_dotenv
+from pathlib import Path
 
+root_dir = Path(__file__).resolve().parents[3]
+env_path = root_dir / "DevOp" / ".env.api"
 
-# router = APIRouter()
+# Load តាមរយៈ Path ដែលបានកំណត់ច្បាស់លាស់
+load_dotenv(dotenv_path=env_path)
+router = APIRouter(prefix="/auth/Facebook", tags=["Facebook Authentication"])
 
+FACEBOOK_CLIENT_ID = os.getenv("FACEBOOK_CLIENT_ID", "")
+FACEBOOK_CLIENT_SECRET = os.getenv("FACEBOOK_CLIENT_SECRET", "")
 
-# import os
-# from fastapi import APIRouter, Depends, HTTPException, status
-# from datetime import datetime,timezone
-# from pydantic import BaseModel
-# from sqlmodel import select
-# from sqlalchemy.ext.asyncio import AsyncSession
-# from Facebook.oauth2 import id_token
-# from Facebook.auth.transport import requests as Facebook_requests
-# from typing import Annotated
-# from Database.database import get_session
-# from Database.model import FacebookSignIn
-# from dotenv import load_dotenv
-# from pathlib import Path
+class FacebookTokenRequest(BaseModel):
+    token: str  # Facebook Access Token ផ្ញើមកពី Frontend
 
-# root_dir = Path(__file__).resolve().parents[3]
-# env_path = root_dir / "DevOp" / ".env.api"
+class FacebookSchema(BaseModel):
+    username: str
+    password: str = "FacebookPassword"
+    gmail: EmailStr    
+    role: str
+    is_active: bool
+    create_at: datetime
 
-# # Load តាមរយៈ Path ដែលបានកំណត់ច្បាស់លាស់
-# load_dotenv(dotenv_path=env_path)
-# router = APIRouter(prefix="/auth/Facebook", tags=["Facebook Authentication"])
+class FacebookSchemaResponse(BaseModel):
+    detail: str = "Facebook user sign in successfully! ✅"
+    user_info: FacebookSchema
 
-# Facebook_CLIENT_ID = os.getenv("FACEBOOK_CLIENT_ID","")
-
-# class FacebookTokenRequest(BaseModel):
-#     token: str
-
-# class FacebookSchema(BaseModel):
-#     username:str
-#     password: str = "FacebookPassword"
-#     gmail: str    
-#     role: str
-#     is_active:bool
-#     create_at: datetime
-# class FacebookSchemaResponse(BaseModel):
-#     detail: str = "Facebook'user sign in successfully!✅"
-#     user_info: FacebookSchema
-
-# @router.post("/Facebook_signin",response_model = FacebookSchemaResponse)
-# async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSession, Depends(get_session)]):
-#     try:
-#         # Verify Facebook ID Token
-#         idinfo = id_token.verify_oauth2_token(
-#             payload.token, 
-#             Facebook_requests.Request(), 
-#             Facebook_CLIENT_ID
-#         )
-
-#         email = idinfo.get("email")
-#         name = idinfo.get("name", "Facebook User")
-
-        
-
-#         # Check if user exists in database
-#         statement = select(FacebookSignIn).where(FacebookSignIn.gmail == email)
-#         result = await db.scalars(statement)
-#         user = result.first()
-
+@router.post("/Facebook_signin", response_model=FacebookSchemaResponse)
+async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSession, Depends(get_session)]):
+    try:
     
-#         add_Facebook_user = FacebookSignIn(username=str(name).title(),gmail=email,is_active=True,role="user",create_at=datetime.now(timezone.utc),password="FacebookPassword")    
-#         db.add(add_Facebook_user)
-#         await db.commit()
-         
-#         result_response  = FacebookSchema(username=str(name).title(),gmail=email,role= "user",is_active = user.is_active,create_at=datetime.now(timezone.utc))
-#         return FacebookSchemaResponse(detail = "Facebook'user sign in successfully!✅",user_info=result_response)
-#     except ValueError as e:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail=f"Token verification failed: {str(e)}"
-#         )
+        async with httpx.AsyncClient() as client:
+            graph_url = f"https://graph.facebook.com/me?fields=id,name,email&access_token={payload.token}"
+            response = await client.get(graph_url)
+            
+            if response.status_code != status.HTTP_200_OK:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid or expired Facebook access token."
+                )
+            
+            fb_data = response.json()
+            email = fb_data.get("email") or "example@gmail.com"
+            name = fb_data.get("name", "Facebook User")
+      
+
+        if not email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Could not retrieve email from Facebook account. Ensure email permission is granted."
+            )
+
+        # 2. ពិនិត្យមើលว่า User ធ្លាប់មានក្នុង Database ហើយឬยัง
+        statement = select(FacebookSignIn).where(FacebookSignIn.gmail == email)
+        result = await db.scalars(statement)
+        user = result.first()
+
+        current_time = datetime.now(timezone.utc)
+
+        if not user:
+            # បើមិនទាន់មាន ធ្វើការ Register ใหม่อัตโนมัติ
+            user = FacebookSignIn(
+                username=str(name).title(),
+                gmail=email,
+                is_active=True,
+                role="user",
+                create_at=current_time,
+                password="FacebookPassword"
+            )
+            db.add(user)
+            await db.commit()
+            await db.refresh(user)
+
+        # 3. រៀបចំ Response ត្រលប់ទៅវិញ
+        result_response = FacebookSchema(
+            username=user.username,
+            gmail=user.gmail,
+            role=user.role,
+            is_active=user.is_active,
+            create_at=user.create_at
+        )
+        
+        return FacebookSchemaResponse(
+            detail="Facebook user sign in successfully! ✅",
+            user_info=result_response
+        )
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Facebook authentication failed: {str(e)}"
+        )

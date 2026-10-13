@@ -12,7 +12,7 @@ class FacebookSignIn(SQLModel,table=True):
     id: Optional[int] = Field(default=None, primary_key=True,index = True)
     gmail: Annotated[str, Field(default =None)]
     username: Annotated[str,Field(default=None,index = True)]
-    password: Annotated[str,Field(default = "PasswordGithub")]
+    password: Annotated[str,Field(default = "FacebookPassword")]
     create_at: Annotated[datetime, Field(default_factory=datetime.now(timezone.utc))]
     is_active: Annotated[bool ,Field(default=True)]
     role: Annotated[str,Field(default="user")]
@@ -24,7 +24,7 @@ class UserFacebookLogin(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True,index = True)
     gmail: Annotated[str, Field(default =None)]
     username: Annotated[str,Field(default=None,index = True)]
-    password: Annotated[str,Field(default = "Password")]
+    password: Annotated[str,Field(default = "FacebookPassword")]
     login_at: Annotated[datetime, Field(default_factory=datetime.now(timezone.utc))]
     is_active: Annotated[bool ,Field(default=True)]
     role: Annotated[str,Field(default="user")]
@@ -39,7 +39,7 @@ class GithubSignIn(SQLModel,table=True):
     id: Optional[int] = Field(default=None, primary_key=True,index = True)
     gmail: Annotated[str, Field(default =None)]
     username: Annotated[str,Field(default=None,index = True)]
-    password: Annotated[str,Field(default = "PasswordGithub")]
+    password: Annotated[str,Field(default = "GithubPassword")]
     create_at: Annotated[datetime, Field(default_factory=datetime.now(timezone.utc))]
     is_active: Annotated[bool ,Field(default=True)]
     role: Annotated[str,Field(default="user")]
@@ -53,7 +53,7 @@ class UserGithubLogin(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True,index = True)
     gmail: Annotated[str, Field(default =None)]
     username: Annotated[str,Field(default=None,index = True)]
-    password: Annotated[str,Field(default = "PasswordGithub")]
+    password: Annotated[str,Field(default = "GithubPassword")]
     login_at: Annotated[datetime, Field(default_factory=datetime.now(timezone.utc))]
     is_active: Annotated[bool ,Field(default=True)]
     role: Annotated[str,Field(default="user")]
@@ -69,7 +69,7 @@ class GoogleSignIn(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True, index=True)
     gmail: Annotated[str, Field(default=None)]
     username: Annotated[str, Field(default=None, index=True)]
-    password: Annotated[str, Field(default="PasswordGithub")]
+    password: Annotated[str, Field(default="GooglePassword")]
     create_at: Annotated[datetime, Field(default_factory=lambda: datetime.now(timezone.utc))]
     is_active: Annotated[bool, Field(default=True)]
     role: Annotated[str, Field(default="user")]
@@ -85,7 +85,7 @@ class UserGoogleLogin(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True, index=True)
     gmail: Annotated[str, Field(default=None)]
     username: Annotated[str, Field(default=None, index=True)]
-    password: Annotated[str, Field(default="PasswordGoogle")]
+    password: Annotated[str, Field(default="GooglePassword",max_length=72)]
     login_at: Annotated[datetime, Field(default_factory=datetime.now(timezone.utc))]
     is_active: Annotated[bool, Field(default=True)]
     role: Annotated[str, Field(default="user")]
@@ -109,7 +109,7 @@ class UserLogin(SQLModel, table=True):
     register_id: int = Field(default=None, foreign_key="user_signin.id")
     
     user: Optional["UserSignIn"] = Relationship(back_populates="logins")  
-    # 👇 កែ back_populates ឱ្យត្រូវទៅនឹងឈ្មោះ user_login នៅខាង UserLogout
+    
     logouts: List["UserLogout"] = Relationship(back_populates="user_login")
 
 
@@ -124,15 +124,15 @@ class UserLogout(SQLModel, table=True):
     is_active: bool = Field(default=True)
     role: str = Field(default="user")
     
-    register_id: int = Field(default=None, foreign_key="user_login.id")
-    # ឈ្មោះ attribute នេះគឺ user_login ដូច្នេះ back_populates នៅខាង UserLogin ត្រូវតែជា user_login ដែរ
+    login_id: int = Field(default=None, foreign_key="user_login.id")
+
     user_login: Optional["UserLogin"] = Relationship(back_populates="logouts") 
     
     facebook_id: Optional[int] = Field(default=None, foreign_key="user_facebook_login.id")
     github_id: Optional[int] = Field(default=None, foreign_key="user_github_login.id")
     google_id: Optional[int] = Field(default=None, foreign_key="user_google_login.id")
     
-    user_id: Optional[int] = Field(default=None, foreign_key="user_signin.id")
+    signin_id: Optional[int] = Field(default=None, foreign_key="user_signin.id")
     user_signin: Optional["UserSignIn"] = Relationship(back_populates="user_logouts")
     
     google_signin: Optional["UserGoogleLogin"] = Relationship(back_populates="user_google_logouts")
@@ -152,5 +152,5 @@ class UserSignIn(SQLModel, table=True):
     role: str = Field(default="user")
 
     logins: List["UserLogin"] = Relationship(back_populates="user")
-    # 👇 ដាក់ឈ្មោះ field នេះឱ្យត្រូវជាមួយ back_populates នៅខាង UserLogout
+  
     user_logouts: List["UserLogout"] = Relationship(back_populates="user_signin")

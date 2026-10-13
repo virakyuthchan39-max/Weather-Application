@@ -22,7 +22,7 @@ EXPIRE_MIN = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
 
 if not SECRET_KEY:
     raise ValueError(f"SECRET_KEY is still missing! Checked path: {env_path}")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/loginAccount")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/LogoutAccount")
 
 
 def create_access_token(data: dict) -> str:
@@ -36,7 +36,7 @@ def decode_access_token(token: str) -> dict:
         return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     except JWTError:
         raise HTTPException(
-            detail="Invalid or expired token. Please login again!",
+            detail="Invalid or expired token. Please Logout again!",
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
 

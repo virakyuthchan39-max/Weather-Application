@@ -1,7 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import "./account.css"
-import { playButtonSound } from '../../Effect_Sevice/sound_effect';
-import SignupEmoji from "/public/Icon/Welcome/account_emoji2.avif"
+import { playButtonSound } from '../../Effect_Service/sound_effect';
+import SignupEmoji from "/Icon/Welcome/account_emoji2.avif"
+import { createAccount, saveToken, type CreateUserRequest } from '../../Effect_Service/Api/service/fetch';
+
+// fetch the google auth
+import { googleSignIn ,requestGoogleIdToken} from '../../Effect_Service/Api/ThirdParty/google_fetch';
+import {
+  startGithubOAuth,
+  getGithubCodeFromUrl,
+  clearGithubCodeFromUrl,
+  githubSignIn,
+} from '../../Effect_Service/Api/ThirdParty/github_fetch'
+import { facebookSignIn, requestFacebookToken } from '../../Effect_Service/Api/ThirdParty/facebook_fetch';
 
 interface SignUpProps {
   onSwitchToLogin: () => void;
@@ -22,10 +33,30 @@ export const SignUp: React.FC<SignUpProps> = ({ onSwitchToLogin, onSwitchToHome,
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value, }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (onSubmit) onSubmit(formData);
-  };
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setErrorMsg('');
+  setLoading(true);
+  try {
+    const payload: CreateUserRequest = {
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      gmail: formData.email,
+      password: formData.password,
+    };
+    const res = await createAccount(payload);
+    saveToken(res.access_token);
+    onSubmit?.(formData);        // optional parent callback
+    // TODO: navigate to home/dashboard
+  } catch (err) {
+    setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
+  } finally {
+    setLoading(false);
+  }
+ };
   const handleSwitch = ()=>{
   
       playButtonSound();
@@ -35,6 +66,76 @@ export const SignUp: React.FC<SignUpProps> = ({ onSwitchToLogin, onSwitchToHome,
        playButtonSound(),
        onSwitchToHome()
     }  
+
+  //  google submit information (sign in)
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleError, setGoogleError] = useState('');
+
+  const handleGoogleSignIn = async () => {
+  playButtonSound();
+  setGoogleError('');
+  setGoogleLoading(true);
+  try {
+    const googleToken = await requestGoogleIdToken();
+    const res = await googleSignIn(googleToken);
+    saveToken(res.access_token);
+    // TODO: navigate
+  } catch (err) {
+    setGoogleError(err instanceof Error ? err.message : 'Something went wrong');
+  } finally {
+    setGoogleLoading(false);
+  }
+};
+
+  const [githubLoading, setGithubLoading] = useState(false);
+  const [githubError, setGithubError] = useState('');
+
+    /* ចុចប៊ូតុង → ទៅ GitHub */
+    const handleGithubSignIn = () => {
+      playButtonSound();
+      startGithubOAuth();
+    };
+
+    /* ពេល component mount → ពិនិត្យ ?code= ពី URL */
+    useEffect(() => {
+      const code = getGithubCodeFromUrl();
+      if (!code) return;
+
+      const run = async () => {
+        setGithubLoading(true);
+        try {
+          const res = await githubSignIn(code);
+          saveToken(res.access_token);
+          clearGithubCodeFromUrl();
+          // TODO: navigate to home/dashboard
+        } catch (err) {
+          setGithubError(err instanceof Error ? err.message : 'Something went wrong');
+        } finally {
+          setGithubLoading(false);
+        }
+      };
+      run();
+    }, []);
+  const [facebookLoading, setFacebookLoading] = useState(false);
+  const [facebookError, setFacebookError] = useState('');
+
+  const handleFacebookSignIn = async () => {
+    playButtonSound();
+    setFacebookError('');
+    setFacebookLoading(true);
+    try {
+      const fbToken = await requestFacebookToken();
+      const res = await facebookSignIn(fbToken);
+      saveToken(res.access_token);
+      // TODO: navigate to home/dashboard
+    } catch (err) {
+      setFacebookError(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setFacebookLoading(false);
+    }
+  };
+
+
   const reuse_button_logo:string = "flex h-12 w-12 items-center drop-shadow-lg/50 drop-shadow-blue-600 justify-center border-b-4 border-gray-500 rounded-full bg-white transition-all \
   hover:scale-110 hover:duration-150 \
   active:scale-95 active:border-b-0 active:translate-y-2 hover:duration:-100"
@@ -62,27 +163,30 @@ export const SignUp: React.FC<SignUpProps> = ({ onSwitchToLogin, onSwitchToHome,
 
       {/* Social Login Section */}
        <div className="mb-6 flex justify-center border-b-4 pb-4 border-dashed gap-4">
-        <button
-          type="button"
-          onClick={playButtonSound}
-          className={reuse_button_logo}
-        >
-          <img src="/Icon/Google logo.avif" alt="Google" className="h-8 w-8 object-contain" />
+       <button
+            type="button"
+            disabled={googleLoading}
+            onClick={handleGoogleSignIn}
+            className={reuse_button_logo}
+          >
+            <img src="/Icon/Google logo.avif" alt="Google" className="h-8 w-8 object-contain" />
         </button>
         <button
-          onClick={playButtonSound}
-          type="button"
-           className={reuse_button_logo}
-        >
-          <img src="/Icon/Github logo.avif" alt="GitHub" className="h-12 w-12 object-contain" />
-        </button>
+            type="button"
+            disabled={githubLoading}
+            onClick={handleGithubSignIn}
+            className={reuse_button_logo}
+          >
+            <img src="/Icon/Github logo.avif" alt="GitHub" className="h-12 w-12 object-contain" />
+          </button>
         <button
-          type="button"
-          onClick={playButtonSound}
-          className={reuse_button_logo}
-        >
-          <img src="/Icon/Facebook logo.avif" alt="Facebook" className="h-8 w-8 object-contain" />
-        </button>
+            type="button"
+            disabled={facebookLoading}
+            onClick={handleFacebookSignIn}
+            className={reuse_button_logo}
+          >
+            <img src="/Icon/Facebook logo.avif" alt="Facebook" className="h-8 w-8 object-contain" />
+          </button>
       </div>
 
       <div className="text-center font-bold text-white/70 mb-10">
@@ -144,15 +248,21 @@ export const SignUp: React.FC<SignUpProps> = ({ onSwitchToLogin, onSwitchToHome,
           />
         </div>
 
-        <button
-          type="submit"
-          onClick = {playButtonSound}
-          className=" block items-center mt-6 w-[60%] mx-auto rounded-lg bg-green-800 py-3 text-xl text-white font-bold border-b-8 border-green-900 transition-all \
-          hover:bg-green-400 hover:border-b-6 hover:translate-y-2 hover:duration-300 hover:delay-150 hover:drop-shadow-green-500 hover:drop-shadow-lg/30 \
-          active:scale-[0.98] active:border-b-0 active:translate-y-4 active:bg-green-400 active:text-blue-500 active:duration-100"
-        >
-          Sign Up
-        </button>
+        {errorMsg && (
+              <p className="text-center text-xl italic font-bold text-red-400">{errorMsg}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              onClick={playButtonSound}
+              className="block items-center mt-6 w-[60%] mx-auto rounded-lg bg-green-800 py-3 text-xl text-white font-bold border-b-8 border-green-900 transition-all \
+              hover:bg-green-400 hover:border-b-6 hover:translate-y-2 hover:duration-300 hover:delay-150 hover:drop-shadow-green-500 hover:drop-shadow-lg/30 \
+              active:scale-[0.98] active:border-b-0 active:translate-y-4 active:bg-green-400 active:text-blue-500 active:duration-100 \
+              disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Signing up…' : 'Sign Up'}
+            </button>
       </form>
 
       {/* Toggle Link */}
