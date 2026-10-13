@@ -68,7 +68,7 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
       
 
         if not user:
-          raise HTTPException(detail="Your account didn't sign in yet!",status_code = status.HTTP_400_BAD_REQUEST)
+          raise HTTPException(detail="Your Facebook's account didn't sign in yet!",status_code = status.HTTP_400_BAD_REQUEST)
         
         query = await db.scalars(select(UserFacebookLogin).where(UserFacebookLogin.gmail == email))
         final_query = query.first()

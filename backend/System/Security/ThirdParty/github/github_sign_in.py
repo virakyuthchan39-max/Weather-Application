@@ -92,13 +92,14 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
                 detail="Could not retrieve email from GitHub account. Ensure your GitHub email is public."
             )
 
-        # 2. ពិនិត្យមើលว่า User ធ្លាប់មានក្នុង Database ហើយឬยัง
+
         statement = select(GithubSignIn).where(GithubSignIn.gmail == email)
         result = await db.scalars(statement)
         user = result.first()
 
         current_time = datetime.now(timezone.utc)
-
+        if user:
+            raise HTTPException(detail="This Github's email had been used!",status_code=status.HTTP_400_BAD_REQUEST)
         if not user:
             # បើមិនទាន់មាន ធ្វើការ Register ថ្មី
             user = GithubSignIn(

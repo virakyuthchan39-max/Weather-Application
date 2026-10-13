@@ -18,7 +18,7 @@ def hash_password(pwd: str) -> str:
             detail="Password would be at least 8 characters long!",
             status_code=status.HTTP_400_BAD_REQUEST,
         )
-    # pass bytes so bcrypt doesn't re-encode a possibly-too-long string
+
     return context_pwd.hash(_truncate(pwd))
 
 

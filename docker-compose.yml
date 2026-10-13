@@ -10,7 +10,7 @@ services:
         ports:
             - "${FRONTEND_PORT}:5173"  
         environment:
-            - FRONTEND_URL=http://0.0.0.0:${FRONTEND_PORT}
+            - FRONTEND_URL=http://localhost:${FRONTEND_PORT}
         depends_on:
             - backend
 
@@ -31,8 +31,10 @@ services:
             - DATABASE_USER=${DATABASE_USERNAME}
             - DATABASE_PASSWORD=${DATABASE_PASSWORD}
             - DATABASE_NAME=${DATABASE_NAME}
+            - REDIS_URL=${REDIS_CONTAINER_URL}
         depends_on:
             - database 
+            - memory-cache
 
     database:
         image: mysql:8.4
@@ -46,7 +48,12 @@ services:
             MYSQL_PASSWORD: ${DATABASE_PASSWORD}
         volumes:
             - mysql_data:/var/lib/mysql
-
+    memory-cache: 
+         image: redis:7-alpine
+         container_name: ${REDIS_CONTAINER_NAME}
+         ports:
+         - "${REDIS_PORT}:6379"
+         restart: always
 volumes:
   mysql_data:
     driver: local

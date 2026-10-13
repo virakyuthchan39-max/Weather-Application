@@ -31,9 +31,8 @@ declare global {
   }
 }
 
-const GOOGLE_CLIENT_ID="564556269175-iuea8eui18ilpkjk97q3rgbcc1bm44cd.apps.googleusercontent.com";
-console.log("ID length", GOOGLE_CLIENT_ID.length);
-console.log("Redirect URI being sent:", window.location.href);
+const GOOGLE_CLIENT_ID="861684131854-noibsnasaj1rsqlpqe7onma2t3af6po6.apps.googleusercontent.com";
+
 
 export function requestGoogleIdToken(): Promise<string> {
   return new Promise((resolve, reject) => {

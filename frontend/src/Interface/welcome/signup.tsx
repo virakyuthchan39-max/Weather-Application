@@ -69,11 +69,10 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   //  google submit information (sign in)
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [googleError, setGoogleError] = useState('');
 
   const handleGoogleSignIn = async () => {
   playButtonSound();
-  setGoogleError('');
+  setErrorMsg('');
   setGoogleLoading(true);
   try {
     const googleToken = await requestGoogleIdToken();
@@ -81,18 +80,19 @@ const handleSubmit = async (e: React.FormEvent) => {
     saveToken(res.access_token);
     // TODO: navigate
   } catch (err) {
-    setGoogleError(err instanceof Error ? err.message : 'Something went wrong');
+    setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
   } finally {
     setGoogleLoading(false);
   }
 };
 
   const [githubLoading, setGithubLoading] = useState(false);
-  const [githubError, setGithubError] = useState('');
+  
 
     /* ចុចប៊ូតុង → ទៅ GitHub */
     const handleGithubSignIn = () => {
       playButtonSound();
+       setErrorMsg('');
       startGithubOAuth();
     };
 
@@ -109,7 +109,7 @@ const handleSubmit = async (e: React.FormEvent) => {
           clearGithubCodeFromUrl();
           // TODO: navigate to home/dashboard
         } catch (err) {
-          setGithubError(err instanceof Error ? err.message : 'Something went wrong');
+           setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
         } finally {
           setGithubLoading(false);
         }
@@ -117,11 +117,11 @@ const handleSubmit = async (e: React.FormEvent) => {
       run();
     }, []);
   const [facebookLoading, setFacebookLoading] = useState(false);
-  const [facebookError, setFacebookError] = useState('');
+
 
   const handleFacebookSignIn = async () => {
     playButtonSound();
-    setFacebookError('');
+    setErrorMsg('');
     setFacebookLoading(true);
     try {
       const fbToken = await requestFacebookToken();
@@ -129,7 +129,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       saveToken(res.access_token);
       // TODO: navigate to home/dashboard
     } catch (err) {
-      setFacebookError(err instanceof Error ? err.message : 'Something went wrong');
+       setErrorMsg(err instanceof Error ? err.message.slice(36) : 'Something went wrong');
     } finally {
       setFacebookLoading(false);
     }
@@ -248,9 +248,8 @@ const handleSubmit = async (e: React.FormEvent) => {
           />
         </div>
 
-        {errorMsg && (
-              <p className="text-center text-xl italic font-bold text-red-400">{errorMsg}</p>
-            )}
+        {
+        errorMsg && (<p className="text-center text-xl italic font-bold text-red-400 drop-shadow-red-700 transition-colors drop-shadow-md/90 duration-1000 delay-300">{errorMsg}</p>)}    
 
             <button
               type="submit"

@@ -12,10 +12,11 @@ from dotenv import load_dotenv
 from pathlib import Path
 from Security.Encryption.token import create_access_token
 from .github_sign_in import exchange_code_for_token
+
 root_dir = Path(__file__).resolve().parents[3]
 env_path = root_dir / "DevOp" / ".env.api"
 
-# Load តាមរយៈ Path ដែលបានកំណត់ច្បាស់លាស់
+
 load_dotenv(dotenv_path=env_path)
 router = APIRouter(prefix="/auth/github", tags=["Github Authentication"])
 
@@ -23,7 +24,7 @@ GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID", "")
 GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET", "")
 
 class GithubTokenRequest(BaseModel):
-    token: str  # GitHub Access Token ផ្ញើมาจาก Frontend
+    token: str 
 
 
 class GithubSchema(BaseModel):
@@ -40,7 +41,6 @@ class GithubSchemaResponse(BaseModel):
     token_type: str = "bearer"
     user_info: GithubSchema
     
-
 @router.post("/github_login", response_model=GithubSchemaResponse)
 async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, Depends(get_session)]):
     try:
@@ -63,7 +63,6 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
             username = github_data.get("login") or "Github User"
             email = github_data.get("email")
             
-            # ប្រសិនបើ Account របស់ GitHub ដាក់ Email គឺ Private ត្រូវហៅ API យក Emails បន្ថែម
             if not email:
                 email_response = await client.get("https://api.github.com/user/emails", headers=headers)
                 if email_response.status_code == status.HTTP_200_OK:
@@ -82,7 +81,7 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
         result = await db.scalars(statement)
         user = result.first()
         if not user:
-            raise HTTPException(detail="This account didn't sign in yet!",status_code =status.HTTP_400_BAD_REQUEST)
+            raise HTTPException(detail="This Github's account didn't sign in yet!",status_code =status.HTTP_400_BAD_REQUEST)
 
         current_time = datetime.now(timezone.utc)
 
@@ -99,7 +98,7 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
                 gmail=email,
                 is_active=True,
                 role="user",
-                github_id=user.id,        # user គឺ GithubSignIn ដែលបានរកឃើញខាងលើ
+                github_id=user.id,
                 login_at=current_time,
                 password="GithubPassword",
             )

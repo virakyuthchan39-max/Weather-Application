@@ -26,7 +26,6 @@ class GoogleTokenRequest(BaseModel):
     token: str
 
 class GoogleSchema(BaseModel):
-  
     username:str
     password: str = "GooglePassword"
     gmail: str    
@@ -57,7 +56,7 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
         result = await db.scalars(statement)
         user = result.first()
         if user:
-            raise HTTPException(detail="this gmail already had used !",status_code=status.HTTP_400_BAD_REQUEST)
+            raise HTTPException(detail="This Google's gmail had used !",status_code=status.HTTP_400_BAD_REQUEST)
 
     
         add_google_user = GoogleSignIn(username=str(name).title(),gmail=email,is_active=True,role="user",create_at=datetime.now(timezone.utc),password="GooglePassword")    

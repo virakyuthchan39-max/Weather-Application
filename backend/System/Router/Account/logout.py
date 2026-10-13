@@ -10,10 +10,19 @@ from Database.model import UserLogout, UserSignIn,UserLogin
 from Database.database import get_session
 
 # from Security.Encryption.hash import verify_password
-from fastapi.security import HTTPBearer
-# from Security.Encryption.token import create_access_token
+from fastapi.security import HTTPAuthorizationCredentials
+from Security.Encryption.token import create_access_token
+from Security.Encryption.refresh_token import (
+    get_current_user,
+    decode_token,
+    create_refresh_token,
+    refresh_access_token,
+    blacklist_token,
+    bearer_scheme,
+)
 import asyncio
-security = HTTPBearer()
+
+router = APIRouter()
 
 class LogoutUserRequest(BaseModel):
     gmail: EmailStr
@@ -31,47 +40,55 @@ class LogoutSchemaResponse(BaseModel):
     detail: Annotated[str, Field(default="This user Logout account successfully! ✅")]
     user_info: LogoutSchema
 
-router = APIRouter()
 
 @router.post("/logoutAccount", status_code=status.HTTP_200_OK, response_model=LogoutSchemaResponse)
-async def Logout_User(userAccount: LogoutUserRequest, db: Annotated[AsyncSession, Depends(get_session)]):
-    """
-    ***Logout Account user Operation!***
-    Here! in this operation, they require most of gmail and Token for access the application here
-    ***Gmail*** would be EmailStr
-    """
+async def Logout_User(
+    userAccount: LogoutUserRequest,
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(bearer_scheme)],
+    db: Annotated[AsyncSession, Depends(get_session)],
+):
+    # ១. ទាញ token ពី header
+    if credentials is None or not credentials.credentials:
+        raise HTTPException(
+            detail="Not authenticated.",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+        )
+    token = credentials.credentials            # ← កែ crendentials → credentials
 
-    # ១. ស្វែងរក User ក្នុង UserSignIn
+
+    try:
+        await decode_token(token, expected_type="access")
+    except HTTPException:
+        raise
+
+    # ៣. ដាក់ token ចូល Redis blacklist
+    await blacklist_token(token)
+
+    # ៤. DB update (ដូចដើម)
     query = await db.scalars(select(UserSignIn).where(UserSignIn.gmail == userAccount.gmail))
     final_query = query.first()
     if not final_query:
-        raise HTTPException(detail="Cannot find this account in our data! Please try again!", status_code=status.HTTP_400_BAD_REQUEST)
-    if final_query:
-        final_query.is_active=False
-        db.add(final_query)
-        target_user = final_query
-  
- 
+        raise HTTPException(
+            detail="Cannot find this account in our data! Please try again!",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+    final_query.is_active = False
+    db.add(final_query)
+    target_user = final_query
+
     query_Login = await db.scalars(select(UserLogin).where(UserLogin.gmail == userAccount.gmail))
     final_query_Login = query_Login.first()
-
     if final_query_Login:
         final_query_Login.is_active = False
         db.add(final_query_Login)
         target_user = final_query_Login
-        
-    if not final_query_Login and final_query:
-        final_query.is_active=False
-        db.add(final_query)
-        target_user = final_query
-    
+
     query_logout = await db.scalars(select(UserLogout).where(UserLogout.gmail == userAccount.gmail))
     final_query_logout = query_logout.first()
-    if (final_query_logout and final_query):
+    if final_query_logout:
         final_query_logout.logout_at = datetime.now(timezone.utc)
         db.add(final_query_logout)
-        
-    elif (final_query_Login and final_query_logout):    
+    elif final_query_Login:
         add_user_logout = UserLogout(
             username=final_query_Login.username,
             login_id=final_query_Login.id,
@@ -79,29 +96,22 @@ async def Logout_User(userAccount: LogoutUserRequest, db: Annotated[AsyncSession
             logout_at=datetime.now(timezone.utc),
             is_active=False,
             role=final_query_Login.role,
-            user_id = final_query_Login.id
         )
         db.add(add_user_logout)
-        
-    await db.commit() 
-    await asyncio.sleep(0.5)
+
+    await db.commit()
     await db.refresh(target_user)
 
-   
-    # ៥. រៀបចំ Response ឱ្យត្រឹមត្រូវ
     result_response = LogoutSchema(
-        id=final_query.id, 
-        full_name=final_query.username, 
-        gmail=final_query.gmail, 
-        logout_at=datetime.now(timezone.utc), 
-        is_active=target_user.is_active, 
+        id=final_query.id,
+        full_name=final_query.username,
+        gmail=final_query.gmail,
+        logout_at=datetime.now(timezone.utc),
+        is_active=target_user.is_active,
         role=target_user.role,
- 
     )
-    
     return LogoutSchemaResponse(
-        detail="This user Logout account successfully! ✅", 
-        user_info=result_response
+        detail="This user Logout account successfully! ✅",
+        user_info=result_response,
     )
-
 

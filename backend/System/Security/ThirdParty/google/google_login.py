@@ -15,7 +15,7 @@ import asyncio
 router = APIRouter()
 
 root_dir = Path(__file__).resolve().parents[3]
-env_path = root_dir / "DevOp" / ".env.secret"
+env_path = root_dir / "DevOp" / ".env.api"
 
 load_dotenv(dotenv_path=env_path)
 
@@ -60,11 +60,11 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
         statement = select(GoogleSignIn).where(GoogleSignIn.gmail == email)
         result = await db.scalars(statement)
         user = result.first()
-
+ 
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Account not found. Please sign up first."
+                detail="This Google's account didn't sign in yet !"
             )
 
         if not user.is_active:

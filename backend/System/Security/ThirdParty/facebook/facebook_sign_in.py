@@ -61,11 +61,11 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
                 detail="Could not retrieve email from Facebook account. Ensure email permission is granted."
             )
 
-        # 2. ពិនិត្យមើលว่า User ធ្លាប់មានក្នុង Database ហើយឬยัง
         statement = select(FacebookSignIn).where(FacebookSignIn.gmail == email)
         result = await db.scalars(statement)
         user = result.first()
-
+        if user:
+            raise HTTPException(detail="This Facebook's email had used!",status_code = status.HTTP_400_BAD_REQUEST)
         current_time = datetime.now(timezone.utc)
 
         if not user:

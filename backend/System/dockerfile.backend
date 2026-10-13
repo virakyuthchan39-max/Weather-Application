@@ -4,7 +4,6 @@ WORKDIR /app
 
 COPY requirements.txt .
 
-# 🛠️ កែសម្រួលកន្លែងនេះ៖ យកសញ្ញា . ដាក់មកក្រោយគេបង្អស់
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .

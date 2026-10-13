@@ -9,9 +9,24 @@ from Database.model import UserSignIn
 from Database.database import get_session
 
 from Security.Encryption.hash import hash_password
+# security
+from fastapi.security import HTTPAuthorizationCredentials
 from Security.Encryption.token import create_access_token
-
+from Security.Encryption.refresh_token import (
+    get_current_user,
+    create_refresh_token,
+    refresh_access_token,
+    blacklist_token,
+    bearer_scheme,
+)
 import asyncio
+
+router = APIRouter()
+
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
+
 
 class CreateUserRequest(BaseModel):
     first_name: Annotated[str,Field(max_length=20,min_length=3)]
@@ -32,10 +47,11 @@ class CreateSchema(BaseModel):
 class CreateSchemaResponse(BaseModel):
     detail: Annotated[str, Field(default ="This user create account successfully! ✅")]
     access_token: str
+    refresh_token: str
     token_type: str = "bearer"
     user_info: CreateSchema
 
-router = APIRouter()
+
 
 def full_name(first:str,Last:str):
     return f"{first} {Last}"
@@ -44,7 +60,7 @@ def full_name(first:str,Last:str):
 async def Create_User(
     userAccount: CreateUserRequest,
     db: Annotated[AsyncSession, Depends(get_session)],
-):
+): 
     """
           ***Account Creation user Operation!***
           Here! in this operation, they require most of username , gmail and password for access the application here
@@ -52,6 +68,7 @@ async def Create_User(
           ***Gmail*** would be EmailStr
           ***Password*** would be Str and at least 8 character range.
     """
+
     query = await db.scalars(select(UserSignIn).where(UserSignIn.gmail == userAccount.gmail))
     if query.first():
         raise HTTPException(
@@ -74,13 +91,14 @@ async def Create_User(
     await asyncio.sleep(1.5)
     await db.commit()
     await db.refresh(add_user_db)
-
-    token = create_access_token({
-        "sub": str(add_user_db.id),
-        "gmail": add_user_db.gmail,
-        "role": add_user_db.role,
-    })
-
+    dicts={
+           "sub": str(add_user_db.id),
+            "gmail": add_user_db.gmail,
+            "role": add_user_db.role,
+        }
+    token = create_access_token(dicts)
+    refresh = create_refresh_token(dicts)
+    
     result_response = CreateSchema(
         id=add_user_db.id,
         full_name=add_user_db.username,
@@ -92,7 +110,10 @@ async def Create_User(
     return CreateSchemaResponse(
         detail="This user create account successfully! ✅",
         access_token=token,
+        refresh_token= refresh,
         user_info=result_response,
     )
 
-    
+@router.post("/refreshToken")
+async def refresh(payload: RefreshRequest):
+    return await refresh_access_token(payload.refresh_token)

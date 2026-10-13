@@ -8,9 +8,24 @@ from sqlmodel import select
 from Database.model import UserLogin, UserSignIn
 from Database.database import get_session
 
+# security
+from fastapi.security import HTTPAuthorizationCredentials
 from Security.Encryption.hash import verify_password
 from Security.Encryption.token import create_access_token
+from Security.Encryption.refresh_token import (
+    get_current_user,
+    create_refresh_token,
+    refresh_access_token,
+    blacklist_token,
+    bearer_scheme,
+)
 import asyncio
+
+router = APIRouter()
+
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
 
 class LoginUserRequest(BaseModel):
     gmail: EmailStr
@@ -27,38 +42,38 @@ class LoginSchema(BaseModel):
 class LoginSchemaResponse(BaseModel):
     detail: Annotated[str, Field(default="This user login account successfully! ✅")]
     access_token: str
+    refresh_token: str
     token_type: str = "bearer"
     user_info: LoginSchema
 
-router = APIRouter()
+
 
 @router.post("/loginAccount", status_code=status.HTTP_200_OK, response_model=LoginSchemaResponse)
-async def login_User(userAccount: LoginUserRequest, db: Annotated[AsyncSession, Depends(get_session)]):
+async def login_User(userAccount: LoginUserRequest,db: Annotated[AsyncSession, Depends(get_session)]):
     """
     ***Login Account user Operation!***
     Here! in this operation, they require most of gmail and password for access the application here
     ***Gmail*** would be EmailStr
     ***Password*** would be Str and at least 8 character range.
     """
-
+    
     # ១. ស្វែងរក User ក្នុង UserSignIn
     query = await db.scalars(select(UserSignIn).where(UserSignIn.gmail == userAccount.gmail))
     final_query = query.first()
     if not final_query:
         raise HTTPException(detail="Cannot find this account in our data! Please try again!", status_code=status.HTTP_400_BAD_REQUEST)
     
-    # ២. ផ្ទៀងផ្ទាត់ Password
+
     if not verify_password(userAccount.password, final_query.password):
         raise HTTPException(detail="Invalid password or email. Please try again!", status_code=status.HTTP_400_BAD_REQUEST)
+    
     final_query.is_active = True
     db.add(final_query)
     target_user = final_query
     current_time = datetime.now(timezone.utc)
 
-    # ៣. ពិនិត្យមើលថាតើ UserLogin ធ្លាប់មាន record សម្រាប់ gmail នេះរួចហើយឬยัง
     query_login = await db.scalars(select(UserLogin).where(UserLogin.gmail == userAccount.gmail))
     final_query_login = query_login.first()
-    
     
     if final_query_login:
       
@@ -85,13 +100,17 @@ async def login_User(userAccount: LoginUserRequest, db: Annotated[AsyncSession, 
     await db.refresh(target_user)
 
     # ៤. បង្កើត Token
-    token = create_access_token({
-        "sub": str(final_query.id),
-        "gmail": final_query.gmail,
-        "role": final_query.role,
-    })
+    token_data = {
+    "sub": str(target_user.id),
+    "gmail": target_user.gmail,
+    "role": target_user.role,
+}
 
-    # ៥. រៀបចំ Response ឱ្យត្រឹមត្រូវ
+    access = create_access_token(token_data)
+    refresh = create_refresh_token(token_data)
+  
+    
+ 
     result_response = LoginSchema(
         id=final_query.id, 
         full_name=final_query.username, 
@@ -103,6 +122,9 @@ async def login_User(userAccount: LoginUserRequest, db: Annotated[AsyncSession, 
     
     return LoginSchemaResponse(
         detail="This user login account successfully! ✅", 
-        access_token=token, 
+        access_token=access, 
+        refresh_token=refresh,
         user_info=result_response
     )
+
+

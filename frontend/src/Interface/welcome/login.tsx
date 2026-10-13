@@ -68,11 +68,10 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, 
 
   //  google submit information (sign in)
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [googleError, setGoogleError] = useState('');
   //  handle google submit (login)
   const handleGoogleLogin = async () => {
   playButtonSound();
-  setGoogleError('');
+  setErrorMsg('');
   setGoogleLoading(true);
   try {
     const googleToken = await requestGoogleIdToken();
@@ -80,17 +79,18 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, 
     saveToken(res.access_token);
     // TODO: navigate to home/dashboard
   } catch (err) {
-    setGoogleError(err instanceof Error ? err.message : 'Something went wrong');
+    setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
   } finally {
     setGoogleLoading(false);
   }
 };
  const [githubLoading, setGithubLoading] = useState(false);
- const [githubError, setGithubError] = useState('');
+
 
   const handleGithubLogin = () => {
     playButtonSound();
     startGithubOAuth();
+    setErrorMsg("");
   };
 
   useEffect(() => {
@@ -105,7 +105,7 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, 
         clearGithubCodeFromUrl();
         // TODO: navigate to home/dashboard
       } catch (err) {
-        setGithubError(err instanceof Error ? err.message : 'Something went wrong');
+        setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
       } finally {
         setGithubLoading(false);
       }
@@ -114,11 +114,10 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, 
   }, []);
 
     const [facebookLoading, setFacebookLoading] = useState(false);
-    const [facebookError, setFacebookError] = useState('');
 
     const handleFacebookLogin = async () => {
       playButtonSound();
-      setFacebookError('');
+      setErrorMsg('');
       setFacebookLoading(true);
       try {
         const fbToken = await requestFacebookToken();
@@ -126,7 +125,7 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, 
         saveToken(res.access_token);
         // TODO: navigate to home/dashboard
       } catch (err) {
-        setFacebookError(err instanceof Error ? err.message : 'Something went wrong');
+        setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
       } finally {
         setFacebookLoading(false);
       }
@@ -182,7 +181,8 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, 
           <img src="/Icon/Github logo.avif" alt="GitHub" className="h-12 w-12 object-contain" />
         </button>
         <button
-          type="button"
+         type="button"
+         disabled={facebookLoading}
          onClick={handleFacebookLogin}
          className={reuse_button_logo}
         >
@@ -223,8 +223,9 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, 
         </div>
         
         {errorMsg && (
-              <p className="text-center text-sm font-semibold text-red-400">{errorMsg}</p>
+              <p className="text-center text-xl font-bold text-red-400">{errorMsg}</p>
             )}
+
          
 
             <button

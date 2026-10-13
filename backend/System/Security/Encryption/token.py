@@ -20,15 +20,15 @@ EXPIRE_MIN = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
 
 
 
-if not SECRET_KEY:
-    raise ValueError(f"SECRET_KEY is still missing! Checked path: {env_path}")
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/LogoutAccount")
 
 
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()
     to_encode["exp"] = datetime.now(timezone.utc) + timedelta(minutes=EXPIRE_MIN)
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    to_encode["type"] = "access"
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM, )
 
 
 def decode_access_token(token: str) -> dict:
