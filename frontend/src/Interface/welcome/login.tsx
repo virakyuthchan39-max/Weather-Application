@@ -18,11 +18,12 @@ import {
 
 interface LoginProps {
   onSwitchToSignUp: () => void;
-  onSwitchToHome: () => void
+  onSwitchToHome: () => void;
+  onSuccess?:(username:string) => void;
   onSubmit?: (data: Record<string, string>) => void;
 }
 
-export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, onSubmit }) => {
+export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, onSuccess, onSubmit }) => {
 
   const [formData, setFormData] = useState({
     email: '',
@@ -48,6 +49,7 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, 
       };
       const res = await loginAccount(payload);
       saveToken(res.access_token);
+      onSuccess?.(res.user_info.full_name)
       onSubmit?.(formData);
       // TODO: navigate to home/dashboard
     } catch (err) {
@@ -118,6 +120,7 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, 
     const handleFacebookLogin = async () => {
       playButtonSound();
       setErrorMsg('');
+      
       setFacebookLoading(true);
       try {
         const fbToken = await requestFacebookToken();
@@ -217,6 +220,7 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, 
             placeholder="Enter your password"
             value={formData.password}
             onChange={handleChange}
+            
             required
              className={reuse_form}
           />

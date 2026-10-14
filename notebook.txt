@@ -1,1 +1,4 @@
 docker compose --env-file backend/System/DevOp/.env.service up --build
+
+
+https://chat.deepseek.com/a/chat/s/d4b3afff-4b87-4e96-be37-640c480d4e9f

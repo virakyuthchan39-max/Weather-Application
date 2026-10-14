@@ -17,6 +17,12 @@
   }
 
 }
+@keyframes streamPop {
+  0%   { opacity: 0; transform: translateY(20px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+
 
 
 @keyframes fadeOutView { from {opacity:1} to {opacity:0} }
@@ -24,3 +30,31 @@
 .anim-out-welcome { animation: fadeOutView 1.2s ease-in-out forwards; }
 .anim-out-form { animation: fadeOutView 0.9s ease-in-out forwards; }
 .anim-in-form { animation: fadeInView 1.5s ease-in-out forwards; }
+
+
+/* Container animation of data_streaming / form container */
+.animate-stream-pop {
+  animation: streamPop 0.8s ease-out forwards;
+}
+
+.anim-out-form {
+  animation: viewFadeOut 0.9s ease-in-out forwards;
+}
+
+.anim-out-welcome {
+  animation: viewFadeOut 1.2s ease-in-out forwards;
+}
+
+.anim-in-view {
+  animation: viewFadeIn 1.5s ease-in-out forwards;
+}
+
+@keyframes viewFadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes viewFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}

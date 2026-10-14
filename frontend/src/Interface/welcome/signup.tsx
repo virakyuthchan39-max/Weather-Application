@@ -17,10 +17,11 @@ import { facebookSignIn, requestFacebookToken } from '../../Effect_Service/Api/T
 interface SignUpProps {
   onSwitchToLogin: () => void;
   onSwitchToHome: () => void;
+  onSuccess: (name:string) => void;
   onSubmit?: (data: Record<string, string>) => void;
 }
 
-export const SignUp: React.FC<SignUpProps> = ({ onSwitchToLogin, onSwitchToHome, onSubmit }) => {
+export const SignUp: React.FC<SignUpProps> = ({ onSwitchToLogin, onSwitchToHome, onSuccess,onSubmit }) => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -49,6 +50,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     };
     const res = await createAccount(payload);
     saveToken(res.access_token);
+    onSuccess?.(res.user_info.full_name)
     onSubmit?.(formData);        // optional parent callback
     // TODO: navigate to home/dashboard
   } catch (err) {

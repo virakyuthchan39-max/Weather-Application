@@ -1,6 +1,6 @@
 import React, { memo, useState, useEffect, useCallback, useRef} from 'react';
 import BackgroundMusic from '../../Effect_Service/background_music.tsx';
-import { playButtonSound, playAnimeClick } from '../../Effect_Service/sound_effect.tsx';
+import { playButtonSound, playAnimeClick } from '../../Effect_Service/sound_effect';
 import AnimeThankful from "/Icon/Welcome/Kita.avif";
 import AnimeShock from "/Icon/Welcome/kita_shock.avif"
 import AnimeMad from "/Icon/Welcome/Kita_mad.avif"
@@ -9,7 +9,11 @@ import SignUp from './signup';
 import Login from './login';
 import "./account.css";
 
-type AuthView = 'welcome' | 'signup' | 'login';
+// import the data streaming
+import DataStreaming from '../../Effect_Service/Api/service/data_streaming';
+
+
+type AuthView = 'welcome' | 'signup' | 'login' | 'streaming';
 
 const Account: React.FC = memo(() => {
   const [view, setView] = useState<AuthView>('welcome');
@@ -20,6 +24,8 @@ const Account: React.FC = memo(() => {
   const [animeCount, setAnimeCount] = useState(0);
   const [animeImg, setAnimeImg] = useState(AnimeThankful);
   const signTimerRef = useRef<number | null>(null);
+  
+  const [username, setUsername] = useState(''); //add the username in data_streaming
 
   const handleAnimeClick = () => {
   playAnimeClick();
@@ -235,20 +241,34 @@ const Account: React.FC = memo(() => {
               </div>
             </div>
           )}
+           {view === 'streaming' && (
+                  <DataStreaming
+                    username={username}
+                    onContinue={() => transitionTo('welcome')}
+                  />
+                )}
 
           {/* ---------- SIGNUP VIEW ---------- */}
           {view === 'signup' && (
             <SignUp
               onSwitchToLogin={() => transitionTo('login')}
               onSwitchToHome={() => transitionTo('welcome')}
+              onSuccess={(name) => {
+                                  setUsername(name);
+                                   transitionTo("streaming");
+                                  }}
             />
           )}
 
           {/* ---------- LOGIN VIEW ---------- */}
-          {view === 'login' && (
+         {view === 'login' && (
             <Login
               onSwitchToSignUp={() => transitionTo('signup')}
               onSwitchToHome={() => transitionTo('welcome')}
+              onSuccess={(name) => {              // ← បន្ថែម
+                setUsername(name);
+                transitionTo('streaming');
+              }}
             />
           )}
         </div>

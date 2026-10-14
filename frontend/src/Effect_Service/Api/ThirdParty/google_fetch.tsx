@@ -13,7 +13,9 @@ async function postGoogle(path: string, token: string): Promise<GoogleAuthRespon
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ token }),
   });
+  
   const data = await res.json();
+  
   if (!res.ok) throw new Error(data?.detail ?? `Request failed (${res.status})`);
   return data as GoogleAuthResponse;
 }
@@ -47,6 +49,7 @@ export function requestGoogleIdToken(): Promise<string> {
         else reject(new Error("No credential returned from Google"));
       },
     });
+    
     window.google.accounts.id.prompt();
   });
 }

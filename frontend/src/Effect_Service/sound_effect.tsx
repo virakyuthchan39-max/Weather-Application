@@ -3,6 +3,15 @@ import React from 'react';
 
 const SFX_PATH = '/Audio/Effect/button/welcome_button.mp3';
 const ANIME_CLICK= '/Audio/Effect/button/animeThankful.mp3'
+const DATA_STREAMING= '/Audio/Effect/button/data_streaming.mp3'
+
+export  const playDataStreamingEffect = ()=>{
+  const audio = new Audio(DATA_STREAMING)
+  audio.currentTime = 0
+  audio.volume=0.7
+  audio.play().catch(()=>{})
+}
+
 
 export const playAnimeClick =() =>{
         const audio = new Audio(ANIME_CLICK);
