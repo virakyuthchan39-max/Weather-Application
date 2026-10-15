@@ -8,11 +8,13 @@ services:
             - ./frontend:/app
             - /app/node_modules
         ports:
-            - "${FRONTEND_PORT}:5173"  
+            - "${FRONTEND_PORT}:5173"
         environment:
             - FRONTEND_URL=http://localhost:${FRONTEND_PORT}
+            - VITE_BACKEND_URL=http://localhost:${BACKEND_PORT}
         depends_on:
-            - backend
+            backend:
+                condition: service_started
 
     backend:
         build:
@@ -20,21 +22,22 @@ services:
             dockerfile: dockerfile.backend
         container_name: ${BACKEND_CONTAINER_NAME}
         volumes:
-            - ./backend/System:/app  
-          
+            - ./backend/System:/app
         ports:
-            - "${BACKEND_PORT}:8000"  
+            - "${BACKEND_PORT}:8000"
         environment:
-            - BACKEND_URL=http://0.0.0.0:${BACKEND_PORT}
-            - DATABASE_HOST=${DATABASE_CONTAINER_HOST}
-            - DATABASE_CONTAINER_PORT=${DATABASE_CONTAINER_PORT}
+            - BACKEND_URL=http://backend:8000
+            - DATABASE_HOST=database
+            - DATABASE_CONTAINER_PORT=${DATABASE_PORT}
             - DATABASE_USER=${DATABASE_USERNAME}
             - DATABASE_PASSWORD=${DATABASE_PASSWORD}
             - DATABASE_NAME=${DATABASE_NAME}
             - REDIS_URL=${REDIS_CONTAINER_URL}
         depends_on:
-            - database 
-            - memory-cache
+            database:
+                condition: service_healthy
+            memory-cache:
+                condition: service_started
 
     database:
         image: mysql:8.4
@@ -48,12 +51,19 @@ services:
             MYSQL_PASSWORD: ${DATABASE_PASSWORD}
         volumes:
             - mysql_data:/var/lib/mysql
-    memory-cache: 
-         image: redis:7-alpine
-         container_name: ${REDIS_CONTAINER_NAME}
-         ports:
-         - "${REDIS_PORT}:6379"
-         restart: always
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DATABASE_PASSWORD}"]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+
+    memory-cache:
+        image: redis:7-alpine
+        container_name: memory-cache
+        ports:
+            - "${REDIS_PORT}:6379"
+        restart: always
+
 volumes:
-  mysql_data:
-    driver: local
+    mysql_data:
+        driver: local

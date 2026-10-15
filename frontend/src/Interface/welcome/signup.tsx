@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState,useEffect,useRef } from 'react';
 import "./account.css"
 import { playButtonSound } from '../../Effect_Service/sound_effect';
 import SignupEmoji from "/Icon/Welcome/account_emoji2.avif"
@@ -7,9 +7,9 @@ import { createAccount, saveToken, type CreateUserRequest } from '../../Effect_S
 // fetch the google auth
 import { googleSignIn ,requestGoogleIdToken} from '../../Effect_Service/Api/ThirdParty/google_fetch';
 import {
-  startGithubOAuth,
-  getGithubCodeFromUrl,
-  clearGithubCodeFromUrl,
+   startGithubOAuth,
+  saveGithubIntent,
+  clearGithubIntent,
   githubSignIn,
 } from '../../Effect_Service/Api/ThirdParty/github_fetch'
 import { facebookSignIn, requestFacebookToken } from '../../Effect_Service/Api/ThirdParty/facebook_fetch';
@@ -18,17 +18,19 @@ interface SignUpProps {
   onSwitchToLogin: () => void;
   onSwitchToHome: () => void;
   onSuccess: (name:string) => void;
+  githubCode?: string | null;
   onSubmit?: (data: Record<string, string>) => void;
 }
 
-export const SignUp: React.FC<SignUpProps> = ({ onSwitchToLogin, onSwitchToHome, onSuccess,onSubmit }) => {
+export const SignUp: React.FC<SignUpProps> = ({ onSwitchToLogin, onSwitchToHome, githubCode,  onSuccess,onSubmit }) => {
+  
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     password: '',
   });
-
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value, }));
@@ -36,9 +38,11 @@ export const SignUp: React.FC<SignUpProps> = ({ onSwitchToLogin, onSwitchToHome,
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
+  setSuccessMsg('');
   setErrorMsg('');
   setLoading(true);
   try {
@@ -49,6 +53,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       password: formData.password,
     };
     const res = await createAccount(payload);
+    setSuccessMsg("Account creates success !")
     saveToken(res.access_token);
     onSuccess?.(res.user_info.full_name)
     onSubmit?.(formData);        // optional parent callback
@@ -74,12 +79,16 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   const handleGoogleSignIn = async () => {
   playButtonSound();
+  setSuccessMsg("")
   setErrorMsg('');
   setGoogleLoading(true);
   try {
     const googleToken = await requestGoogleIdToken();
     const res = await googleSignIn(googleToken);
+    setSuccessMsg("Account creates success !")
+  
     saveToken(res.access_token);
+    onSuccess?.(res.user_info.username)
     // TODO: navigate
   } catch (err) {
     setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
@@ -93,42 +102,55 @@ const handleSubmit = async (e: React.FormEvent) => {
 
     /* ចុចប៊ូតុង → ទៅ GitHub */
     const handleGithubSignIn = () => {
-      playButtonSound();
-       setErrorMsg('');
-      startGithubOAuth();
-    };
-
-    /* ពេល component mount → ពិនិត្យ ?code= ពី URL */
-    useEffect(() => {
-      const code = getGithubCodeFromUrl();
-      if (!code) return;
-
-      const run = async () => {
-        setGithubLoading(true);
-        try {
-          const res = await githubSignIn(code);
-          saveToken(res.access_token);
-          clearGithubCodeFromUrl();
-          // TODO: navigate to home/dashboard
-        } catch (err) {
-           setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
-        } finally {
-          setGithubLoading(false);
-        }
+      
+        playButtonSound();
+        setErrorMsg('');
+        saveGithubIntent("signup");   // ← រក្សាទុក intent មុន redirect
+        startGithubOAuth();
+         setSuccessMsg("")
+   
       };
-      run();
-    }, []);
+
+
+       const hasExchanged = useRef(false);
+
+        useEffect(() => {
+          if (!githubCode) return;
+          if (hasExchanged.current) return;
+          hasExchanged.current = true;
+
+          const run = async () => {
+            setGithubLoading(true);
+            try {
+              const res = await githubSignIn(githubCode);
+              saveToken(res.access_token);
+              setSuccessMsg("Account creates success !")
+              clearGithubIntent();        // ← សម្អាតតែ intent (code សម្អាតរួចក្នុង Account)
+              onSuccess?.(res.user_info.username);
+            } catch (err) {
+              hasExchanged.current = false;
+               setErrorMsg(err instanceof Error ? err.message.slice(34) : "Something went wrong")
+            } finally {
+              setGithubLoading(false);
+            }
+          };
+          run();
+        }, [githubCode]); 
   const [facebookLoading, setFacebookLoading] = useState(false);
 
 
   const handleFacebookSignIn = async () => {
     playButtonSound();
     setErrorMsg('');
+    setSuccessMsg("")
     setFacebookLoading(true);
     try {
       const fbToken = await requestFacebookToken();
       const res = await facebookSignIn(fbToken);
+      setSuccessMsg("Account creates success !")
+        
       saveToken(res.access_token);
+      onSuccess?.(res.user_info.username)
       // TODO: navigate to home/dashboard
     } catch (err) {
        setErrorMsg(err instanceof Error ? err.message.slice(36) : 'Something went wrong');
@@ -250,8 +272,11 @@ const handleSubmit = async (e: React.FormEvent) => {
           />
         </div>
 
-        {
-        errorMsg && (<p className="text-center text-xl italic font-bold text-red-400 drop-shadow-red-700 transition-colors drop-shadow-md/90 duration-1000 delay-300">{errorMsg}</p>)}    
+        {successMsg ? 
+              <p className='text-center text-xl italic font-bold text-green-400  drop-shadow-green-700  drop-shadow-md/90'>{successMsg}</p>
+              :
+               <p className="text-center text-xl italic font-bold text-red-400 drop-shadow-red-700 drop-shadow-md/90 ">{errorMsg}</p>
+            }
 
             <button
               type="submit"

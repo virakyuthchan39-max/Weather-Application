@@ -1,10 +1,20 @@
 const BASE_URL = "http://127.0.0.1:8000";
 
+export interface GoogleUserInfo {
+  id: number;
+  username: string;
+  gmail: string;
+  role: string;
+  is_active: boolean;
+  create_at: string;
+}
+
 export interface GoogleAuthResponse {
   detail: string;
   access_token: string;
   token_type: string;
-  user_info: Record<string, unknown>;
+  refresh_token:string;
+  user_info: GoogleUserInfo;
 }
 
 async function postGoogle(path: string, token: string): Promise<GoogleAuthResponse> {
@@ -34,7 +44,7 @@ declare global {
 }
 
 const GOOGLE_CLIENT_ID="861684131854-noibsnasaj1rsqlpqe7onma2t3af6po6.apps.googleusercontent.com";
-
+console.log(window.location.href)
 
 export function requestGoogleIdToken(): Promise<string> {
   return new Promise((resolve, reject) => {

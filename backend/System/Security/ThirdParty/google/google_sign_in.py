@@ -10,6 +10,8 @@ from typing import Annotated
 from Database.database import get_session
 from Database.model import GoogleSignIn
 from dotenv import load_dotenv
+from Security.Encryption.token import create_access_token
+from Security.Encryption.refresh_token import create_refresh_token
 from pathlib import Path
 import asyncio
 
@@ -26,6 +28,7 @@ class GoogleTokenRequest(BaseModel):
     token: str
 
 class GoogleSchema(BaseModel):
+    id: int
     username:str
     password: str = "GooglePassword"
     gmail: str    
@@ -34,6 +37,9 @@ class GoogleSchema(BaseModel):
     create_at: datetime
 class GoogleSchemaResponse(BaseModel):
     detail: str = "Google'user sign in successfully!✅"
+    access_token: str                    
+    refresh_token: str       
+    token_type: str = "bearer"   
     user_info: GoogleSchema
 
 @router.post("/google_signin",response_model = GoogleSchemaResponse)
@@ -63,11 +69,35 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
         db.add(add_google_user)
         await asyncio.sleep(0.4)
         await db.commit()
+        await db.refresh(add_google_user)   
         
-        result_response  = GoogleSchema(username=str(name).title(),gmail=email,role= "user",is_active = add_google_user.is_active,create_at=datetime.now(timezone.utc))
-        return GoogleSchemaResponse(detail = "Google'user sign in successfully!✅",user_info=result_response)
+        dicts = {
+            "sub": str(add_google_user.id),
+            "gmail": add_google_user.gmail,
+            "role": add_google_user.role,
+        }
+        token = create_access_token(dicts)
+        refresh_token = create_refresh_token(dicts)
+        result_response = GoogleSchema(
+            id=add_google_user.id,
+            username=add_google_user.username,
+            gmail=add_google_user.gmail,
+            role=add_google_user.role,
+            is_active=add_google_user.is_active,
+            create_at=add_google_user.create_at,
+        )
+        return GoogleSchemaResponse(
+            detail="Google's user sign in successfully! ✅",
+            access_token=token,
+            refresh_token= refresh_token,
+            token_type="Bearer",
+            user_info=result_response,
+        )
+
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Token verification failed: {str(e)}"
+            detail=f"Token verification failed: {str(e)}",
         )

@@ -11,7 +11,7 @@ class Text_Request(BaseModel):
 
 
 async def Text_generator(username: str):
-    message = f"Hello {username} ! What's is your weather today? If you don't know let figure out together !"
+    message = f"Hello {username.title()}👋🏻! What's is your weather today⛅? If you don't know let figure out together✨!"
     for char in message:
         yield char
         await asyncio.sleep(0.08)

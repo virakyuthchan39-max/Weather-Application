@@ -2,12 +2,21 @@ const BASE_URL = "http://127.0.0.1:8000";
 
 const GITHUB_CLIENT_ID = "Ov23liBQknBp1XcqjPs9";
 
+export interface GithubUserInfo {
+  id: number;
+  username: string;
+  gmail: string;
+  role: string;
+  is_active: boolean;
+  create_at: string;
+}
 
 export interface GithubAuthResponse {
   detail: string;
   access_token: string;
   token_type: string;
-  user_info: Record<string, unknown>;
+  refresh_token:string;
+  user_info: GithubUserInfo;
 }
 
 /* ---------- បើកទំព័រ GitHub ឱ្យ user ជ្រើស account ---------- */
@@ -56,3 +65,33 @@ export const githubLogin = (code: string) =>
 
 
 
+// sub dependencie (helper)
+const INTENT_KEY = "github_oauth_intent";
+const EXCHANGED_KEY = "github_oauth_exchanged";
+
+export type GithubIntent = "signup" | "login";
+
+export function saveGithubIntent(intent: GithubIntent): void {
+  sessionStorage.setItem(INTENT_KEY, intent);
+}
+
+export function getGithubIntent(): GithubIntent | null {
+  const v = sessionStorage.getItem(INTENT_KEY);
+  return v === "signup" || v === "login" ? v : null;
+}
+
+export function clearGithubIntent(): void {
+  sessionStorage.removeItem(INTENT_KEY);
+}
+
+export function markGithubExchanged(): void {
+  sessionStorage.setItem(EXCHANGED_KEY, "1");
+}
+
+export function hasGithubExchanged(): boolean {
+  return sessionStorage.getItem(EXCHANGED_KEY) === "1";
+}
+
+export function clearGithubExchanged(): void {
+  sessionStorage.removeItem(EXCHANGED_KEY);
+}

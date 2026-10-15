@@ -27,6 +27,7 @@ export interface AuthResponse {
   detail: string;
   access_token: string;
   token_type: string;
+  refresh_token:string;
   user_info: UserInfo;
 }
 

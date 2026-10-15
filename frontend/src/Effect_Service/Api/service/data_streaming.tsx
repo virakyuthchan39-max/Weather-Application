@@ -38,14 +38,15 @@ const DataStreaming: React.FC<DataStreamingProps> = ({ username, onContinue }) =
   };
 
   return (
-    <div className="relative mx-4 w-full min-h-30 max-w-xl rounded-2xl  bg-black/40 p-8 text-white shadow-2xl -backdrop-blur-[1px] md:p-10 animate-stream-pop">
-      <h2 className="mb-4 text-3xl font-extrabold tracking-tight text-cyan-400">
+    <div className="relative mx-4 w-full max-w-xl rounded-2xl  bg-black/40 p-8 text-white shadow-2xl -backdrop-blur-[1px] md:p-10 animate-stream-pop">
+      <h2 className="mb-4 text-3xl text-nowrap font-extrabold tracking-tight text-cyan-400
+      max-[500px]:text-xl">
         ☀ Weather Assistant
       </h2>
 
-      <p className="mb-8 min-h-24 text-lg leading-relaxed text-cyan-400 animate-pulse transition-all duration-500 ">
+      <p className="mx-4 max-[500px]:p-2 min-h-24 text-lg leading-relaxed text-cyan-400 animate-pulse transition-colors duration-400 ">
         {text}
-        {!done && <span className="ml-1 inline-block animate-pulse">|</span>}
+        {!done && <span className="ml-1 inline-block">|</span>}
       </p>
 
       <div className="flex justify-center">
@@ -53,7 +54,7 @@ const DataStreaming: React.FC<DataStreamingProps> = ({ username, onContinue }) =
           type="button"
           onClick={handleContinue}
           disabled={!done}
-          className="rounded-xl bg-green-800 px-8 py-3 text-xl font-bold text-white shadow-lg/40 transition-all duration-300 border-b-8 border-green-900 
+          className="rounded-xl bg-green-800 px-8 py-3 text-xl font-bold text-white shadow-lg/40 transition-all duration-300 border-b-8 mt-5 border-green-900 
           hover:bg-green-400 hover:translate-y-1 hover:border-b-5
            active:text-blue-600 active:scale-[0.98] active:border-b-0 active:translate-y-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >

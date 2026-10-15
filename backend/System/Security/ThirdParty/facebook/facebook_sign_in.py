@@ -8,6 +8,8 @@ import httpx
 from typing import Annotated
 from Database.database import get_session
 from Database.model import FacebookSignIn
+from Security.Encryption.token import create_access_token
+from Security.Encryption.refresh_token import create_refresh_token
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -25,6 +27,7 @@ class FacebookTokenRequest(BaseModel):
     token: str  # Facebook Access Token ផ្ញើមកពី Frontend
 
 class FacebookSchema(BaseModel):
+    id: int
     username: str
     password: str = "FacebookPassword"
     gmail: EmailStr    
@@ -34,6 +37,9 @@ class FacebookSchema(BaseModel):
 
 class FacebookSchemaResponse(BaseModel):
     detail: str = "Facebook user sign in successfully! ✅"
+    access_token: str
+    refresh_token: str
+    token_type: str = "Bearer"
     user_info: FacebookSchema
 
 @router.post("/Facebook_signin", response_model=FacebookSchemaResponse)
@@ -84,15 +90,25 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
 
         # 3. រៀបចំ Response ត្រលប់ទៅវិញ
         result_response = FacebookSchema(
+            id = user.id,
             username=user.username,
             gmail=user.gmail,
             role=user.role,
             is_active=user.is_active,
             create_at=user.create_at
         )
-        
+        dicts = {
+                "sub": str(user.id),
+                "gmail": user.gmail,
+                "role": user.role,
+            }
+        token = create_access_token(dicts)
+        refresh_token = create_refresh_token(dicts) 
         return FacebookSchemaResponse(
             detail="Facebook user sign in successfully! ✅",
+            access_token=token,
+            refresh_token = refresh_token,
+            token_type="Bearer",
             user_info=result_response
         )
         

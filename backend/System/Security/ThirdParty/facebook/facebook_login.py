@@ -1,13 +1,15 @@
-import os
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from datetime import datetime, timezone
 from pydantic import BaseModel, EmailStr
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
-import httpx
+import httpx,os
 from typing import Annotated
 from Database.database import get_session
 from Database.model import FacebookSignIn,UserFacebookLogin
+from Security.Encryption.token import create_access_token
+from Security.Encryption.refresh_token import create_refresh_token
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -25,6 +27,7 @@ class FacebookTokenRequest(BaseModel):
     token: str  
 
 class FacebookSchema(BaseModel):
+    id: int
     username: str
     password: str = "FacebookPassword"
     gmail: EmailStr    
@@ -34,6 +37,9 @@ class FacebookSchema(BaseModel):
 
 class FacebookSchemaResponse(BaseModel):
     detail: str = "Facebook's user sign in successfully! ✅"
+    access_token: str
+    refresh_token: str
+    token_type: str = "Bearer"
     user_info: FacebookSchema
 
 @router.post("/Facebook_login", response_model=FacebookSchemaResponse)
@@ -79,18 +85,30 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
             add_facebook_user = UserFacebookLogin(facebook_id=user.id,username=user.username,password="FacebookPassword",gmail=email,login_at=datetime.now(timezone.utc),is_active=user.is_active,role=user.role)
             db.add(add_facebook_user)
         await db.commit()
+
     
-        # 3. រៀបចំ Response ត្រលប់ទៅវិញ
+
         result_response = FacebookSchema(
+            id = user.id,
             username=user.username,
             gmail=user.gmail,
             role=user.role,
             is_active=user.is_active,
             login_at = datetime.now(timezone.utc)
         )
+        dicts = {
+                "sub": str(user.id),
+                "gmail": user.gmail,
+                "role": user.role,
+        }
+        token = create_access_token(dicts)
+        refresh_token = create_refresh_token(dicts) 
         
         return FacebookSchemaResponse(
             detail="Facebook's user login successfully! ✅",
+            access_token= token,
+            refresh_token=refresh_token,
+            token_type="Bearer",
             user_info=result_response
         )
         

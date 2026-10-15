@@ -11,6 +11,8 @@ import "./account.css";
 
 // import the data streaming
 import DataStreaming from '../../Effect_Service/Api/service/data_streaming';
+// fetch the github
+import { getGithubCodeFromUrl, getGithubIntent,clearGithubCodeFromUrl,clearGithubIntent } from '../../Effect_Service/Api/ThirdParty/github_fetch';
 
 
 type AuthView = 'welcome' | 'signup' | 'login' | 'streaming';
@@ -26,6 +28,37 @@ const Account: React.FC = memo(() => {
   const signTimerRef = useRef<number | null>(null);
   
   const [username, setUsername] = useState(''); //add the username in data_streaming
+  
+  const hasRouted = useRef(false);
+   const [githubCode, setGithubCode] = useState<string | null>(null);
+
+  useEffect(() => {
+  if (hasRouted.current) return;
+
+  const code = getGithubCodeFromUrl();
+  const intent = getGithubIntent();
+
+  // ❌ បើគ្មាន code តែមាន intent ចាស់ជាប់ → clear intent (stale)
+  if (!code) {
+    if (intent) clearGithubIntent();
+    return;
+  }
+
+  // ❌ បើមាន code តែគ្មាន intent → clear code (security)
+  if (!intent) {
+    clearGithubCodeFromUrl();
+    return;
+  }
+
+  hasRouted.current = true;
+
+  // ✅ សម្អាត URL ភ្លាមៗ មុនពេល reload ណាមួយ
+  clearGithubCodeFromUrl();
+
+  setGithubCode(code);          // ផ្ញើតាម prop ទៅ child
+  setView(intent);
+  setShowContent(true);
+}, []);
 
   const handleAnimeClick = () => {
   playAnimeClick();
@@ -37,10 +70,11 @@ const Account: React.FC = memo(() => {
   });
   };
 
+ 
   // idle 1s → (mad path: sign → 1s → thankful) | (shock path: thankful)
   useEffect(() => {
   if (animeCount === 0) return;
-
+  
   const t = setTimeout(() => {
     if (animeCount >= 5) {
       // was mad → show sign for 1s, then reset
@@ -257,6 +291,7 @@ const Account: React.FC = memo(() => {
                                   setUsername(name);
                                    transitionTo("streaming");
                                   }}
+              githubCode={githubCode}                     
             />
           )}
 
@@ -265,7 +300,7 @@ const Account: React.FC = memo(() => {
             <Login
               onSwitchToSignUp={() => transitionTo('signup')}
               onSwitchToHome={() => transitionTo('welcome')}
-              onSuccess={(name) => {              // ← បន្ថែម
+              onSuccess={(name) => {             
                 setUsername(name);
                 transitionTo('streaming');
               }}
