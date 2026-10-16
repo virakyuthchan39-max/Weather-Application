@@ -32,11 +32,6 @@ interface SoundButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
   children: React.ReactNode;
 }
 
-
-
-
-
-
 export const SoundButton: React.FC<SoundButtonProps> = ({ onClick, children, ...props }) => {
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     playButtonSound();

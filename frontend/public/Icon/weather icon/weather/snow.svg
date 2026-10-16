@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="50" height="50" fill="none">
+  <!-- Cloud outline -->
+  <path d="M22.5 5
+       C16.71 5 12 9.71 12 15.5
+       C12 15.67 11.99 15.83 12 16
+       C7.59 16 4 19.59 4 24
+       C4 28.41 7.59 32 12 32
+       H36
+       C41.52 32 46 27.52 46 22
+       C46 16.48 41.52 12 36 12
+       C34.82 12 33.69 12.2 32.59 12.59
+       C31.33 8.12 27.26 5 22.5 5
+       Z" fill="white" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+
+  <!-- Snowflake 1 -->
+  <g stroke="#38BDF8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M24 17 V33
+         M17.06 21 L30.94 29
+         M17.06 29 L30.94 21"></path>
+  </g>
+
+  <!-- Snowflake 2 -->
+  <g stroke="#38BDF8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M40 35.5 L42 40.5
+         M37.5 38 L44.5 38
+         M38.5 40.5 L43.5 35.5"></path>
+  </g>
+
+  <!-- Falling snowflake 3 -->
+  <g stroke="#38BDF8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M25 40.5 L27 45.5
+         M22.5 43 L29.5 43
+         M23.5 45.5 L28.5 40.5"></path>
+  </g>
+
+  <!-- Falling snowflake 4 -->
+  <g stroke="#38BDF8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 44.5 L16 49
+         M11.5 46.5 L18.5 46.5
+         M12.5 49 L17.5 44"></path>
+  </g>
+
+  <!-- Falling snowflake 5 -->
+  <g stroke="#38BDF8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M35 44.5 L37 49
+         M32.5 46.5 L39.5 46.5
+         M33.5 49 L38.5 44"></path>
+  </g>
+</svg>

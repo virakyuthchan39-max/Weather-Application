@@ -58,3 +58,12 @@
   from { opacity: 0; }
   to   { opacity: 1; }
 }
+
+/* play  the animation fade after user click the continue in data_streaming */
+.anim-fade-page{
+  animation:fadeWholePage 1.5s ease-in-out forwards;
+}
+@keyframes fadeWholePage{
+  from{opacity:1;}
+  to{opacity:0;}
+}

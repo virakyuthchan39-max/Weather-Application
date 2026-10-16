@@ -67,7 +67,6 @@ export const githubLogin = (code: string) =>
 
 // sub dependencie (helper)
 const INTENT_KEY = "github_oauth_intent";
-const EXCHANGED_KEY = "github_oauth_exchanged";
 
 export type GithubIntent = "signup" | "login";
 
@@ -82,16 +81,4 @@ export function getGithubIntent(): GithubIntent | null {
 
 export function clearGithubIntent(): void {
   sessionStorage.removeItem(INTENT_KEY);
-}
-
-export function markGithubExchanged(): void {
-  sessionStorage.setItem(EXCHANGED_KEY, "1");
-}
-
-export function hasGithubExchanged(): boolean {
-  return sessionStorage.getItem(EXCHANGED_KEY) === "1";
-}
-
-export function clearGithubExchanged(): void {
-  sessionStorage.removeItem(EXCHANGED_KEY);
 }

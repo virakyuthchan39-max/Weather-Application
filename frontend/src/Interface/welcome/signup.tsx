@@ -14,6 +14,7 @@ import {
 } from '../../Effect_Service/Api/ThirdParty/github_fetch'
 import { facebookSignIn, requestFacebookToken } from '../../Effect_Service/Api/ThirdParty/facebook_fetch';
 
+
 interface SignUpProps {
   onSwitchToLogin: () => void;
   onSwitchToHome: () => void;
@@ -129,7 +130,9 @@ const handleSubmit = async (e: React.FormEvent) => {
               onSuccess?.(res.user_info.username);
             } catch (err) {
               hasExchanged.current = false;
-               setErrorMsg(err instanceof Error ? err.message.slice(34) : "Something went wrong")
+              if (err instanceof Error ? err.message === "GitHub code exchange failed: {'error': 'bad_verification_code', 'error_description': 'The code passed is incorrect or expired.', 'error_uri': 'https://docs.github.com/apps/managing-oauth-apps/troubleshooting-oauth-app-access-token-request-errors/#bad-verification-code'}":"")
+               return setErrorMsg("");
+              else setErrorMsg(err instanceof Error ? err.message.slice(34) : "Something went wrong")
             } finally {
               setGithubLoading(false);
             }
@@ -174,11 +177,11 @@ const handleSubmit = async (e: React.FormEvent) => {
         max-[500px]:text-2xl max-[500px]:text-nowrap max-[500px]:pl-20 max-[500px]:justify-between
         max-[600px]:pl-20
         max-[450px]:pl-25
-        max-[400px]:pl-13
+        max-[400px]:pl-20
       ">
         Welcome User
         <img src ={SignupEmoji} className = "w-25 h-25 relative drop-shadow-lg/80 -top-8 right-3 \
-        max-[500px]:w-20 max-[500px]:h-20 max-[500px]:-top-6 max-[500px]:right-3 max-[450px]:right-7 \
+        max-[500px]:w-20 max-[500px]:h-20 max-[500px]:-top-6 max-[500px]:right-3 max-[450px]:right-9 max-[400px]:right-8  \
         " />
         </h2>
       <h2 className="mb-6 text-center text-3xl font-bold text-cyan-400

@@ -125,10 +125,12 @@ async def fetch_weather(city: str, country_code: str = "") -> WeatherResponse:
     return response
 
 
-@limiter.limit("1/minute")
+
 @router.get("/weather", response_model=WeatherResponse)
+@limiter.limit("10/minute")
 async def get_weather(
     request:Request,
     city: Annotated[str, Query(min_length=1, description="City name or Province name")],
 ):
     return await fetch_weather(city=city)
+

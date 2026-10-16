@@ -39,12 +39,12 @@ const DataStreaming: React.FC<DataStreamingProps> = ({ username, onContinue }) =
 
   return (
     <div className="relative mx-4 w-full max-w-xl rounded-2xl  bg-black/40 p-8 text-white shadow-2xl -backdrop-blur-[1px] md:p-10 animate-stream-pop">
-      <h2 className="mb-4 text-3xl text-nowrap font-extrabold tracking-tight text-cyan-400
+      <h2 className="mb-4 text-3xl pb-4 border-b-4 text-nowrap font-extrabold tracking-tight text-cyan-400
       max-[500px]:text-xl">
         ☀ Weather Assistant
       </h2>
 
-      <p className="mx-4 max-[500px]:p-2 min-h-24 text-lg leading-relaxed text-cyan-400 animate-pulse transition-colors duration-400 ">
+      <p className="mx-4 max-[500px]:p-2 min-h-24 text-lg leading-relaxed   text-cyan-400 animate-pulse transition-colors duration-400 ">
         {text}
         {!done && <span className="ml-1 inline-block">|</span>}
       </p>

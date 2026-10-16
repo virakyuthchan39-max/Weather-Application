@@ -8,14 +8,14 @@ import AnimeSign from "/Icon/Welcome/Kita_sign.avif"
 import SignUp from './signup';
 import Login from './login';
 import "./account.css";
-
+import Weather from "../../Interface/Weather"
 // import the data streaming
 import DataStreaming from '../../Effect_Service/Api/service/data_streaming';
 // fetch the github
 import { getGithubCodeFromUrl, getGithubIntent,clearGithubCodeFromUrl,clearGithubIntent } from '../../Effect_Service/Api/ThirdParty/github_fetch';
 
 
-type AuthView = 'welcome' | 'signup' | 'login' | 'streaming';
+type AuthView = 'welcome' | 'signup' | 'login' | 'streaming' | "weather";
 
 const Account: React.FC = memo(() => {
   const [view, setView] = useState<AuthView>('welcome');
@@ -28,9 +28,29 @@ const Account: React.FC = memo(() => {
   const signTimerRef = useRef<number | null>(null);
   
   const [username, setUsername] = useState(''); //add the username in data_streaming
-  
+  // fade the whole page if user success click the continue in data_streaming
+  const [pageFade, setPageFade] = useState('');
+  const [hideAll, setHideAll] = useState(false);
+  const [stopMusic, setStopMusic] = useState(false)
+  const [redirecting, setRedirecting] = useState(false);
+  const handleContinueToWeather = useCallback(() => {
+        if (redirecting) return;
+        setRedirecting(true);
+        setStopMusic(true);
+        // 1.5s fade → swap view
+        setPageFade('anim-fade-page');
+        window.setTimeout(() => {
+          setHideAll(true); 
+          setView('weather');
+          setPageFade('');
+                   
+          setRedirecting(false);
+        }, 1500);
+      }, [redirecting]);
+
+
   const hasRouted = useRef(false);
-   const [githubCode, setGithubCode] = useState<string | null>(null);
+  const [githubCode, setGithubCode] = useState<string | null>(null);
 
   useEffect(() => {
   if (hasRouted.current) return;
@@ -132,9 +152,9 @@ const Account: React.FC = memo(() => {
   const reuse_color_hover = "hover:text-purple-500 text-cyan-200";
 
   return (
-    <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-black font-welcome">
+    <div className= {`relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-black font-welcome ${pageFade}`}>
       {/* Background Music */}
-      <BackgroundMusic />
+      <BackgroundMusic stop={stopMusic} />
 
       {/* Background Video — STAYS MOUNTED across all views */}
       <video
@@ -144,8 +164,10 @@ const Account: React.FC = memo(() => {
         playsInline
         preload="metadata"
         className="absolute inset-0 h-full w-full object-cover"
-      >
-        <source src="/Audio/Video/welcome.mp4" type="video/mp4" />
+      > 
+        <source src = "/Audio/Video/webm/welcome.webm" type="video/webm"/>
+        <source src="/Audio/Video/mp4/welcome.mp4" type="video/mp4" />
+      
         Your browser does not support the video tag.
       </video>
 
@@ -278,7 +300,7 @@ const Account: React.FC = memo(() => {
            {view === 'streaming' && (
                   <DataStreaming
                     username={username}
-                    onContinue={() => transitionTo('welcome')}
+                    onContinue={handleContinueToWeather}   
                   />
                 )}
 
@@ -294,7 +316,6 @@ const Account: React.FC = memo(() => {
               githubCode={githubCode}                     
             />
           )}
-
           {/* ---------- LOGIN VIEW ---------- */}
          {view === 'login' && (
             <Login
@@ -304,6 +325,7 @@ const Account: React.FC = memo(() => {
                 setUsername(name);
                 transitionTo('streaming');
               }}
+              githubCode={githubCode} 
             />
           )}
         </div>
