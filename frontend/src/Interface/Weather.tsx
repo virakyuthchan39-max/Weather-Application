@@ -1,13 +1,4 @@
-<<<<<<< HEAD
 
-
-export default function Weather(){
-    return(
-        <>
-        </>
-    )
-}
-=======
 import React, { useState, useEffect, useRef } from 'react';
 import "./weather.css";
 import "../Interface/welcome/account.css";
@@ -191,4 +182,4 @@ const Weather: React.FC<WeatherProps> = ({ username, onLogout, onDetail }) => {
 };
 
 export default Weather;
->>>>>>> backend
+
