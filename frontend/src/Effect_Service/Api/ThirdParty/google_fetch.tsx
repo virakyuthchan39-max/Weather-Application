@@ -1,10 +1,27 @@
 const BASE_URL = "http://127.0.0.1:8000";
 
+<<<<<<< HEAD
+=======
+export interface GoogleUserInfo {
+  id: number;
+  username: string;
+  gmail: string;
+  role: string;
+  is_active: boolean;
+  create_at: string;
+}
+
+>>>>>>> backend
 export interface GoogleAuthResponse {
   detail: string;
   access_token: string;
   token_type: string;
+<<<<<<< HEAD
   user_info: Record<string, unknown>;
+=======
+  refresh_token:string;
+  user_info: GoogleUserInfo;
+>>>>>>> backend
 }
 
 async function postGoogle(path: string, token: string): Promise<GoogleAuthResponse> {
@@ -13,7 +30,13 @@ async function postGoogle(path: string, token: string): Promise<GoogleAuthRespon
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ token }),
   });
+<<<<<<< HEAD
   const data = await res.json();
+=======
+  
+  const data = await res.json();
+  
+>>>>>>> backend
   if (!res.ok) throw new Error(data?.detail ?? `Request failed (${res.status})`);
   return data as GoogleAuthResponse;
 }
@@ -32,7 +55,11 @@ declare global {
 }
 
 const GOOGLE_CLIENT_ID="861684131854-noibsnasaj1rsqlpqe7onma2t3af6po6.apps.googleusercontent.com";
+<<<<<<< HEAD
 
+=======
+console.log(window.location.href)
+>>>>>>> backend
 
 export function requestGoogleIdToken(): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -47,6 +74,10 @@ export function requestGoogleIdToken(): Promise<string> {
         else reject(new Error("No credential returned from Google"));
       },
     });
+<<<<<<< HEAD
+=======
+    
+>>>>>>> backend
     window.google.accounts.id.prompt();
   });
 }

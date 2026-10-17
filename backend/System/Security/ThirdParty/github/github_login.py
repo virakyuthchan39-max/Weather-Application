@@ -11,6 +11,10 @@ from Database.model import GithubSignIn,UserGithubLogin
 from dotenv import load_dotenv
 from pathlib import Path
 from Security.Encryption.token import create_access_token
+<<<<<<< HEAD
+=======
+from Security.Encryption.refresh_token import create_refresh_token
+>>>>>>> backend
 from .github_sign_in import exchange_code_for_token
 
 root_dir = Path(__file__).resolve().parents[3]
@@ -38,6 +42,10 @@ class GithubSchema(BaseModel):
 class GithubSchemaResponse(BaseModel):
     detail: str = "Github user sign in successfully! ✅"
     access_token: str
+<<<<<<< HEAD
+=======
+    refresh_token: str
+>>>>>>> backend
     token_type: str = "bearer"
     user_info: GithubSchema
     
@@ -106,6 +114,7 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
             await db.commit()
             await db.refresh(new_login)
           
+<<<<<<< HEAD
 
         token = create_access_token({
             "sub": str(user.id),
@@ -113,6 +122,16 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
             "role": user.role,
         })
 
+=======
+        dicts = {
+                "sub": str(user.id),
+                "gmail": user.gmail,
+                "role": user.role, 
+                }
+        token = create_access_token(dicts)
+        refresh_token = create_refresh_token(dicts)
+   
+>>>>>>> backend
         result_response = GithubSchema(
             id=user.id,
             username=user.username,
@@ -125,6 +144,11 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
         return GithubSchemaResponse(
             detail="Github user sign in successfully! ✅",
             access_token=token,
+<<<<<<< HEAD
+=======
+            refresh_token=refresh_token,
+            token_type="Bearer",
+>>>>>>> backend
             user_info=result_response,
         )
         

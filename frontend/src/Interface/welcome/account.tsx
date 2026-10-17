@@ -1,6 +1,10 @@
 import React, { memo, useState, useEffect, useCallback, useRef} from 'react';
 import BackgroundMusic from '../../Effect_Service/background_music.tsx';
+<<<<<<< HEAD
 import { playButtonSound, playAnimeClick } from '../../Effect_Service/sound_effect.tsx';
+=======
+import { playButtonSound, playAnimeClick } from '../../Effect_Service/sound_effect';
+>>>>>>> backend
 import AnimeThankful from "/Icon/Welcome/Kita.avif";
 import AnimeShock from "/Icon/Welcome/kita_shock.avif"
 import AnimeMad from "/Icon/Welcome/Kita_mad.avif"
@@ -8,8 +12,19 @@ import AnimeSign from "/Icon/Welcome/Kita_sign.avif"
 import SignUp from './signup';
 import Login from './login';
 import "./account.css";
+<<<<<<< HEAD
 
 type AuthView = 'welcome' | 'signup' | 'login';
+=======
+import Weather from "../../Interface/Weather"
+// import the data streaming
+import DataStreaming from '../../Effect_Service/Api/service/data_streaming';
+// fetch the github
+import { getGithubCodeFromUrl, getGithubIntent,clearGithubCodeFromUrl,clearGithubIntent } from '../../Effect_Service/Api/ThirdParty/github_fetch';
+
+
+type AuthView = 'welcome' | 'signup' | 'login' | 'streaming' | "weather";
+>>>>>>> backend
 
 const Account: React.FC = memo(() => {
   const [view, setView] = useState<AuthView>('welcome');
@@ -20,6 +35,62 @@ const Account: React.FC = memo(() => {
   const [animeCount, setAnimeCount] = useState(0);
   const [animeImg, setAnimeImg] = useState(AnimeThankful);
   const signTimerRef = useRef<number | null>(null);
+<<<<<<< HEAD
+=======
+  
+  const [username, setUsername] = useState(''); //add the username in data_streaming
+  // fade the whole page if user success click the continue in data_streaming
+  const [pageFade, setPageFade] = useState('');
+  const [hideAll, setHideAll] = useState(false);
+  const [stopMusic, setStopMusic] = useState(false)
+  const [redirecting, setRedirecting] = useState(false);
+  const handleContinueToWeather = useCallback(() => {
+        if (redirecting) return;
+        setRedirecting(true);
+        setStopMusic(true);
+        // 1.5s fade → swap view
+        setPageFade('anim-fade-page');
+        window.setTimeout(() => {
+          setHideAll(true); 
+          setView('weather');
+          setPageFade('');
+                   
+          setRedirecting(false);
+        }, 1500);
+      }, [redirecting]);
+
+
+  const hasRouted = useRef(false);
+  const [githubCode, setGithubCode] = useState<string | null>(null);
+
+  useEffect(() => {
+  if (hasRouted.current) return;
+
+  const code = getGithubCodeFromUrl();
+  const intent = getGithubIntent();
+
+  // ❌ បើគ្មាន code តែមាន intent ចាស់ជាប់ → clear intent (stale)
+  if (!code) {
+    if (intent) clearGithubIntent();
+    return;
+  }
+
+  // ❌ បើមាន code តែគ្មាន intent → clear code (security)
+  if (!intent) {
+    clearGithubCodeFromUrl();
+    return;
+  }
+
+  hasRouted.current = true;
+
+  // ✅ សម្អាត URL ភ្លាមៗ មុនពេល reload ណាមួយ
+  clearGithubCodeFromUrl();
+
+  setGithubCode(code);          // ផ្ញើតាម prop ទៅ child
+  setView(intent);
+  setShowContent(true);
+}, []);
+>>>>>>> backend
 
   const handleAnimeClick = () => {
   playAnimeClick();
@@ -31,10 +102,18 @@ const Account: React.FC = memo(() => {
   });
   };
 
+<<<<<<< HEAD
   // idle 1s → (mad path: sign → 1s → thankful) | (shock path: thankful)
   useEffect(() => {
   if (animeCount === 0) return;
 
+=======
+ 
+  // idle 1s → (mad path: sign → 1s → thankful) | (shock path: thankful)
+  useEffect(() => {
+  if (animeCount === 0) return;
+  
+>>>>>>> backend
   const t = setTimeout(() => {
     if (animeCount >= 5) {
       // was mad → show sign for 1s, then reset
@@ -92,9 +171,15 @@ const Account: React.FC = memo(() => {
   const reuse_color_hover = "hover:text-purple-500 text-cyan-200";
 
   return (
+<<<<<<< HEAD
     <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-black font-welcome">
       {/* Background Music */}
       <BackgroundMusic />
+=======
+    <div className= {`relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-black font-welcome ${pageFade}`}>
+      {/* Background Music */}
+      <BackgroundMusic stop={stopMusic} />
+>>>>>>> backend
 
       {/* Background Video — STAYS MOUNTED across all views */}
       <video
@@ -104,8 +189,15 @@ const Account: React.FC = memo(() => {
         playsInline
         preload="metadata"
         className="absolute inset-0 h-full w-full object-cover"
+<<<<<<< HEAD
       >
         <source src="/Audio/Video/welcome.mp4" type="video/mp4" />
+=======
+      > 
+        <source src = "/Audio/Video/webm/welcome.webm" type="video/webm"/>
+        <source src="/Audio/Video/mp4/welcome.mp4" type="video/mp4" />
+      
+>>>>>>> backend
         Your browser does not support the video tag.
       </video>
 
@@ -235,12 +327,22 @@ const Account: React.FC = memo(() => {
               </div>
             </div>
           )}
+<<<<<<< HEAD
+=======
+           {view === 'streaming' && (
+                  <DataStreaming
+                    username={username}
+                    onContinue={handleContinueToWeather}   
+                  />
+                )}
+>>>>>>> backend
 
           {/* ---------- SIGNUP VIEW ---------- */}
           {view === 'signup' && (
             <SignUp
               onSwitchToLogin={() => transitionTo('login')}
               onSwitchToHome={() => transitionTo('welcome')}
+<<<<<<< HEAD
             />
           )}
 
@@ -249,6 +351,25 @@ const Account: React.FC = memo(() => {
             <Login
               onSwitchToSignUp={() => transitionTo('signup')}
               onSwitchToHome={() => transitionTo('welcome')}
+=======
+              onSuccess={(name) => {
+                                  setUsername(name);
+                                   transitionTo("streaming");
+                                  }}
+              githubCode={githubCode}                     
+            />
+          )}
+          {/* ---------- LOGIN VIEW ---------- */}
+         {view === 'login' && (
+            <Login
+              onSwitchToSignUp={() => transitionTo('signup')}
+              onSwitchToHome={() => transitionTo('welcome')}
+              onSuccess={(name) => {             
+                setUsername(name);
+                transitionTo('streaming');
+              }}
+              githubCode={githubCode} 
+>>>>>>> backend
             />
           )}
         </div>

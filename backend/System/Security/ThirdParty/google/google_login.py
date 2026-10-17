@@ -9,6 +9,11 @@ from google.auth.transport import requests as google_requests
 from typing import Annotated, Optional
 from Database.database import get_session
 from Database.model import GoogleSignIn, UserGoogleLogin
+<<<<<<< HEAD
+=======
+from Security.Encryption.refresh_token import create_refresh_token
+from Security.Encryption.token import create_access_token
+>>>>>>> backend
 from pathlib import Path
 from dotenv import load_dotenv
 import asyncio
@@ -35,6 +40,12 @@ class GoogleSchema(BaseModel):
 
 class GoogleSchemaResponse(BaseModel):
     detail: str = "Google'user login successfully!✅"
+<<<<<<< HEAD
+=======
+    access_token: str
+    refresh_token: str
+    token_type: str = "Bearer"
+>>>>>>> backend
     user_info: GoogleSchema
 
 @router.post("/google_login", response_model=GoogleSchemaResponse)
@@ -48,7 +59,11 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
         )
 
         email = idinfo.get("email")
+<<<<<<< HEAD
         name = idinfo.get("name", "Google User")
+=======
+
+>>>>>>> backend
 
         if not email:
             raise HTTPException(
@@ -77,7 +92,11 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
         current_time = datetime.now(timezone.utc)
         query = await db.scalars(select(UserGoogleLogin).where(UserGoogleLogin.gmail == email))
         final_query = query.first()
+<<<<<<< HEAD
         # ✅ ត្រូវ
+=======
+        
+>>>>>>> backend
         if final_query:
             final_query.login_at = current_time
             db.add(final_query)
@@ -93,8 +112,20 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
             db.add(add_google_user)
         await asyncio.sleep(0.4)    
         await db.commit()
+<<<<<<< HEAD
         
 
+=======
+
+        
+        dicts = {
+                   "sub": str(user.id),
+                   "gmail": user.gmail,
+                   "role": user.role,
+               }
+        token = create_access_token(dicts)
+        refresh_token = create_refresh_token(dicts)
+>>>>>>> backend
      
         result_response = GoogleSchema(
             id=user.id,
@@ -107,6 +138,12 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
         
         return GoogleSchemaResponse(
             detail="Google'user login successfully!✅",
+<<<<<<< HEAD
+=======
+            access_token = token,
+            refresh_token=refresh_token,
+            token_type="Bearer",
+>>>>>>> backend
             user_info=result_response
         )
         

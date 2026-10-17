@@ -1,1 +1,14 @@
+<<<<<<< HEAD
 docker compose --env-file backend/System/DevOp/.env.service up --build
+=======
+
+
+docker compose --env-file backend/System/DevOp/.env.service up --build
+
+
+https://chat.deepseek.com/a/chat/s/d4b3afff-4b87-4e96-be37-640c480d4e9f
+github_token: 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
+
+https://manus.im/app/fP47AnxWJW1CrlYGBJ5sEy?from=web (manus)
+${hideAll ? 'hidden':''}
+>>>>>>> backend
