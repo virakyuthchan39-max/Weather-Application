@@ -1,228 +1,155 @@
-<<<<<<< HEAD
-import React, { useState,useEffect } from 'react';
-=======
-import React, { useState,useEffect ,useRef} from 'react';
->>>>>>> backend
-import "./account.css"
+import React, { useState, useEffect, useRef } from 'react';
+import "./account.css";
 import { playButtonSound } from '../../Effect_Service/sound_effect';
-import LoginEmoji from "/Icon/Welcome/account_emoji.avif"
+import LoginEmoji from "/Icon/Welcome/account_emoji.avif";
 import { loginAccount, saveToken, type LoginUserRequest } from '../../Effect_Service/Api/service/fetch';
-// fetch the google login auth
-import { googleLogin,requestGoogleIdToken } from '../../Effect_Service/Api/ThirdParty/google_fetch';
+import { googleLogin, requestGoogleIdToken } from '../../Effect_Service/Api/ThirdParty/google_fetch';
 import { facebookLogin, requestFacebookToken } from '../../Effect_Service/Api/ThirdParty/facebook_fetch';
-// fetch the github login auth
 import {
   startGithubOAuth,
-<<<<<<< HEAD
-  getGithubCodeFromUrl,
-  clearGithubCodeFromUrl,
-=======
   saveGithubIntent,
   clearGithubIntent,
->>>>>>> backend
   githubLogin,
 } from '../../Effect_Service/Api/ThirdParty/github_fetch';
 
-
-
 interface LoginProps {
   onSwitchToSignUp: () => void;
-<<<<<<< HEAD
-  onSwitchToHome: () => void
-  onSubmit?: (data: Record<string, string>) => void;
-}
-
-export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, onSubmit }) => {
-=======
   onSwitchToHome: () => void;
-  onSuccess?:(username:string) => void;
+  onSuccess?: (username: string) => void;
   githubCode?: string | null;
   onSubmit?: (data: Record<string, string>) => void;
 }
 
-export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, githubCode, onSuccess, onSubmit }) => {
->>>>>>> backend
-
+const Login: React.FC<LoginProps> = ({
+  onSwitchToSignUp,
+  onSwitchToHome,
+  githubCode,
+  onSuccess,
+  onSubmit,
+}) => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
- 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-   
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-<<<<<<< HEAD
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-=======
   const [successMsg, setSuccessMsg] = useState('');
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [githubLoading, setGithubLoading] = useState(false);
+  const [facebookLoading, setFacebookLoading] = useState(false);
+
+  const hasExchanged = useRef(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-      setSuccessMsg('');
->>>>>>> backend
     setErrorMsg('');
+    setSuccessMsg('');
     setLoading(true);
+
     try {
       const payload: LoginUserRequest = {
         gmail: formData.email,
         password: formData.password,
       };
       const res = await loginAccount(payload);
-<<<<<<< HEAD
       saveToken(res.access_token);
-=======
-      setSuccessMsg("Account logins success !")
-      saveToken(res.access_token);
-      onSuccess?.(res.user_info.full_name)
->>>>>>> backend
+      setSuccessMsg("Account login success !");
+      onSuccess?.(res.user_info.full_name);
       onSubmit?.(formData);
-      // TODO: navigate to home/dashboard
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setLoading(false);
     }
   };
-  const handleSwitch = ()=>{
 
+  const handleSwitch = () => {
     playButtonSound();
     onSwitchToSignUp();
-  }
-  const handleToHome = () =>{
-     playButtonSound(),
-     onSwitchToHome()
-  }
+  };
 
-  //  google submit information (sign in)
-  const [googleLoading, setGoogleLoading] = useState(false);
-  //  handle google submit (login)
+  const handleToHome = () => {
+    playButtonSound();
+    onSwitchToHome();
+  };
+
   const handleGoogleLogin = async () => {
-  playButtonSound();
-  setErrorMsg('');
-<<<<<<< HEAD
-=======
-  setSuccessMsg("")
->>>>>>> backend
-  setGoogleLoading(true);
-  try {
-    const googleToken = await requestGoogleIdToken();
-    const res = await googleLogin(googleToken);
-<<<<<<< HEAD
-    saveToken(res.access_token);
-=======
-      setSuccessMsg("Account logins success !")
-     saveToken(res.access_token);
-      onSuccess?.(res.user_info.username)
->>>>>>> backend
-    // TODO: navigate to home/dashboard
-  } catch (err) {
-    setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
-  } finally {
-    setGoogleLoading(false);
-  }
-};
- const [githubLoading, setGithubLoading] = useState(false);
+    playButtonSound();
+    setErrorMsg('');
+    setSuccessMsg('');
+    setGoogleLoading(true);
 
-<<<<<<< HEAD
+    try {
+      const googleToken = await requestGoogleIdToken();
+      const res = await googleLogin(googleToken);
+      saveToken(res.access_token);
+      setSuccessMsg("Account login success !");
+      onSuccess?.(res.user_info.username);
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
   const handleGithubLogin = () => {
     playButtonSound();
+    saveGithubIntent("login");
     startGithubOAuth();
     setErrorMsg("");
+    setSuccessMsg("");
   };
 
-  useEffect(() => {
-    const code = getGithubCodeFromUrl();
-    if (!code) return;
-=======
-  
-  const handleGithubLogin = () => {
-   
-        playButtonSound();
-        saveGithubIntent("login");
-        startGithubOAuth();
-         setSuccessMsg("");
-         setErrorMsg("");
-      };
-
-  const hasExchanged = useRef(false);
   useEffect(() => {
     if (!githubCode) return;
     if (hasExchanged.current) return;
     hasExchanged.current = true;
->>>>>>> backend
 
     const run = async () => {
       setGithubLoading(true);
       try {
-<<<<<<< HEAD
-        const res = await githubLogin(code);
-        saveToken(res.access_token);
-        clearGithubCodeFromUrl();
-        // TODO: navigate to home/dashboard
-      } catch (err) {
-        setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
-=======
         const res = await githubLogin(githubCode);
         saveToken(res.access_token);
-        setSuccessMsg("Account logins success !");
-        clearGithubIntent();        // ← សម្អាតតែ intent (code សម្អាតរួចក្នុង Account)
+        setSuccessMsg("Account login success !");
+        clearGithubIntent();
         onSuccess?.(res.user_info.username);
       } catch (err) {
         hasExchanged.current = false;
-        if (err instanceof Error ? err.message === "GitHub code exchange failed: {'error': 'bad_verification_code', 'error_description': 'The code passed is incorrect or expired.', 'error_uri': 'https://docs.github.com/apps/managing-oauth-apps/troubleshooting-oauth-app-access-token-request-errors/#bad-verification-code'}":"")
-        return setErrorMsg("");
-        else setErrorMsg( err instanceof Error ? err.message.slice(34) : "Something went wrong")
->>>>>>> backend
+        const errMsg = err instanceof Error ? err.message : "";
+        if (errMsg.includes("bad_verification_code")) {
+          setErrorMsg("");
+        } else {
+          setErrorMsg(err instanceof Error ? err.message.slice(34) : "Something went wrong");
+        }
       } finally {
         setGithubLoading(false);
       }
     };
     run();
-<<<<<<< HEAD
-  }, []);
-=======
-  }, [githubCode]); 
->>>>>>> backend
+  }, [githubCode]);
 
-    const [facebookLoading, setFacebookLoading] = useState(false);
+  const handleFacebookLogin = async () => {
+    playButtonSound();
+    setErrorMsg('');
+    setSuccessMsg('');
+    setFacebookLoading(true);
 
-    const handleFacebookLogin = async () => {
-      playButtonSound();
-      setErrorMsg('');
-<<<<<<< HEAD
-=======
-      setSuccessMsg("")
-      
->>>>>>> backend
-      setFacebookLoading(true);
-      try {
-        const fbToken = await requestFacebookToken();
-        const res = await facebookLogin(fbToken);
-<<<<<<< HEAD
-        saveToken(res.access_token);
-        // TODO: navigate to home/dashboard
-      } catch (err) {
-        setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
-=======
-        setSuccessMsg("Account logins success !")
-        saveToken(res.access_token);
-        onSuccess?.(res.user_info.username)
-        // TODO: navigate to home/dashboard
-      } catch (err) {
-          setErrorMsg(err instanceof Error ? err.message.slice(36) : 'Something went wrong');
-          
->>>>>>> backend
-      } finally {
-        setFacebookLoading(false);
-      }
-    };
+    try {
+      const fbToken = await requestFacebookToken();
+      const res = await facebookLogin(fbToken);
+      saveToken(res.access_token);
+      setSuccessMsg("Account login success !");
+      onSuccess?.(res.user_info.username);
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message.slice(36) : 'Something went wrong');
+    } finally {
+      setFacebookLoading(false);
+    }
 
 
   const reuse_button_logo:string = "flex h-12 w-12 items-center drop-shadow-lg/50 drop-shadow-blue-600 justify-center border-b-4 border-gray-500 rounded-full bg-white transition-all \
@@ -245,12 +172,7 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, 
       ">
         Welcome Back
         <img src ={LoginEmoji} className = "w-25 h-25 relative drop-shadow-lg/80 -top-8 right-4 \
-<<<<<<< HEAD
-        max-[500px]:w-20 max-[500px]:h-20 max-[500px]:-top-6 max-[500px]:right-2 max-[450px]:right-3 \
-=======
-        max-[500px]:w-20 max-[500px]:h-20 max-[500px]:-top-6 max-[500px]:right-2 max-[450px]:right-8 max-[400px]:right-3 \
->>>>>>> backend
-        "/>
+        max-[500px]:w-20 max-[500px]:h-20 max-[500px]:-top-6 max-[500px]:right-2 max-[450px]:right-8 max-[400px]:right-3 "/>
         </h2>
     <h2 className="mb-6 pr-3 text-center text-3xl font-bold text-cyan-400
      max-[500px]:text-2xl
@@ -314,28 +236,28 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, 
             placeholder="Enter your password"
             value={formData.password}
             onChange={handleChange}
-<<<<<<< HEAD
-=======
+ 
+ 
             
->>>>>>> backend
+
             required
              className={reuse_form}
           />
         </div>
         
-<<<<<<< HEAD
+ 
         {errorMsg && (
               <p className="text-center text-xl font-bold text-red-400">{errorMsg}</p>
             )}
 
-=======
+ 
         {successMsg ? 
               <p className='text-center text-xl italic font-bold text-green-400  drop-shadow-green-700  drop-shadow-md/90'>{successMsg}</p>
               :
                <p className="text-center text-xl italic font-bold text-red-400 drop-shadow-red-700 drop-shadow-md/90 ">{errorMsg}</p>
             }
          
->>>>>>> backend
+
          
 
             <button
@@ -380,5 +302,5 @@ export const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToHome, 
     </div>
   );
 };
-
+}
 export default Login;

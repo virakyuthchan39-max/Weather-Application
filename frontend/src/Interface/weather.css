@@ -1,3 +1,14 @@
+
+.font-weather {
+  font-family: "Cinzel", serif;
+  font-optical-sizing: auto;
+  font-weight: 900;
+  font-style: normal;
+  font-display:swap;
+}
+
+
+
 /* Sidebar slide-in from left */
 .sidebar {
   transition: all 0.3s ease-in-out;
@@ -10,10 +21,13 @@
   display: block;
   width: 28px;
   height: 3px;
-  background: white;
   margin: 5px 0;
+  background: black;
   border-radius: 2px;
   transition: transform 350ms ease-in-out, opacity 200ms ease-in-out;
+}
+.bar.darkmode{
+  background:white
 }
 
 /* Top bar → rotate 45° */
@@ -31,4 +45,29 @@
 .bar.open-3 {
   transform: translateY(-14px) rotate(-45deg);
   width: 35px;
+}
+
+/* hide the scroll sidebar */
+.no-scrollbar::-webkit-scrollbar{
+  display:none;
+}
+
+.no-scrollbar{
+  -ms-overflow-style: none;
+  scrollbar-width:none;
+}
+
+
+.settings-popup {
+  transform-origin: bottom left;
+  opacity: 0;
+  transform: scale(0) translate(10px,10px);
+  transition: transform 300ms ease-in-out, opacity 300ms ease-in-out;
+  pointer-events: none;
+}
+
+.settings-popup.open {
+  opacity: 1;
+  transform: scale(1) translate(0, 0);
+  pointer-events: auto;
 }

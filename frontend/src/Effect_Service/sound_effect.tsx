@@ -3,8 +3,8 @@ import React from 'react';
 
 const SFX_PATH = '/Audio/Effect/button/welcome_button.mp3';
 const ANIME_CLICK= '/Audio/Effect/button/animeThankful.mp3'
-<<<<<<< HEAD
-=======
+ 
+ 
 const DATA_STREAMING= '/Audio/Effect/button/data_streaming.mp3'
 
 export  const playDataStreamingEffect = ()=>{
@@ -14,7 +14,7 @@ export  const playDataStreamingEffect = ()=>{
   audio.play().catch(()=>{})
 }
 
->>>>>>> backend
+
 
 export const playAnimeClick =() =>{
         const audio = new Audio(ANIME_CLICK);
@@ -35,14 +35,14 @@ interface SoundButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
   children: React.ReactNode;
 }
 
-<<<<<<< HEAD
+ 
 
 
 
 
 
-=======
->>>>>>> backend
+ 
+
 export const SoundButton: React.FC<SoundButtonProps> = ({ onClick, children, ...props }) => {
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     playButtonSound();

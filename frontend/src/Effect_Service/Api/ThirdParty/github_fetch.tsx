@@ -2,8 +2,8 @@ const BASE_URL = "http://127.0.0.1:8000";
 
 const GITHUB_CLIENT_ID = "Ov23liBQknBp1XcqjPs9";
 
-<<<<<<< HEAD
-=======
+ 
+ 
 export interface GithubUserInfo {
   id: number;
   username: string;
@@ -12,18 +12,16 @@ export interface GithubUserInfo {
   is_active: boolean;
   create_at: string;
 }
->>>>>>> backend
+
 
 export interface GithubAuthResponse {
   detail: string;
   access_token: string;
   token_type: string;
-<<<<<<< HEAD
-  user_info: Record<string, unknown>;
-=======
+
   refresh_token:string;
   user_info: GithubUserInfo;
->>>>>>> backend
+
 }
 
 /* ---------- បើកទំព័រ GitHub ឱ្យ user ជ្រើស account ---------- */
@@ -72,8 +70,8 @@ export const githubLogin = (code: string) =>
 
 
 
-<<<<<<< HEAD
-=======
+ 
+ 
 // sub dependencie (helper)
 const INTENT_KEY = "github_oauth_intent";
 
@@ -91,4 +89,4 @@ export function getGithubIntent(): GithubIntent | null {
 export function clearGithubIntent(): void {
   sessionStorage.removeItem(INTENT_KEY);
 }
->>>>>>> backend
+

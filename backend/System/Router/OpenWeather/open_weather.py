@@ -109,7 +109,7 @@ async def fetch_weather(city: str, country_code: str = "") -> WeatherResponse:
     dt = format_datetime(tz_offset)
 
     climate = weather_list[0].get("description", "").title() if weather_list else "N/A"
-    daytime = "Day" if 6 <= int(dt.current_time[:2]) < 18 else "Night"
+    daytime = "Day" if 6 <=  dt.hour < 18 else "Night"
 
     response = WeatherResponse(
         weather=WeatherInfo(daytime=daytime, climate=climate),

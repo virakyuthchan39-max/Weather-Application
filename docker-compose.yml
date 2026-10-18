@@ -8,21 +8,15 @@ services:
             - ./frontend:/app
             - /app/node_modules
         ports:
-<<<<<<< HEAD
+ 
             - "${FRONTEND_PORT}:5173"  
-        environment:
-            - FRONTEND_URL=http://localhost:${FRONTEND_PORT}
-        depends_on:
-            - backend
-=======
-            - "${FRONTEND_PORT}:5173"
         environment:
             - FRONTEND_URL=http://localhost:${FRONTEND_PORT}
             - VITE_BACKEND_URL=http://backend:${BACKEND_PORT}
         depends_on:
             backend:
                 condition: service_started
->>>>>>> backend
+
 
     backend:
         build:
@@ -30,38 +24,26 @@ services:
             dockerfile: dockerfile.backend
         container_name: ${BACKEND_CONTAINER_NAME}
         volumes:
-<<<<<<< HEAD
+ 
             - ./backend/System:/app  
           
         ports:
             - "${BACKEND_PORT}:8000"  
         environment:
-            - BACKEND_URL=http://0.0.0.0:${BACKEND_PORT}
-            - DATABASE_HOST=${DATABASE_CONTAINER_HOST}
-            - DATABASE_CONTAINER_PORT=${DATABASE_CONTAINER_PORT}
-=======
-            - ./backend/System:/app
-        ports:
-            - "${BACKEND_PORT}:8000"
-        environment:
             - BACKEND_URL=http://backend:${BACKEND_PORT}
             - DATABASE_HOST=database
             - DATABASE_CONTAINER_PORT=${DATABASE_PORT}
->>>>>>> backend
+
             - DATABASE_USER=${DATABASE_USERNAME}
             - DATABASE_PASSWORD=${DATABASE_PASSWORD}
             - DATABASE_NAME=${DATABASE_NAME}
             - REDIS_URL=${REDIS_CONTAINER_URL}
         depends_on:
-<<<<<<< HEAD
-            - database 
-            - memory-cache
-=======
             database:
                 condition: service_healthy
             memory-cache:
                 condition: service_started
->>>>>>> backend
+
 
     database:
         image: mysql:8.4
@@ -75,31 +57,20 @@ services:
             MYSQL_PASSWORD: ${DATABASE_PASSWORD}
         volumes:
             - mysql_data:/var/lib/mysql
-<<<<<<< HEAD
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DATABASE_PASSWORD}"]
+            interval: 5s
+            timeout: 5s
+            retries: 10
     memory-cache: 
          image: redis:7-alpine
          container_name: ${REDIS_CONTAINER_NAME}
          ports:
          - "${REDIS_PORT}:6379"
          restart: always
-volumes:
-  mysql_data:
-    driver: local
-=======
-        healthcheck:
-            test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DATABASE_PASSWORD}"]
-            interval: 5s
-            timeout: 5s
-            retries: 10
-
-    memory-cache:
-        image: redis:7-alpine
-        container_name: memory-cache
-        ports:
-            - "${REDIS_PORT}:6379"
-        restart: always
+     
 
 volumes:
     mysql_data:
         driver: local
->>>>>>> backend
+

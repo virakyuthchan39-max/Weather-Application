@@ -10,11 +10,11 @@ from typing import Annotated
 from Database.database import get_session
 from Database.model import GoogleSignIn
 from dotenv import load_dotenv
-<<<<<<< HEAD
-=======
+ 
+ 
 from Security.Encryption.token import create_access_token
 from Security.Encryption.refresh_token import create_refresh_token
->>>>>>> backend
+
 from pathlib import Path
 import asyncio
 
@@ -31,10 +31,10 @@ class GoogleTokenRequest(BaseModel):
     token: str
 
 class GoogleSchema(BaseModel):
-<<<<<<< HEAD
-=======
+ 
+ 
     id: int
->>>>>>> backend
+
     username:str
     password: str = "GooglePassword"
     gmail: str    
@@ -43,12 +43,12 @@ class GoogleSchema(BaseModel):
     create_at: datetime
 class GoogleSchemaResponse(BaseModel):
     detail: str = "Google'user sign in successfully!✅"
-<<<<<<< HEAD
-=======
+ 
+ 
     access_token: str                    
     refresh_token: str       
     token_type: str = "bearer"   
->>>>>>> backend
+
     user_info: GoogleSchema
 
 @router.post("/google_signin",response_model = GoogleSchemaResponse)
@@ -78,15 +78,7 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
         db.add(add_google_user)
         await asyncio.sleep(0.4)
         await db.commit()
-<<<<<<< HEAD
-        
-        result_response  = GoogleSchema(username=str(name).title(),gmail=email,role= "user",is_active = add_google_user.is_active,create_at=datetime.now(timezone.utc))
-        return GoogleSchemaResponse(detail = "Google'user sign in successfully!✅",user_info=result_response)
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Token verification failed: {str(e)}"
-=======
+ 
         await db.refresh(add_google_user)   
         
         dicts = {
@@ -118,5 +110,5 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Token verification failed: {str(e)}",
->>>>>>> backend
+
         )

@@ -27,10 +27,10 @@ export interface AuthResponse {
   detail: string;
   access_token: string;
   token_type: string;
-<<<<<<< HEAD
-=======
+ 
+ 
   refresh_token:string;
->>>>>>> backend
+
   user_info: UserInfo;
 }
 

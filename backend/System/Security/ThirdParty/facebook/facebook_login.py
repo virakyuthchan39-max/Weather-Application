@@ -1,26 +1,26 @@
-<<<<<<< HEAD
+ 
 import os
-=======
+ 
 
->>>>>>> backend
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from datetime import datetime, timezone
 from pydantic import BaseModel, EmailStr
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
-<<<<<<< HEAD
+ 
 import httpx
 from typing import Annotated
 from Database.database import get_session
 from Database.model import FacebookSignIn,UserFacebookLogin
-=======
+ 
 import httpx,os
 from typing import Annotated
 from Database.database import get_session
 from Database.model import FacebookSignIn,UserFacebookLogin
 from Security.Encryption.token import create_access_token
 from Security.Encryption.refresh_token import create_refresh_token
->>>>>>> backend
+
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -38,10 +38,10 @@ class FacebookTokenRequest(BaseModel):
     token: str  
 
 class FacebookSchema(BaseModel):
-<<<<<<< HEAD
-=======
+ 
+ 
     id: int
->>>>>>> backend
+
     username: str
     password: str = "FacebookPassword"
     gmail: EmailStr    
@@ -51,12 +51,12 @@ class FacebookSchema(BaseModel):
 
 class FacebookSchemaResponse(BaseModel):
     detail: str = "Facebook's user sign in successfully! ✅"
-<<<<<<< HEAD
-=======
+ 
+ 
     access_token: str
     refresh_token: str
     token_type: str = "Bearer"
->>>>>>> backend
+
     user_info: FacebookSchema
 
 @router.post("/Facebook_login", response_model=FacebookSchemaResponse)
@@ -102,28 +102,23 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
             add_facebook_user = UserFacebookLogin(facebook_id=user.id,username=user.username,password="FacebookPassword",gmail=email,login_at=datetime.now(timezone.utc),is_active=user.is_active,role=user.role)
             db.add(add_facebook_user)
         await db.commit()
-<<<<<<< HEAD
+ 
     
-        # 3. រៀបចំ Response ត្រលប់ទៅវិញ
-        result_response = FacebookSchema(
-=======
+ 
 
     
 
         result_response = FacebookSchema(
             id = user.id,
->>>>>>> backend
+
             username=user.username,
             gmail=user.gmail,
             role=user.role,
             is_active=user.is_active,
             login_at = datetime.now(timezone.utc)
         )
-<<<<<<< HEAD
-        
-        return FacebookSchemaResponse(
-            detail="Facebook's user login successfully! ✅",
-=======
+ 
+ 
         dicts = {
                 "sub": str(user.id),
                 "gmail": user.gmail,
@@ -137,7 +132,7 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
             access_token= token,
             refresh_token=refresh_token,
             token_type="Bearer",
->>>>>>> backend
+
             user_info=result_response
         )
         
