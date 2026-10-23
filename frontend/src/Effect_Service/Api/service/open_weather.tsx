@@ -15,11 +15,13 @@ export interface Temperature {
 export interface LocationInfo {
   country: string;
   city: string;
+  country_code: string;
   territory: string;
 }
 
 export interface DateTimeInfo {
   current_time: string;
+  local_time: string;
   full_date: string;
 }
 
@@ -32,18 +34,17 @@ export interface WeatherResponse {
 }
 
 
-
 /* ---------- Fetch weather by city ---------- */
-export async function fetchWeather(city: string): Promise<WeatherResponse> {
+export async function fetchWeather(city: string,country_code:string,lat:number,lon:number): Promise<WeatherResponse> {
   try {
-    const url = `${BASE_URL}/weather?city=${encodeURIComponent(city)}`;
+    const url = `${BASE_URL}/weather?city=${encodeURIComponent(city)}&country_code=${encodeURIComponent(country_code)}&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`;
     const res = await fetch(url, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
 
     const data = await res.json();
-
+    
     if (!res.ok) {
       throw new Error(data?.detail ?? `Request failed (${res.status})`);
     }

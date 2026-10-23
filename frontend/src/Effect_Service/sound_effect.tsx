@@ -2,10 +2,12 @@
 import React from 'react';
 
 const SFX_PATH = '/Audio/Effect/button/welcome_button.mp3';
-const ANIME_CLICK= '/Audio/Effect/button/animeThankful.mp3'
+const ANIME_CLICK= '/Audio/Effect/button/animeThankful.mp3';
  
  
-const DATA_STREAMING= '/Audio/Effect/button/data_streaming.mp3'
+const DATA_STREAMING= '/Audio/Effect/button/data_streaming.mp3';
+const slideOff = "/Audio/Effect/button/off.mp3";
+const slideOn = "/Audio/Effect/button/on.mp3";
 
 export  const playDataStreamingEffect = ()=>{
   const audio = new Audio(DATA_STREAMING)
@@ -30,6 +32,20 @@ export const playButtonSound = () => {
   audio.volume = 0.7
   audio.play().catch(() => {});
 };
+export const playSlideOn = () => {
+  const audio = new Audio(slideOn);
+  audio.currentTime = 0;
+  audio.volume = 0.7
+  audio.play().catch(() => {});
+};
+
+export const playSlideOff = () =>{
+  const audio = new Audio(slideOff);
+  audio.currentTime =0;
+  audio.volume = 0.7;
+  audio.play().catch(() =>[]);
+}
+
 
 interface SoundButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
@@ -37,11 +53,6 @@ interface SoundButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
 
  
 
-
-
-
-
- 
 
 export const SoundButton: React.FC<SoundButtonProps> = ({ onClick, children, ...props }) => {
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {

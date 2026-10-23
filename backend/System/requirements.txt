@@ -14,9 +14,6 @@ requests
 httpx
 sqlalchemy[asyncio]
 aiomysql
- 
-redis
- 
 redis
 pycountry
 

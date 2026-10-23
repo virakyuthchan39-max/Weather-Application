@@ -7,15 +7,44 @@ export const useWeatherService = () => {
   const [city, setCity] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [daytime,setDaytime] = useState("");
-  const fetchCityWeather = async (targetCity: string) => {
+  const [daytime, setDaytime] = useState("");
+  const [cloneCity, setClone] = useState("");
+
+  // ១. កែឱ្យ country ក្លាយជា Optional (មាន ឬគ្មានក៏បាន)
+    const fetchCityWeather = async (
+    targetCity: string, 
+    country: string = "", 
+    lat: number = 0, 
+    lon: number = 0,
+    suggestionTerritory: string = "" // ✅ បន្ថែម Parameter ថ្មីនេះ
+  ) => {
     if (!targetCity) return;
     setLoading(true);
     setError("");
     try {
-      const res = await fetchWeather(targetCity);
+      const res = await fetchWeather(targetCity, country, lat, lon);
+      
+      if (res && res.location) {
+        let territory = res.location.territory; 
+        
+        // ✅ បើ API មិនបញ្ជូនខេត្តមក (ឬ N/A) តែយើងមានឈ្មោះខេត្តពី Suggestion យើងយកវាមកប្រើជំនួស
+        if ((!territory || territory.toUpperCase() === "N/A" || territory.trim() === "") && suggestionTerritory) {
+          territory = suggestionTerritory;
+          res.location.territory = suggestionTerritory; // រក្សាទុកក្នុង Object ដើម្បីងាយស្រួលពេល Save Favorite
+        }
+
+        // បញ្ចូលឈ្មោះខេត្តទៅក្នុងឈ្មោះទីក្រុង
+        if (territory && territory.trim() !== "" && territory.toUpperCase() !== "N/A" && territory.toLowerCase() !== targetCity.toLowerCase()) {
+          res.location.city = `${targetCity}, ${territory}`;
+        } else {
+          res.location.city = targetCity;
+        }
+        
+        setClone(targetCity);
+      }
+
       setWeather(res);
-      setDaytime(res.weather.daytime)
+      setDaytime(res.weather.daytime);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -28,7 +57,8 @@ export const useWeatherService = () => {
       try {
         const res = await fetchDefaultLocation();
         setCity(res.location.city);
-        fetchCityWeather(res.location.city);
+        // បញ្ជូនទាំង city និង country ពី Default Location (បើមាន)
+        fetchCityWeather(res.location.city, res.location.country || "");
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to load default location"
@@ -38,18 +68,27 @@ export const useWeatherService = () => {
     loadDefault();
   }, []);
 
+  // ២. ចាប់យកការវាយអក្សរដោយខ្លួនឯង (បើវាយ "Rome, Italy" វានឹងកាត់យកតែឈ្មោះ)
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchCityWeather(city);
+    const parts = city.split(",");
+    const cityName = parts[0].trim();
+    const countryOrTerritory = parts.length > 1 ? parts[1].trim() : "";
+    
+    // ✅ បញ្ជូន countryOrTerritory ទៅជា suggestionTerritory ដែរ
+    fetchCityWeather(cityName, "", 0, 0, countryOrTerritory);
   };
 
   return {
+    cloneCity,
     weather,
     city,
     daytime,
     setCity,
+    setLoading,
     error,
     loading,
     handleSearch,
+    fetchCityWeather, // ✅ Export វាចេញដើម្បីឱ្យ Weather.tsx ហៅបាន
   };
 };

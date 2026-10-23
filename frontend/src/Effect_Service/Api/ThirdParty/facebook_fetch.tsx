@@ -8,7 +8,6 @@ declare global {
 }
 
  
- 
 export interface FacebookUserInfo {
   id: number;
   username: string;

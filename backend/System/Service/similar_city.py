@@ -10,8 +10,9 @@ from typing import Annotated
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from .timezone import format_datetime, DateTimeSchema
-
+from .daytime import get_detailed_time_phase
 from Memory.localStorage import cache_get, cache_set
+from Router.OpenWeather.open_weather import clean_country_name
 limiter = Limiter(key_func=get_remote_address)
 
 # ---------- Load env ----------
@@ -28,6 +29,10 @@ OPEN_WEATHER_WEATHER_URL = "https://api.openweathermap.org/data/2.5/weather"
 class SimilarSchemes(BaseModel):
     city: str
     country: str
+    country_code: str
+    lat:float
+    lon:float
+    type: str
     timezone: DateTimeSchema
     daytime: str
 
@@ -42,11 +47,12 @@ def convert_country_name(code: str):
         return "N/A"
     country = pycountry.countries.get(alpha_2=code.upper())
     if country:
-        return getattr(country, "common_name", country.name)
+        raw_name = getattr(country, "common_name", country.name)
+        return clean_country_name(raw_name)
     return code
 
 @router.get("/similar_city", status_code=status.HTTP_200_OK, response_model=SimilarResponse)
-@limiter.limit("10/minute")
+@limiter.limit("50/minute")
 async def Finding_Similar_City(
     request: Request,
     city: Annotated[str, Query(min_length=1, description="City name to find across regions")],
@@ -57,13 +63,16 @@ async def Finding_Similar_City(
     cache_key = f"weather:{city.lower()}"
     cached = await cache_get(cache_key)
     if cached:
+        try:   
             return SimilarResponse(**cached)
+        except Exception:
+            pass
     geo_params = {
         "q": city,
-        "limit": 5,
+        "limit": 10,
         "appid": OPEN_WEATHER_API_KEY,
     }
-  
+    
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             res = await client.get(OPEN_WEATHER_GEO_URL, params=geo_params)
@@ -78,9 +87,8 @@ async def Finding_Similar_City(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"OpenWeather Geo error ({res.status_code}): {res.text}",
         )
-
     data = res.json()
-
+    print(data)
     if not data:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -89,9 +97,12 @@ async def Finding_Similar_City(
 
     # Helper function to fetch real-time weather/timezone data using lat and lon
     async def fetch_city_details(client: httpx.AsyncClient, item: dict):
-        c_name = item.get("name", "N/A")
+  
+        c_name =  item.get("name", "N/A")
         country_code = item.get("country", "N/A")
+        state_name = item.get("state","")
         formatted_country = convert_country_name(country_code)
+   
         lat = item.get("lat")
         lon = item.get("lon")
 
@@ -112,12 +123,15 @@ async def Finding_Similar_City(
                 pass
 
         dt = format_datetime(tz_offset)
-        daytime = "Day" if 6 <= int(dt.current_time[:2]) < 18 else "Night"
-
+        daytime = get_detailed_time_phase(dt.hour)
         return {
             "unique_key": f"{c_name.lower()}-{formatted_country.lower()}",
             "schema": SimilarSchemes(
                 city=c_name,
+                type= state_name,
+                lat = lat,
+                lon = lon,
+                country_code = country_code,
                 country=formatted_country,
                 timezone=dt,
                 daytime=daytime
@@ -125,7 +139,7 @@ async def Finding_Similar_City(
         }
 
     # 2. Concurrently fetch weather details for all found coordinates using asyncio.gather
-    async with httpx.AsyncClient(timeout=10.0) as client:
+    async with httpx.AsyncClient(timeout=5.0) as client:
         tasks = [fetch_city_details(client, item) for item in data]
         results = await asyncio.gather(*tasks)
 
@@ -133,11 +147,17 @@ async def Finding_Similar_City(
     seen = set()
 
     for result in results:
+        if result is None:
+            continue
+        schema_data = result["schema"]
+        city_name= schema_data.city
+        if not all(ord(char) < 128  for  char in city_name if char not in " -.,'"):
+                    continue
         unique_key = result["unique_key"]
         if unique_key not in seen:
             seen.add(unique_key)
             city_list.append(result["schema"])
-    
+     
     response = SimilarResponse(city_list_info=city_list)  
     await cache_set(cache_key, response.model_dump(), ttl=WEATHER_CACHE_TTL)
 

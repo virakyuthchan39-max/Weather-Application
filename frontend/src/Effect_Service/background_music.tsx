@@ -13,7 +13,6 @@ export const BackgroundMusic: React.FC<BackgroundMusicStop> = ({ stop = false })
   const audioRefs = useRef<HTMLAudioElement[]>([]);
 
   useEffect(() => {
-    // ១. បង្កើត Audio objects សម្រាប់ TRACKS ទាំងអស់
     const audios = TRACKS.map((track) => {
       const audio = new Audio(track);
       audio.loop = true;
@@ -21,10 +20,8 @@ export const BackgroundMusic: React.FC<BackgroundMusicStop> = ({ stop = false })
       return audio;
     });
 
-    // ២. រក្សាទុកក្នុង Ref
     audioRefs.current = audios;
 
-    // ៣. គ្រប់គ្រងការចាក់ដំបូង (Handle browser autoplay policy via user interaction)
     const handleFirstInteraction = () => {
       audioRefs.current.forEach((audio) => {
         audio.play().catch(() => {});
@@ -34,11 +31,9 @@ export const BackgroundMusic: React.FC<BackgroundMusicStop> = ({ stop = false })
       window.removeEventListener('keydown', handleFirstInteraction);
     };
 
-    // ៤. ភ្ជាប់ EventListeners សម្រាប់ការបញ្ជាដំបូង
     window.addEventListener('click', handleFirstInteraction);
     window.addEventListener('keydown', handleFirstInteraction);
 
-    // ៥. Cleanup function ពេល Component unmount
     return () => {
       window.removeEventListener('click', handleFirstInteraction);
       window.removeEventListener('keydown', handleFirstInteraction);
@@ -51,7 +46,6 @@ export const BackgroundMusic: React.FC<BackgroundMusicStop> = ({ stop = false })
     };
   }, []);
 
-  // ⏹️ បញ្ឈប់/លេងតាម prop stop
   useEffect(() => {
     if (audioRefs.current.length === 0) return;
     if (stop) {
@@ -66,3 +60,44 @@ export const BackgroundMusic: React.FC<BackgroundMusicStop> = ({ stop = false })
 };
 
 export default BackgroundMusic;
+
+
+interface WeatherMusic {
+  play: boolean;
+  track: string;
+}
+
+export const WeatherMusicPlay: React.FC<WeatherMusic> = ({ play, track }) => {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    audioRef.current = new Audio(track);
+    audioRef.current.loop = true;
+    audioRef.current.volume = 0.2;
+
+    if (play) {
+      audioRef.current.play().catch(() => {});
+    }
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    };
+  }, [track]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      if (play) {
+        audioRef.current.play().catch(() => {});
+      } else {
+        audioRef.current.pause();
+      }
+    }
+  }, [play]);
+
+  return null;
+};

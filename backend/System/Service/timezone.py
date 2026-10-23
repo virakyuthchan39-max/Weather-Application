@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 class DateTimeSchema(BaseModel):
     current_time: str
+    local_time: str
     full_date: str
     hour: int
 
@@ -12,7 +13,8 @@ def format_datetime(offset_seconds: int) -> DateTimeSchema:
     now = datetime.now(tz)
 
     return DateTimeSchema(
-        current_time=now.strftime("%I:%M:%S %p"),
+        current_time=now.strftime("%I:%M %p"),
+        local_time = now.strftime("%H:%M %p"),
         full_date=now.strftime("%A %d %B %Y"),
         hour = now.hour
     )

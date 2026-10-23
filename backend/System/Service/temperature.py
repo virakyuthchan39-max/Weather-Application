@@ -22,10 +22,14 @@ def convert_temperature(kelvin: float) -> TemperatureSchema:
         fahrenheit=kelvin_to_fahrenheit(kelvin),
     )
 
-
 def classify_level(celsius: float) -> str:
-    if celsius < 10:
+    if celsius < 0:
+        return "Extremely Cold"
+    elif celsius < 10:
         return "Cold"
-    if celsius > 30:
+    elif celsius <= 30:
+        return "Average"
+    elif celsius <= 35:
         return "Hot"
-    return "Average"
+    else:
+        return "Extremely Hot"

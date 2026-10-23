@@ -1,4 +1,9 @@
-
+.font-country {
+  font-family: "Montserrat", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: normal;
+  font-style: normal;
+}
 .font-weather {
   font-family: "Cinzel", serif;
   font-optical-sizing: auto;
@@ -7,15 +12,11 @@
   font-display:swap;
 }
 
-
-
 /* Sidebar slide-in from left */
 .sidebar {
   transition: all 0.3s ease-in-out;
  
 }
-
-
 /* Hamburger bars */
 .bar {
   display: block;
@@ -70,4 +71,51 @@
   opacity: 1;
   transform: scale(1) translate(0, 0);
   pointer-events: auto;
+}
+
+
+
+/* ++++++++++++++++Music Container animation+++++++++++++++++++++++ */
+@keyframes modalPopIn {
+  0% { opacity: 0; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.animate-modal-pop {
+  animation: modalPopIn 0.4s ease-out forwards;
+}
+
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* play the animation of search bar container rolling down */
+@keyframes rollDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-down {
+  animation: rollDown 0.3s ease-out forwards;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
