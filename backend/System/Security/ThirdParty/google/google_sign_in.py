@@ -31,15 +31,13 @@ class GoogleTokenRequest(BaseModel):
     token: str
 
 class GoogleSchema(BaseModel):
- 
- 
     id: int
-
-    username:str
+    full_name:str
     password: str = "GooglePassword"
     gmail: str    
     role: str
     is_active:bool
+    account_type: str
     create_at: datetime
 class GoogleSchemaResponse(BaseModel):
     detail: str = "Google'user sign in successfully!✅"
@@ -90,10 +88,11 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
         refresh_token = create_refresh_token(dicts)
         result_response = GoogleSchema(
             id=add_google_user.id,
-            username=add_google_user.username,
+            full_name=add_google_user.username,
             gmail=add_google_user.gmail,
             role=add_google_user.role,
             is_active=add_google_user.is_active,
+            account_type= add_google_user.account_type,
             create_at=add_google_user.create_at,
         )
         return GoogleSchemaResponse(

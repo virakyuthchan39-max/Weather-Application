@@ -1,11 +1,15 @@
+import { Temperature } from "./open_weather";
+
 const BASE_URL = "http://127.0.0.1:8000";
 
 /* ---------- Types ---------- */
+
 export interface FavoriteAddRequest {
   user_id: number;
   account_type: string;
   email: string;
   city: string ;
+  temp: Temperature;
   country: string;
   country_code: string;
   territory: string;
@@ -17,6 +21,7 @@ export interface FavoriteSchemes {
   city: string;
   country: string;
   country_code: string;
+  temp: Temperature;
   territory: string;
   time: string ;
 }

@@ -2,7 +2,7 @@
 import "./account.css";
 import { playButtonSound } from '../../Effect_Service/sound_effect';
 import SignupEmoji from "/Icon/Welcome/account_emoji2.avif";
-import { createAccount, saveToken, type CreateUserRequest } from '../../Effect_Service/Api/service/fetch';
+import { createAccount, saveToken, saveUserInfo, type CreateUserRequest ,UserInfo} from '../../Effect_Service/Api/service/fetch';
 
 // fetch the google, github, facebook auth
 import { googleSignIn, requestGoogleIdToken } from '../../Effect_Service/Api/ThirdParty/google_fetch';
@@ -17,7 +17,7 @@ import { facebookSignIn, requestFacebookToken } from '../../Effect_Service/Api/T
 interface SignUpProps {
   onSwitchToLogin: () => void;
   onSwitchToHome: () => void;
-  onSuccess: (name: string) => void;
+  onSuccess: (name:UserInfo ) => void;
   githubCode?: string | null;
   onSubmit?: (data: Record<string, string>) => void;
 }
@@ -45,7 +45,7 @@ export const SignUp: React.FC<SignUpProps> = ({
   };
 
   // ---------- Form Submit (Manual Sign Up) ----------
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setSuccessMsg('');
     setErrorMsg('');
@@ -62,7 +62,8 @@ export const SignUp: React.FC<SignUpProps> = ({
       const res = await createAccount(payload);
       saveToken(res.access_token);
       setSuccessMsg("Account created successfully!");
-      onSuccess?.(res.user_info.full_name);
+      saveUserInfo(res.user_info);
+      onSuccess?.(res.user_info);
       onSubmit?.(formData);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
@@ -94,8 +95,9 @@ export const SignUp: React.FC<SignUpProps> = ({
       const googleToken = await requestGoogleIdToken();
       const res = await googleSignIn(googleToken);
       saveToken(res.access_token);
+
       setSuccessMsg("Account created successfully!");
-      onSuccess?.(res.user_info.username);
+      onSuccess?.(res.user_info);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -127,7 +129,7 @@ export const SignUp: React.FC<SignUpProps> = ({
         saveToken(res.access_token);
         setSuccessMsg("Account created successfully!");
         clearGithubIntent();
-        onSuccess?.(res.user_info.username);
+        onSuccess?.(res.user_info);
       } catch (err) {
         hasExchanged.current = false;
         if (err instanceof Error) {
@@ -156,7 +158,8 @@ export const SignUp: React.FC<SignUpProps> = ({
       const res = await facebookSignIn(fbToken);
       saveToken(res.access_token);
       setSuccessMsg("Account created successfully!");
-      onSuccess?.(res.user_info.username);
+      
+      onSuccess?.(res.user_info);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -184,7 +187,9 @@ export const SignUp: React.FC<SignUpProps> = ({
       ">
         Welcome User
       
-        <img src ={SignupEmoji} className = "w-25 h-25 relative drop-shadow-lg/80 -top-8 right-3 \
+        <img src ={SignupEmoji}
+        alt= "Hello girl emoji"
+         className = "w-25 h-25 relative drop-shadow-lg/80 -top-8 right-3 \
         max-[500px]:w-20 max-[500px]:h-20 max-[500px]:-top-6 max-[500px]:right-3 max-[450px]:right-9 max-[400px]:right-8 " />
         </h2>
       <h2 className="mb-6 text-center text-3xl font-bold text-cyan-400
@@ -279,9 +284,7 @@ export const SignUp: React.FC<SignUpProps> = ({
         </div>
 
  
-        {
-        errorMsg && (<p className="text-center text-xl italic font-bold text-red-400 drop-shadow-red-700 transition-colors drop-shadow-md/90 duration-1000 delay-300">{errorMsg}</p>)}    
- 
+        
         {successMsg ? 
               <p className='text-center text-xl italic font-bold text-green-400  drop-shadow-green-700  drop-shadow-md/90'>{successMsg}</p>
               :

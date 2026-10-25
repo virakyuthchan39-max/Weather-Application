@@ -38,15 +38,13 @@ class FacebookTokenRequest(BaseModel):
     token: str  
 
 class FacebookSchema(BaseModel):
- 
- 
     id: int
-
-    username: str
+    full_name: str
     password: str = "FacebookPassword"
     gmail: EmailStr    
     role: str
     is_active: bool
+    account_type: str
     login_at: datetime
 
 class FacebookSchemaResponse(BaseModel):
@@ -110,11 +108,11 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
 
         result_response = FacebookSchema(
             id = user.id,
-
-            username=user.username,
+            full_name=user.username,
             gmail=user.gmail,
             role=user.role,
             is_active=user.is_active,
+            account_type= user.account_type,
             login_at = datetime.now(timezone.utc)
         )
  

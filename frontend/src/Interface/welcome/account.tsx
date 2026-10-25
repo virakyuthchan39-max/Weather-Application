@@ -11,17 +11,23 @@ import Login from './login';
 import "./account.css";
  
 
-import Weather from "../../Interface/Weather"
+
 // import the data streaming
 import DataStreaming from '../../Effect_Service/Api/service/data_streaming';
 // fetch the github
 import { getGithubCodeFromUrl, getGithubIntent,clearGithubCodeFromUrl,clearGithubIntent } from '../../Effect_Service/Api/ThirdParty/github_fetch';
 
 
-type AuthView = 'welcome' | 'signup' | 'login' | 'streaming' | "weather";
+type AuthView = 'welcome' | 'signup' | 'login' | 'streaming';
 
+// បន្ថែម Prop ថ្មី
+interface AccountProps {
+  onLoginSuccess: (user: any) => void;
+  onRegisterSuccess:(user: any) => void;
+}
 
-const Account: React.FC = memo(() => {
+const Account: React.FC<AccountProps> = memo(({onLoginSuccess,onRegisterSuccess}) => {
+  const [user, setUser] = useState<any>(null);
   const [view, setView] = useState<AuthView>('welcome');
   const [showContent, setShowContent] = useState(false);
   const [animClass, setAnimClass] = useState('');
@@ -40,19 +46,21 @@ const Account: React.FC = memo(() => {
   const [stopMusic, setStopMusic] = useState(false)
   const [redirecting, setRedirecting] = useState(false);
   const handleContinueToWeather = useCallback(() => {
-        if (redirecting) return;
-        setRedirecting(true);
-        setStopMusic(true);
-        // 1.5s fade → swap view
-        setPageFade('anim-fade-page');
-        window.setTimeout(() => {
-          setHideAll(true); 
-          setView('weather');
-          setPageFade('');
-                   
-          setRedirecting(false);
-        }, 1500);
-      }, [redirecting]);
+    if (redirecting) return;
+    setRedirecting(true);
+    setStopMusic(true);
+    
+    // 1.5s fade → swap view
+    setPageFade('anim-fade-page');
+    window.setTimeout(() => {
+      setHideAll(true); 
+      onLoginSuccess(user);
+      onRegisterSuccess(user)
+      
+      setPageFade('');
+      setRedirecting(false);
+    }, 1500);
+  }, [redirecting, username, onLoginSuccess,onRegisterSuccess]);
 
 
   const hasRouted = useRef(false);
@@ -167,7 +175,8 @@ const Account: React.FC = memo(() => {
  
   
  
-    <div className= {`relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-black font-welcome ${pageFade}`}>
+    <div className= {`relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-black font-welcome
+     ${pageFade} ${hideAll ? "anim-fade-page":""}`}>
       {/* Background Music */}
       <BackgroundMusic stop={stopMusic} />
 
@@ -223,6 +232,7 @@ const Account: React.FC = memo(() => {
 
                 <img
                       src={animeImg}
+                   
                       onClick={handleAnimeClick}
                       className={`absolute top-20 left-70 h-auto opacity-90 drop-shadow-red-900/90 drop-shadow-lg/100  cursor-pointer active:scale-99
                         max-[800px]:top-20 m-2
@@ -247,7 +257,7 @@ const Account: React.FC = memo(() => {
                             : "w-65 max-[800px]:w-60 max-[600px]:w-50 max-[500px]:w-50 "
                         }
                       `}
-                      alt="Anime"
+                      alt="Anime Girl"
                     />
                 <p className="mt-3 mb-1 flex">
                     <span className= "animate-spin transition-all duration-2000 hover:text-3xl hover:relative hover:-top-2 hover:-py-4 hover:border-0  hover:outline-none cursor-pointer mr-2">★</span>
@@ -318,7 +328,7 @@ const Account: React.FC = memo(() => {
               </div>
             </div>
           )}
- 
+          
  
            {view === 'streaming' && (
                   <DataStreaming
@@ -326,37 +336,32 @@ const Account: React.FC = memo(() => {
                     onContinue={handleContinueToWeather}   
                   />
                 )}
-
-          {view === "weather" && (
-            <Weather username = {username} />
-          )}
           {/* ---------- SIGNUP VIEW ---------- */}
-          {view === 'signup' && (
-            <SignUp
-              onSwitchToLogin={() => transitionTo('login')}
-              onSwitchToHome={() => transitionTo('welcome')}
-              onSuccess={(name) => {             
-                setUsername(name);
-                transitionTo('streaming');
-              }}
-              githubCode={githubCode} 
-            />
-          )}
+         {view === 'signup' && (
+                <SignUp
+                  onSwitchToLogin={() => transitionTo('login')}
+                  onSwitchToHome={() => transitionTo('welcome')}
+                  onSuccess={(userData) => {             
+                    setUser(userData); // ✅ រក្សាទុក Object
+                    setUsername(userData.full_name); // បង្ហាញឈ្មោះក្នុង DataStreaming
+                    transitionTo('streaming');
+                  }}
+                  githubCode={githubCode} 
+                />
+              )}
 
-     
-          {/* ---------- LOGIN VIEW ---------- */}
-         {view === 'login' && (
-            <Login
-              onSwitchToSignUp={() => transitionTo('signup')}
-              onSwitchToHome={() => transitionTo('welcome')}
-              onSuccess={(name) => {             
-                setUsername(name);
-                transitionTo('streaming');
-              }}
-              githubCode={githubCode} 
-
-            />
-          )}
+              {view === 'login' && (
+                <Login
+                  onSwitchToSignUp={() => transitionTo('signup')}
+                  onSwitchToHome={() => transitionTo('welcome')}
+                  onSuccess={(userData) => {             
+                    setUser(userData); // ✅ រក្សាទុក Object
+                    setUsername(userData.full_name);
+                    transitionTo('streaming');
+                  }}
+                  githubCode={githubCode} 
+                />
+              )}
         </div>
       )}
     </div>

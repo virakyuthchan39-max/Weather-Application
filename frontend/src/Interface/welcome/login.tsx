@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import "./account.css";
 import { playButtonSound } from '../../Effect_Service/sound_effect';
 import LoginEmoji from "/Icon/Welcome/account_emoji.avif";
-import { loginAccount, saveToken, type LoginUserRequest } from '../../Effect_Service/Api/service/fetch';
+import { loginAccount, saveToken,saveUserInfo, type LoginUserRequest ,UserInfo} from '../../Effect_Service/Api/service/fetch';
 import { googleLogin, requestGoogleIdToken } from '../../Effect_Service/Api/ThirdParty/google_fetch';
 import { facebookLogin, requestFacebookToken } from '../../Effect_Service/Api/ThirdParty/facebook_fetch';
 import {
@@ -12,10 +12,11 @@ import {
   githubLogin,
 } from '../../Effect_Service/Api/ThirdParty/github_fetch';
 
+
 interface LoginProps {
   onSwitchToSignUp: () => void;
   onSwitchToHome: () => void;
-  onSuccess?: (username: string) => void;
+  onSuccess?: (user:UserInfo) => void;
   githubCode?: string | null;
   onSubmit?: (data: Record<string, string>) => void;
 }
@@ -58,8 +59,9 @@ const Login: React.FC<LoginProps> = ({
       };
       const res = await loginAccount(payload);
       saveToken(res.access_token);
+      saveUserInfo(res.user_info);
       setSuccessMsg("Account login success !");
-      onSuccess?.(res.user_info.full_name);
+      onSuccess?.(res.user_info);
       onSubmit?.(formData);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
@@ -88,8 +90,9 @@ const Login: React.FC<LoginProps> = ({
       const googleToken = await requestGoogleIdToken();
       const res = await googleLogin(googleToken);
       saveToken(res.access_token);
+      
       setSuccessMsg("Account login success !");
-      onSuccess?.(res.user_info.username);
+      onSuccess?.(res.user_info);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -100,6 +103,7 @@ const Login: React.FC<LoginProps> = ({
   const handleGithubLogin = () => {
     playButtonSound();
     saveGithubIntent("login");
+
     startGithubOAuth();
     setErrorMsg("");
     setSuccessMsg("");
@@ -116,8 +120,9 @@ const Login: React.FC<LoginProps> = ({
         const res = await githubLogin(githubCode);
         saveToken(res.access_token);
         setSuccessMsg("Account login success !");
+        
         clearGithubIntent();
-        onSuccess?.(res.user_info.username);
+        onSuccess?.(res.user_info);
       } catch (err) {
         hasExchanged.current = false;
         const errMsg = err instanceof Error ? err.message : "";
@@ -143,14 +148,15 @@ const Login: React.FC<LoginProps> = ({
       const fbToken = await requestFacebookToken();
       const res = await facebookLogin(fbToken);
       saveToken(res.access_token);
+  
       setSuccessMsg("Account login success !");
-      onSuccess?.(res.user_info.username);
+     onSuccess?.(res.user_info);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message.slice(36) : 'Something went wrong');
     } finally {
       setFacebookLoading(false);
     }
-
+  };
 
   const reuse_button_logo:string = "flex h-12 w-12 items-center drop-shadow-lg/50 drop-shadow-blue-600 justify-center border-b-4 border-gray-500 rounded-full bg-white transition-all \
                                     hover:scale-110 hover:duration-150 \
@@ -171,7 +177,9 @@ const Login: React.FC<LoginProps> = ({
 
       ">
         Welcome Back
-        <img src ={LoginEmoji} className = "w-25 h-25 relative drop-shadow-lg/80 -top-8 right-4 \
+        <img src ={LoginEmoji} 
+        alt = "Happy girl emoji"
+        className = "w-25 h-25 relative drop-shadow-lg/80 -top-8 right-4 \
         max-[500px]:w-20 max-[500px]:h-20 max-[500px]:-top-6 max-[500px]:right-2 max-[450px]:right-8 max-[400px]:right-3 "/>
         </h2>
     <h2 className="mb-6 pr-3 text-center text-3xl font-bold text-cyan-400
@@ -245,12 +253,7 @@ const Login: React.FC<LoginProps> = ({
           />
         </div>
         
- 
-        {errorMsg && (
-              <p className="text-center text-xl font-bold text-red-400">{errorMsg}</p>
-            )}
 
- 
         {successMsg ? 
               <p className='text-center text-xl italic font-bold text-green-400  drop-shadow-green-700  drop-shadow-md/90'>{successMsg}</p>
               :
@@ -302,5 +305,5 @@ const Login: React.FC<LoginProps> = ({
     </div>
   );
 };
-}
+
 export default Login;

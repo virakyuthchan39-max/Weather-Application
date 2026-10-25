@@ -35,12 +35,12 @@ class GithubSchema(BaseModel):
 
 class GithubSchema(BaseModel):
     id: int
-
-    username: str
+    full_name: str
     password: str = "GithubPassword"
     gmail: EmailStr    
     role: str
     is_active: bool
+    account_type: str
     create_at: datetime
 
 class GithubSchemaResponse(BaseModel):
@@ -135,11 +135,11 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
        
         result_response = GithubSchema(
             id=user.id,
-
-            username=user.username,
+            full_name=user.username,
             gmail=user.gmail,
             role=user.role,
             is_active=user.is_active,
+            account_type=user.account_type,
             create_at=user.create_at
         )
  

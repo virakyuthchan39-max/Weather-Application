@@ -31,11 +31,12 @@ class GoogleTokenRequest(BaseModel):
 
 class GoogleSchema(BaseModel):
     id: int
-    username: str
+    full_name: str
     password: str = "GooglePassword"
     gmail: str    
     role: str
     is_active: bool 
+    account_type: str
     login_at: datetime
 
 class GoogleSchemaResponse(BaseModel):
@@ -61,10 +62,6 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
         email = idinfo.get("email")
  
         name = idinfo.get("name", "Google User")
- 
-
-
-
         if not email:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, 
@@ -82,11 +79,7 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
                 detail="This Google's account didn't sign in yet !"
             )
 
-        if not user.is_active:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="User account is deactivated."
-            )
+   
 
         
         current_time = datetime.now(timezone.utc)
@@ -95,8 +88,6 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
  
         # ✅ ត្រូវ
  
-        
-
         if final_query:
             final_query.login_at = current_time
             db.add(final_query)
@@ -111,13 +102,7 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
             )
             db.add(add_google_user)
         await asyncio.sleep(0.4)    
-        await db.commit()
- 
-        
-
- 
-
-        
+        await db.commit()   
         dicts = {
                    "sub": str(user.id),
                    "gmail": user.gmail,
@@ -129,10 +114,11 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
      
         result_response = GoogleSchema(
             id=user.id,
-            username=user.username.title(),
+            full_name=user.username.title(),
             gmail=user.gmail,
             role=user.role,        
             is_active=user.is_active, 
+            account_type= user.account_type,
             login_at=current_time
         )
         

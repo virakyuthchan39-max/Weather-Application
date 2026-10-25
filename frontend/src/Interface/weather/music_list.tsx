@@ -7,6 +7,7 @@ const TRACKS = [
   { id: 2, name: "Ocean of Peace", path: "/Audio/Music/weather/relax/Ocrean_Of_Peace.mp3" },
   { id: 3, name: "Lofi", path: "/Audio/Music/weather/relax/Lofi.mp3" },
   { id: 4, name: "Good Weather", path: "/Audio/Music/weather/relax/Good_Weather.mp3" },
+  
 ];
 
 const Musician = [
@@ -14,6 +15,9 @@ const Musician = [
   { id: 2, name: "See You Again (Wia Khalifa)", path: "/Audio/Music/weather/See_You_Again_Wiz_Khalifa.mp3" },
   { id: 3, name: "A Thousand Mile (Carlton)", path: "/Audio/Music/weather/A_Thousand_Miles.mp3" },
   { id: 4, name: "Faded (Alan Walker)", path: "/Audio/Music/weather/Alan_Walker_Faded.mp3" },
+  {id:5,   name:"As It Was (Harry Styles)",path:"/Audio/Music/weather/As It Was by Harry Styles .mp3"},
+  {id:6, name:"Try to feel alive (Portor Robinson)",path:"/Audio/Music/weather/Trying to Feel Alive.mp3"}
+  
 ];
 
 const EDM = [
@@ -27,7 +31,7 @@ const ORC = [
   {id: 1, name: "Epic Heart", path: "/Audio/Music/weather/orchestra/Epic_Heart.mp3" },
   {id:2, name: "Echoes of lumen emotional", path:"/Audio/Music/weather/orchestra/echoes_of_lumen_emotional.mp3"},
   {id:3, name: "Calming",path:"/Audio/Music/weather/orchestra/Calming.mp3"},
-  {id:4,name:"Peace of love", path:"/Audio/Music/weather/orchestra/peace_and_love.mp3"}
+  {id:4, name:"Peace of love", path:"/Audio/Music/weather/orchestra/peace_and_love.mp3"}
 ];
 
 interface MusicListProps {
@@ -75,7 +79,7 @@ const MusicList: React.FC<MusicListProps> = ({ isOpen,isDarkMode, isMusicStart,o
               :
             </h2>
         </div> 
-     <div className = "flex gap-15 text-nowrap mt-5 w-full overflow-y-auto no-scrollbar h-full \
+     <div className = "flex gap-15 mt-5 w-full overflow-y-auto no-scrollbar h-full \
      max-[600px]:block  \
      max-[1800px]:grid max-[1800px]:grid-cols-3 max-[1800px]:justify-items-center max-[1800px]:content-normal \
      max-[1200px]:grid max-[1200px]:grid-cols-2 ">
@@ -87,7 +91,7 @@ const MusicList: React.FC<MusicListProps> = ({ isOpen,isDarkMode, isMusicStart,o
             <li key={track.id}>
               <button
                 onClick={() => {handleSelect(track.path)}}
-                className={`w-85 relative flex text-left px-5 py-3 cursor-pointer rounded-xl transition-all duration-300 font-semibold border-b-4 
+                className={`w-85 relative flex text-left whitespace-break-spaces  text-[0.95rem] px-5 py-3 cursor-pointer rounded-xl transition-all duration-300 font-semibold border-b-4 
                   max-[800px]:w-70 
                   max-[500px]:w-62 
                   ${currentTrack === track.path 
@@ -154,7 +158,6 @@ const MusicList: React.FC<MusicListProps> = ({ isOpen,isDarkMode, isMusicStart,o
                 onClick={() => {handleSelect(track.path)}}
                 className={`w-85 relative flex text-left px-5 py-3 cursor-pointer rounded-xl transition-all duration-300 font-semibold border-b-4 
                  max-[800px]:w-70 
-    
                   max-[500px]:w-62
                   ${currentTrack === track.path 
                     ? 'bg-cyan-600 border-cyan-900 text-white shadow-lg/50' 
@@ -185,7 +188,7 @@ const MusicList: React.FC<MusicListProps> = ({ isOpen,isDarkMode, isMusicStart,o
             <li key={track.id}>
               <button
                 onClick={() => {handleSelect(track.path)}}
-                className={`w-85 relative flex text-left px-5 py-3.5 cursor-pointer rounded-xl text-[0.8rem] transition-all duration-300 font-semibold border-b-4 
+                className={`w-85 relative flex text-left px-5 py-3.5 cursor-pointer rounded-xl text-[0.75rem] transition-all duration-300 font-semibold border-b-4 
                  max-[800px]:w-70 
    
                   max-[500px]:w-62

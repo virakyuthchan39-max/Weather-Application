@@ -4,10 +4,11 @@ const BASE_URL = "http://127.0.0.1:8000";
  
 export interface GoogleUserInfo {
   id: number;
-  username: string;
+  full_name: string;
   gmail: string;
   role: string;
   is_active: boolean;
+  account_type: string; 
   create_at: string;
 }
 
@@ -16,10 +17,8 @@ export interface GoogleAuthResponse {
   detail: string;
   access_token: string;
   token_type: string;
- 
   refresh_token:string;
   user_info: GoogleUserInfo;
-
 }
 
 async function postGoogle(path: string, token: string): Promise<GoogleAuthResponse> {

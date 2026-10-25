@@ -6,10 +6,11 @@ const GITHUB_CLIENT_ID = "Ov23liBQknBp1XcqjPs9";
  
 export interface GithubUserInfo {
   id: number;
-  username: string;
+  full_name: string;
   gmail: string;
   role: string;
   is_active: boolean;
+  account_type:string
   create_at: string;
 }
 

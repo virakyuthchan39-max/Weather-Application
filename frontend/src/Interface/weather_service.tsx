@@ -9,6 +9,7 @@ export const useWeatherService = () => {
   const [loading, setLoading] = useState(false);
   const [daytime, setDaytime] = useState("");
   const [cloneCity, setClone] = useState("");
+  const [Coord,setCoord] = useState({lat:0,lon:0})
 
   // ១. កែឱ្យ country ក្លាយជា Optional (មាន ឬគ្មានក៏បាន)
     const fetchCityWeather = async (
@@ -35,7 +36,7 @@ export const useWeatherService = () => {
 
         // បញ្ចូលឈ្មោះខេត្តទៅក្នុងឈ្មោះទីក្រុង
         if (territory && territory.trim() !== "" && territory.toUpperCase() !== "N/A" && territory.toLowerCase() !== targetCity.toLowerCase()) {
-          res.location.city = `${targetCity}, ${territory}`;
+          res.location.city = `${targetCity}${territory.includes(targetCity) ? "" : `, ${territory}`}`;
         } else {
           res.location.city = targetCity;
         }
@@ -57,6 +58,7 @@ export const useWeatherService = () => {
       try {
         const res = await fetchDefaultLocation();
         setCity(res.location.city);
+        setCoord({lat:res.location.lat,lon:res.location.lon})
         // បញ្ជូនទាំង city និង country ពី Default Location (បើមាន)
         fetchCityWeather(res.location.city, res.location.country || "");
       } catch (err) {
@@ -80,6 +82,7 @@ export const useWeatherService = () => {
   };
 
   return {
+    Coord,
     cloneCity,
     weather,
     city,

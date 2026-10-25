@@ -2,6 +2,8 @@ const BASE_URL="http://127.0.0.1:8000"
 
 export interface DefaultLocationResponse {
   location: {
+    lat:number;
+    lon:number;
     city: string;
     country: string;
   };

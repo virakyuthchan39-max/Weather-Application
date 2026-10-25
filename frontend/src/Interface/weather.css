@@ -76,24 +76,15 @@
 
 
 /* ++++++++++++++++Music Container animation+++++++++++++++++++++++ */
-@keyframes modalPopIn {
-  0% { opacity: 0; transform: scale(0.8); }
-  100% { opacity: 1; transform: scale(1); }
+@keyframes modalPopIn {0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); }
 }
 
-.animate-modal-pop {
-  animation: modalPopIn 0.4s ease-out forwards;
-}
+.animate-modal-pop {animation: modalPopIn 0.4s ease-out forwards;}
 
 
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
+.hide-scrollbar::-webkit-scrollbar {display: none;}
 
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
+.hide-scrollbar {-ms-overflow-style: none;scrollbar-width: none;}
 
 /* play the animation of search bar container rolling down */
 @keyframes rollDown {
@@ -107,15 +98,14 @@
   }
 }
 
-.animate-slide-down {
-  animation: rollDown 0.3s ease-out forwards;
-}
+.animate-slide-down {animation: rollDown 0.3s ease-out forwards;}
 
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
+.hide-scrollbar::-webkit-scrollbar {display: none;}
 
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.hide-scrollbar {-ms-overflow-style: none;scrollbar-width: none;}
+
+/* overflow username play animation */
+@keyframes scroll-pingpong {
+  0% {transform: translateX(0);}
+  100% {transform: translateX(var(--scroll-amount));}
 }

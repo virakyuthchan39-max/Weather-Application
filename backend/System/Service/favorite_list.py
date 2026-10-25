@@ -9,6 +9,7 @@ import uuid
 import httpx
 
 from Database.database import get_session
+from .temperature import TemperatureSchema
 from Database.model import UserLogin, UserSignIn, GoogleSignIn, FacebookSignIn, GithubSignIn
 # ---------- Pydantic Models ----------
 class FavoriteAddRequest(BaseModel):
@@ -16,6 +17,7 @@ class FavoriteAddRequest(BaseModel):
     account_type: str = "Regular"
     email: EmailStr
     city: str
+    temp: TemperatureSchema
     country: str
     country_code: str
 
@@ -25,6 +27,7 @@ class FavoriteSchemes(BaseModel):
     city: str
     country: str
     country_code: str
+    temp: TemperatureSchema
     time: str
 
 class FavoriteResponse(BaseModel):
@@ -99,12 +102,14 @@ async def Favorite_City(
         print(f"IP lookup failed: {e}")
 
     # ៤. បង្កើត ID ថ្មីសម្រាប់ Favorite នេះ
+    result_temp = TemperatureSchema(kelvin=input.temp.kelvin, celsius=input.temp.celsius,fahrenheit=input.temp.fahrenheit)
     new_fav = FavoriteSchemes(
         fav_id=str(uuid.uuid4()),
         user_id=input.user_id,
         city=input.city,
         country=input.country,
         country_code= input.country_code,
+        temp= result_temp,
         time=formatted_time
     )
 
@@ -112,7 +117,7 @@ async def Favorite_City(
     if input.user_id not in fav_data:
         fav_data[input.user_id] = []
     fav_data[input.user_id].append(new_fav)
-
+    
     return FavoriteResponse(fav_list=fav_data[input.user_id])
 
 

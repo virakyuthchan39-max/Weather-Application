@@ -30,15 +30,13 @@ class FacebookTokenRequest(BaseModel):
     token: str  # Facebook Access Token ផ្ញើមកពី Frontend
 
 class FacebookSchema(BaseModel):
- 
- 
     id: int
-
-    username: str
+    full_name: str
     password: str = "FacebookPassword"
     gmail: EmailStr    
     role: str
     is_active: bool
+    account_type: str
     create_at: datetime
 
 class FacebookSchemaResponse(BaseModel):
@@ -99,14 +97,12 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
 
         # 3. រៀបចំ Response ត្រលប់ទៅវិញ
         result_response = FacebookSchema(
- 
- 
             id = user.id,
-
-            username=user.username,
+            full_name=user.username,
             gmail=user.gmail,
             role=user.role,
             is_active=user.is_active,
+            account_type= user.account_type,
             create_at=user.create_at
         )
  

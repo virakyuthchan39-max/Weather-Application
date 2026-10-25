@@ -134,9 +134,13 @@ class UserLogout(SQLModel, table=True):
 
     user_login: Optional["UserLogin"] = Relationship(back_populates="logouts") 
     
-    facebook_id: Optional[int] = Field(default=None, foreign_key="user_facebook_login.id")
-    github_id: Optional[int] = Field(default=None, foreign_key="user_github_login.id")
-    google_id: Optional[int] = Field(default=None, foreign_key="user_google_login.id")
+    facebook_login_id: Optional[int] = Field(default=None, foreign_key="user_facebook_login.id")
+    github__login_id: Optional[int] = Field(default=None, foreign_key="user_github_login.id")
+    google_login_id: Optional[int] = Field(default=None, foreign_key="user_google_login.id")
+    
+    facebook_signin_id: Optional[int] = Field(default=None, foreign_key="facebook_sign_in.id")
+    github__signin_id: Optional[int] = Field(default=None, foreign_key="github_sign_in.id")
+    google_signin_id: Optional[int] = Field(default=None, foreign_key="google_sign_in.id")
     
     signin_id: Optional[int] = Field(default=None, foreign_key="user_signin.id")
     user_signin: Optional["UserSignIn"] = Relationship(back_populates="user_logouts")

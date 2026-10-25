@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
-from Database.model import UserLogout, UserSignIn,UserLogin
+from Database.model import (UserLogout, UserSignIn,UserLogin)
                          
 from Database.database import get_session
 
@@ -20,7 +20,7 @@ from Security.Encryption.refresh_token import (
     blacklist_token,
     bearer_scheme,
 )
-import asyncio
+
 
 router = APIRouter()
 
@@ -82,7 +82,11 @@ async def Logout_User(
         final_query_Login.is_active = False
         db.add(final_query_Login)
         target_user = final_query_Login
-
+    
+    
+    
+    
+    
     query_logout = await db.scalars(select(UserLogout).where(UserLogout.gmail == userAccount.gmail))
     final_query_logout = query_logout.first()
     if final_query_logout:
