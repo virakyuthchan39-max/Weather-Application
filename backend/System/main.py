@@ -1,3 +1,7 @@
+from Database.model_account import *
+from Database.model_role import *
+from Database.model_application import *
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -9,11 +13,7 @@ from slowapi import _rate_limit_exceeded_handler
 from Router.OpenWeather.open_weather import limiter
 
 
-from Database.database import create_table, engine
-from Database.model import (UserSignIn, UserLogin,
-                            FacebookSignIn,UserFacebookLogin,
-                            GoogleSignIn,UserGoogleLogin,
-                            GithubSignIn,UserGithubLogin)
+from Database.database import create_table, engine_account,engine_application,engine_role
 
 # import the module
 # from  Router
@@ -36,11 +36,17 @@ from Security.ThirdParty.github.github_route import router as Github_Router
 from Service.service_route import router as Service_Router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await create_table()
+    try: 
+      await create_table()
+    except Exception as e:
+        print(f"Error: {e}")
+        raise e
     try:
         yield
     finally:
-        await engine.dispose()
+        await engine_account.dispose()
+        await engine_application.dispose()
+        await engine_role.dispose()
 
 app = FastAPI(
     title="Weather Application ~ Oragnization/Operation",
@@ -56,10 +62,6 @@ app.add_middleware(
 )
 
  
-
-
-# including the router
-app.include_router(Account_Router,tags=["Account Operation"])
  
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded,_rate_limit_exceeded_handler)

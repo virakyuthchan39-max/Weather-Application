@@ -17,7 +17,9 @@ export const useWeatherService = () => {
     country: string = "", 
     lat: number = 0, 
     lon: number = 0,
-    suggestionTerritory: string = "" // ✅ បន្ថែម Parameter ថ្មីនេះ
+    suggestionTerritory: string = "",
+    suggestionCountry: string = "",     // ✅ បន្ថែម Parameter នេះ
+    suggestionCountryCode: string = "" // ✅ បន្ថែម Parameter ថ្មីនេះ
   ) => {
     if (!targetCity) return;
     setLoading(true);
@@ -33,13 +35,18 @@ export const useWeatherService = () => {
           territory = suggestionTerritory;
           res.location.territory = suggestionTerritory; // រក្សាទុកក្នុង Object ដើម្បីងាយស្រួលពេល Save Favorite
         }
-
+      // if lat and lon aren't None
+        if (res.location.lat !== undefined && res.location.lon !== undefined){setCoord({lat:res.location.lat,lon:res.location.lon})}
         // បញ្ចូលឈ្មោះខេត្តទៅក្នុងឈ្មោះទីក្រុង
         if (territory && territory.trim() !== "" && territory.toUpperCase() !== "N/A" && territory.toLowerCase() !== targetCity.toLowerCase()) {
-          res.location.city = `${targetCity}${territory.includes(targetCity) ? "" : `, ${territory}`}`;
+          res.location.city = `${targetCity.toLowerCase().trim().split(/\s+/).map((word)=>word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}${territory.includes(targetCity) ? "" : `, ${territory}`}`;
         } else {
-          res.location.city = targetCity;
+          res.location.city = targetCity.toLowerCase().trim().split(/\s+/).map((word)=>word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
         }
+        if (!res.location.country_code || res.location.country_code === "N/A" || res.location.country_code === "") {
+          res.location.country_code = suggestionCountryCode;
+        }
+        if (!res.location.country || res.location.country === "N/A" || res.location.country === ""){res.location.country = suggestionCountry;}
         
         setClone(targetCity);
       }
@@ -71,7 +78,7 @@ export const useWeatherService = () => {
   }, []);
 
   // ២. ចាប់យកការវាយអក្សរដោយខ្លួនឯង (បើវាយ "Rome, Italy" វានឹងកាត់យកតែឈ្មោះ)
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = (e: React.SubmitEvent) => {
     e.preventDefault();
     const parts = city.split(",");
     const cityName = parts[0].trim();
@@ -92,6 +99,6 @@ export const useWeatherService = () => {
     error,
     loading,
     handleSearch,
-    fetchCityWeather, // ✅ Export វាចេញដើម្បីឱ្យ Weather.tsx ហៅបាន
+    fetchCityWeather, 
   };
 };

@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import httpx
 from typing import Annotated, Optional
 from Database.database import get_session
-from Database.model import GithubSignIn
+from Database.model_account import GithubSignIn
  
  
 from Security.Encryption.token import create_access_token

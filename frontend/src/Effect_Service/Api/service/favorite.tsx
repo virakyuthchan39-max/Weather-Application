@@ -10,6 +10,8 @@ export interface FavoriteAddRequest {
   email: string;
   city: string ;
   temp: Temperature;
+  daytime: string;
+  climate: string;
   country: string;
   country_code: string;
   territory: string;
@@ -19,11 +21,14 @@ export interface FavoriteSchemes {
   fav_id: string;
   user_id: number;
   city: string;
+  daytime: string;
+  climate: string;
   country: string;
   country_code: string;
   temp: Temperature;
   territory: string;
   time: string ;
+  full_date: string;
 }
 
 export interface FavoriteResponse {

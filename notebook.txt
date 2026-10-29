@@ -1,6 +1,7 @@
-  
-docker compose --env-file backend/System/DevOp/.env.service up --build
+
 https://chat.deepseek.com/a/chat/s/d4b3afff-4b87-4e96-be37-640c480d4e9f
+
+docker compose --env-file backend/System/DevOp/.env.service up --build  
 
 github_token: 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
 
@@ -10,7 +11,8 @@ ${hideAll ? 'hidden':''}
 {'coord':
  {'lon': 104.916, 'lat': 11.5625}, 
  'weather': [{
-  'id': 501, 'main': 'Rain',
+  'id': 501,
+ 'main': 'Rain',
   'description': 'moderate rain',
   'icon': '10d'}],
   'base': 'stations',
@@ -19,10 +21,11 @@ ${hideAll ? 'hidden':''}
     'feels_like': 308.82, 
     'temp_min': 304.29, 
     'temp_max': 304.29,
-  'pressure': 1009, 
-  'humidity': 62, 
-  'sea_level': 1009, 
-  'grnd_level': 1008},
+     'pressure': 1009, 
+     'humidity': 62, 
+     'sea_level': 1009, 
+     'grnd_level': 1008
+},
   'visibility': 10000,
   'wind': {
        'speed': 2.93,
@@ -40,4 +43,8 @@ ${hideAll ? 'hidden':''}
    'timezone': 25200, 
    'id': 1821306,
     'name': 'Phnom Penh',
-     'cod': 200}
+     'cod': 200
+     }
+
+
+

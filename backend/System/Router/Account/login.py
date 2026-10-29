@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
-from Database.model import UserLogin, UserSignIn
+from Database.model_account import UserLogin, UserSignIn
 from Database.database import get_session
 
 # security
@@ -37,6 +37,7 @@ class LoginSchema(BaseModel):
     gmail: EmailStr
     login_at: Annotated[datetime, Field(default_factory=lambda: datetime.now(timezone.utc))]
     is_active: Annotated[bool, Field(default=True)]
+    account_type: Annotated[str,Field(default="Regular")]
     role: Annotated[str, Field(default="user")]
 
 class LoginSchemaResponse(BaseModel):
@@ -117,6 +118,7 @@ async def login_User(userAccount: LoginUserRequest,db: Annotated[AsyncSession, D
         gmail=final_query.gmail, 
         login_at=target_user.login_at, 
         is_active=target_user.is_active, 
+        account_type= target_user.account_type,
         role=target_user.role
     )
     

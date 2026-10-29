@@ -11,7 +11,7 @@ import Login from './login';
 import "./account.css";
  
 
-
+import { UserInfo } from '../../Effect_Service/Api/service/fetch.tsx';
 // import the data streaming
 import DataStreaming from '../../Effect_Service/Api/service/data_streaming';
 // fetch the github
@@ -22,8 +22,8 @@ type AuthView = 'welcome' | 'signup' | 'login' | 'streaming';
 
 // បន្ថែម Prop ថ្មី
 interface AccountProps {
-  onLoginSuccess: (user: any) => void;
-  onRegisterSuccess:(user: any) => void;
+  onLoginSuccess: (user: UserInfo) => void;
+  onRegisterSuccess:(user: UserInfo) => void;
 }
 
 const Account: React.FC<AccountProps> = memo(({onLoginSuccess,onRegisterSuccess}) => {
@@ -240,17 +240,17 @@ const Account: React.FC<AccountProps> = memo(({onLoginSuccess,onRegisterSuccess}
 
                         ${
                           animeImg === AnimeShock
-                            ? "w-30 max-[1200px]:w-45 max-[1200px]:left-80 max-[1200px]:top-23 max-[1200px]:scale-90 \
+                            ? "w-30 max-[3000px]:w-45  max-[3000px]:left-80  max-[3000px]:top-23  max-[3000px]:scale-90 \
                             max-[800px]:active:scale-89 max-[800px]:top-20.5 max-[800px]:w-45 max-[800px]:left-77.5 \
                             max-[600px]:w-37 max-[600px]:top-22 max-[600px]:left-76.5 \
                             max-[500px]:w-37 max-[500px]:left-13 max-[500px]:m-5 "
                             : animeImg === AnimeMad
-                            ? "w-30 max-[1200px]:w-46 max-[1200px]:left-79 max-[1200px]:top-18 \
+                            ? "w-30  max-[3000px]:w-46  max-[3000px]:left-79  max-[3000px]:top-18 \
                             max-[800px]:w-40 max-[800px]:left-79 \
                             max-[600px]:w-33 max-[600px]:top-22.5 max-[600px]:left-77.5 \
                             max-[500px]:w-33 max-[500px]:-top-2 max-[500px]:left-12 max-[500px]:m-6 "
                             : animeImg === AnimeSign
-                            ? "w-30 max-[1200px]:w-46 max[1200px]:h-auto max-[1200px]:scale-110 max-[1200px]:left-80 max-[1200px]:top-36 \
+                            ? "w-30 max-[3000px]:w-46 max-[3000px]:h-auto  max-[3000px]:scale-110 max-[3000px]:left-80  max-[3000px]:top-36 \
                             max-[800px]:scale-90 max-[800px]:w-50 max-[800px]:top-33 max-[800px]:left-75 \
                             max-[600px]:w-42 max-[600px]:left-75 max-[600px]:top-31 \
                             max-[500px]:w-40 max-[500px]:my-10.5 max-[500px]:mx-5 max-[500px]:top-3 max-[500px]:right-30 "

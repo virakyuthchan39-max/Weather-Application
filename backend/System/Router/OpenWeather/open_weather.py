@@ -31,9 +31,15 @@ OPEN_WEATHER_BASE_URL = os.getenv(
 WEATHER_CACHE_TTL = int(os.getenv("WEATHER_CACHE_TTL", 288))
 
 # ---------- Response schema ----------
+class  WindySchemes(BaseModel):
+    gust: float
+    speed: float
+    deg: int
+    direction: str
 class WeatherInfo(BaseModel):
     daytime: str
     climate: str
+    wind: WindySchemes
 
 class WeatherResponse(BaseModel):
     weather: WeatherInfo
@@ -44,6 +50,41 @@ class WeatherResponse(BaseModel):
 
 
 router = APIRouter()
+
+
+def clean_territory_name(name: str):
+    if not name or name == "N/A":
+        return "N/A"
+
+    terms_to_remove = [
+        " province",
+        " governorate",
+        " department",
+        " state",
+        " region",
+        " prefecture",
+        " district",
+        " municipality",
+        " autonomous region",
+        " oblast",
+    ]
+
+    cleaned = name.strip()
+
+    # 1. Strip suffixes from the end of the string
+    for term in terms_to_remove:
+        if cleaned.lower().endswith(term):
+            cleaned = cleaned[: -len(term)].strip()
+            break
+
+    # 2. Strip prefixes from the start of the string (e.g., "Province of ...", "State of ...")
+    prefixes_to_remove = ["province of ", "state of ", "governorate of "]
+    for prefix in prefixes_to_remove:
+        if cleaned.lower().startswith(prefix):
+            cleaned = cleaned[len(prefix) :].strip()
+            break
+
+    return cleaned
 
 
 def clean_country_name(name: str):
@@ -97,6 +138,17 @@ def convert_country_name(code: str):
         return clean_country_name(raw_name)
     return code
 
+
+def calculate_wind_direction(value:int):
+    directions = [
+    'North', 'North-Northeast', 'Northeast', 'East-Northeast',
+    'East', 'East-Southeast', 'Southeast', 'South-Southeast',
+    'South', 'South-Southwest', 'Southwest', 'West-Southwest',
+    'West', 'West-Northwest', 'Northwest', 'North-Northwest'
+    ]
+    index = round((value % 360) /22.5)
+    result = directions[index % 16]
+    return result
 
 # ---------- Service function ----------
 # ---------- Service function ----------
@@ -168,9 +220,10 @@ async def fetch_weather(city: str, country_code: str = "", lat: Optional[float] 
     state_name = ""
     try:
         data_locat = locat.json()
-        print(data_locat)
         if isinstance(data_locat, list) and len(data_locat) > 0:
-            state_name = data_locat[0].get("state", "")
+            raw_state = data_locat[0].get("state", "")
+            state_name = clean_territory_name(raw_state)
+            
     except Exception:
         pass
     
@@ -179,27 +232,40 @@ async def fetch_weather(city: str, country_code: str = "", lat: Optional[float] 
     weather_list = data.get("weather", [])
     sys_data = data.get("sys", {})
     tz_offset = data.get("timezone", 0)
+    dt_time= data.get("dt",0)
+    
+    windy_speed= data["wind"].get("speed",0.0)
+    windy_degree= data["wind"].get("deg",0)
+    windy_gust = data["wind"].get("gust",0.0)
+    
+    humidity = main.get("humidity",0)
+    pressure = main.get("pressure",0)
+    visibility = data.get("visibility",0)
+    feel_like = main.get("feels_like",0)
 
     kelvin = float(main.get("temp", 0))
     country_codes = sys_data.get("country", "N/A")
 
     formatted_country = convert_country_name(country_codes)
-    
+   
     # ---------- Transform ----------
-    temperature = convert_temperature(kelvin)
+    windy = WindySchemes(speed= windy_speed,gust= windy_gust,deg = windy_degree,direction= calculate_wind_direction(windy_degree))
+    temperature = convert_temperature(kelvin,humidity=humidity,pressure=pressure,visibility=visibility,feel_like=feel_like)
     location = build_location(
         country=formatted_country,
         city=data.get("name", "N/A"),
+        lon=data["coord"].get("lon",0.0),
+        lat=data["coord"].get("lat",0.0),
         country_code=country_codes,
         territory=state_name,  # 👈 ប្រើប្រាស់ state ដែលបានទាញយកដោយសុវត្ថិភាព
     )
-    dt = format_datetime(tz_offset)
+    dt = format_datetime(tz_offset,offset=tz_offset,dt=dt_time)
 
     climate = weather_list[0].get("description", "").title() if weather_list else "N/A"
     daytime = get_detailed_time_phase(dt.hour)
-
+   
     response = WeatherResponse(
-        weather=WeatherInfo(daytime=daytime, climate=climate),
+        weather=WeatherInfo(daytime=daytime, climate=climate,wind=windy),
         temperature=temperature,
         level=classify_level(temperature.celsius),
         location=location,

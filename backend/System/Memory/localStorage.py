@@ -11,7 +11,7 @@ env_path = root_dir / "DevOp" / ".env.service"
 load_dotenv(dotenv_path=env_path)
 
 # ប្រើ container URL បើរត់ក្នុង Docker, បើមិន → localhost
-REDIS_URL = os.getenv("REDIS_URL") or os.getenv("REDIS_URL", "redis://localhost:6379/0")
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
 redis_client: redis.Redis = redis.from_url(REDIS_URL, decode_responses=True)
 

@@ -12,12 +12,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import httpx
 from typing import Annotated
 from Database.database import get_session
-from Database.model import FacebookSignIn,UserFacebookLogin
+from Database.model_account import FacebookSignIn,UserFacebookLogin
  
 import httpx,os
 from typing import Annotated
 from Database.database import get_session
-from Database.model import FacebookSignIn,UserFacebookLogin
+from Database.model_account import FacebookSignIn,UserFacebookLogin
 from Security.Encryption.token import create_access_token
 from Security.Encryption.refresh_token import create_refresh_token
 

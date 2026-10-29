@@ -12,7 +12,7 @@ from slowapi.util import get_remote_address
 from .timezone import format_datetime, DateTimeSchema
 from .daytime import get_detailed_time_phase
 from Memory.localStorage import cache_get, cache_set
-from Router.OpenWeather.open_weather import clean_country_name
+from Router.OpenWeather.open_weather import clean_country_name,clean_territory_name
 limiter = Limiter(key_func=get_remote_address)
 
 # ---------- Load env ----------
@@ -88,7 +88,6 @@ async def Finding_Similar_City(
             detail=f"OpenWeather Geo error ({res.status_code}): {res.text}",
         )
     data = res.json()
-    print(data)
     if not data:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -100,7 +99,10 @@ async def Finding_Similar_City(
   
         c_name =  item.get("name", "N/A")
         country_code = item.get("country", "N/A")
-        state_name = item.get("state","")
+        raw_name = item.get("state","")
+
+        
+        state_name = clean_territory_name(raw_name)
         formatted_country = convert_country_name(country_code)
    
         lat = item.get("lat")
@@ -119,10 +121,11 @@ async def Finding_Similar_City(
                 if w_res.status_code == status.HTTP_200_OK:
                     w_data = w_res.json()
                     tz_offset = w_data.get("timezone", 0)
+                    dt_time = item.get("dt",0)
             except Exception:
                 pass
 
-        dt = format_datetime(tz_offset)
+        dt = format_datetime(tz_offset,offset=tz_offset,dt=dt_time)
         daytime = get_detailed_time_phase(dt.hour)
         return {
             "unique_key": f"{c_name.lower()}-{formatted_country.lower()}",
@@ -137,7 +140,6 @@ async def Finding_Similar_City(
                 daytime=daytime
             )
         }
-
     # 2. Concurrently fetch weather details for all found coordinates using asyncio.gather
     async with httpx.AsyncClient(timeout=5.0) as client:
         tasks = [fetch_city_details(client, item) for item in data]

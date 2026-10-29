@@ -13,7 +13,7 @@ const TRACKS = [
 const Musician = [
   { id: 1, name: "Stay (Justin Bieber)", path: "/Audio/Music/weather/Stay_justin_bieber.mp3" },
   { id: 2, name: "See You Again (Wia Khalifa)", path: "/Audio/Music/weather/See_You_Again_Wiz_Khalifa.mp3" },
-  { id: 3, name: "A Thousand Mile (Carlton)", path: "/Audio/Music/weather/A_Thousand_Miles.mp3" },
+  { id: 3, name: "A Thousand Mile (Vanessa Carlton)", path: "/Audio/Music/weather/A_Thousand_Miles.mp3" },
   { id: 4, name: "Faded (Alan Walker)", path: "/Audio/Music/weather/Alan_Walker_Faded.mp3" },
   {id:5,   name:"As It Was (Harry Styles)",path:"/Audio/Music/weather/As It Was by Harry Styles .mp3"},
   {id:6, name:"Try to feel alive (Portor Robinson)",path:"/Audio/Music/weather/Trying to Feel Alive.mp3"}
@@ -49,12 +49,10 @@ const MusicList: React.FC<MusicListProps> = ({ isOpen,isDarkMode, isMusicStart,o
     playButtonSound();
     onClose();
   }
-
   const handleSelect = (track:string) =>{
     playAnimeClick();
     onSelect(track);
   }
-
   return (
     <>    
     <div className={`fixed inset-0 z-200 h-full  flex items-center justify-center backdrop-blur-[2px] ${!isDarkMode ? "bg-black":"bg-white"} transition-opacity duration-300`}>

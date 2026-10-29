@@ -8,15 +8,18 @@ from zoneinfo import ZoneInfo
 import uuid
 import httpx
 
+
 from Database.database import get_session
-from .temperature import TemperatureSchema
-from Database.model import UserLogin, UserSignIn, GoogleSignIn, FacebookSignIn, GithubSignIn
+from .temperature import TemperatureSchema,classify_level,classify_feel_like_level,convert_temperature
+from Database.model_account import UserLogin, UserSignIn, GoogleSignIn, FacebookSignIn, GithubSignIn
 # ---------- Pydantic Models ----------
 class FavoriteAddRequest(BaseModel):
     user_id: int
     account_type: str = "Regular"
     email: EmailStr
     city: str
+    daytime: str
+    climate: str
     temp: TemperatureSchema
     country: str
     country_code: str
@@ -25,10 +28,13 @@ class FavoriteSchemes(BaseModel):
     fav_id: str
     user_id: int
     city: str
+    daytime: str
+    climate: str
     country: str
     country_code: str
     temp: TemperatureSchema
     time: str
+    full_date: str
 
 class FavoriteResponse(BaseModel):
     detail: str = "Check favorite's city list was success !✅"
@@ -98,19 +104,23 @@ async def Favorite_City(
                 # គណនាម៉ោងតាម Timezone របស់ User
                 local_now = datetime.now(timezone.utc) + timedelta(seconds=offset_seconds)
                 formatted_time = local_now.strftime("%I:%M %p")
+                formatted_date = local_now.strftime("%d %b %Y")
     except Exception as e:
         print(f"IP lookup failed: {e}")
 
     # ៤. បង្កើត ID ថ្មីសម្រាប់ Favorite នេះ
-    result_temp = TemperatureSchema(kelvin=input.temp.kelvin, celsius=input.temp.celsius,fahrenheit=input.temp.fahrenheit)
+    result_temp = convert_temperature(input.temp.kelvin,humidity=input.temp.humidity,visibility = input.temp.visibility,pressure=input.temp.pressure,feel_like=input.temp.feel_like_kelvin)
     new_fav = FavoriteSchemes(
         fav_id=str(uuid.uuid4()),
         user_id=input.user_id,
         city=input.city,
         country=input.country,
         country_code= input.country_code,
+        daytime=input.daytime,
+        climate=input.climate,
         temp= result_temp,
-        time=formatted_time
+        time=formatted_time,
+        full_date = formatted_date,
     )
 
     # ៥. បន្ថែមទៅក្នុង List របស់ User នោះ

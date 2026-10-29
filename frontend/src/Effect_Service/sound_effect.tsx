@@ -51,9 +51,6 @@ interface SoundButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
   children: React.ReactNode;
 }
 
- 
-
-
 export const SoundButton: React.FC<SoundButtonProps> = ({ onClick, children, ...props }) => {
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     playButtonSound();
@@ -68,7 +65,29 @@ export const SoundButton: React.FC<SoundButtonProps> = ({ onClick, children, ...
     </button>
   );
 };
-
-
-
 export default {SoundButton};
+
+
+
+// weather sound effect
+let weatherAudio: HTMLAudioElement | null = null;
+
+export function playWeatherSound(soundPath: string) {
+  if (weatherAudio) {
+    weatherAudio.pause();
+    weatherAudio.currentTime = 0;
+  }
+  if (!soundPath) return;
+
+  weatherAudio = new Audio(soundPath);
+  weatherAudio.loop = true;
+  weatherAudio.volume = 0.6; // ដំណើរការសំឡេង 50%
+  weatherAudio.play().catch(() => {});
+}
+
+export function stopWeatherSound() {
+  if (weatherAudio) {
+    weatherAudio.pause();
+    weatherAudio.currentTime = 0;
+  }
+}

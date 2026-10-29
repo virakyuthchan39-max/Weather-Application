@@ -46,7 +46,7 @@ const Login: React.FC<LoginProps> = ({
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');

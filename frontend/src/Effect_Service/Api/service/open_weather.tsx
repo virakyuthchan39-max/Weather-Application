@@ -1,20 +1,36 @@
 const BASE_URL = "http://127.0.0.1:8000";
 
+export interface WindySchemes{
+  gust: number;
+  deg: number;
+  speed: number;
+  direction: string;
+}
 /* ---------- Types ---------- */
 export interface WeatherInfo {
   daytime: string;
   climate: string;
+  wind:WindySchemes;
 }
 
 export interface Temperature {
   celsius: number;
   kelvin: number;
   fahrenheit: number;
+  feel_like_celsius:number;
+  feel_like_kelvin: number;
+  feel_like_farhrenheit: number;
+  feel_like_level:string;
+  humidity: number;
+  visibility: number;
+  pressure: number;
 }
 
 export interface LocationInfo {
   country: string;
   city: string;
+  lat: number;
+  lon: number;
   country_code: string;
   territory: string;
 }
@@ -22,7 +38,9 @@ export interface LocationInfo {
 export interface DateTimeInfo {
   current_time: string;
   local_time: string;
+  offset:number;
   full_date: string;
+  dt: number;
 }
 
 export interface WeatherResponse {

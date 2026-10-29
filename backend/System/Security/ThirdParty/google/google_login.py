@@ -8,7 +8,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from typing import Annotated, Optional
 from Database.database import get_session
-from Database.model import GoogleSignIn, UserGoogleLogin
+from Database.model_account import GoogleSignIn, UserGoogleLogin
  
  
 from Security.Encryption.refresh_token import create_refresh_token

@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import httpx
 from typing import Annotated
 from Database.database import get_session
-from Database.model import FacebookSignIn
+from Database.model_account import FacebookSignIn
  
  
 from Security.Encryption.token import create_access_token

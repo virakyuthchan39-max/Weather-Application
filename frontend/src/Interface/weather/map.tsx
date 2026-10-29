@@ -1,50 +1,104 @@
 import React from 'react';
 
+import { WeatherResponse } from '../../Effect_Service/Api/service/open_weather';
+import WeatherStats from '../WeatherState';
+
 interface WeatherMapProps {
+  isLocalHour:boolean
   isDarkMode: boolean
+  isCelsius: boolean;
+  isfarh: boolean;
+  isWindySecond: boolean
+  isKm: boolean;
+  isMile: boolean;
+  isKelvin: boolean;
   lat: number;
   lon: number;
   cityName: string;
+  weather: WeatherResponse | null;
 }
 
-const WeatherMap: React.FC<WeatherMapProps> = ({ isDarkMode,lat, lon, cityName }) => {
+const WeatherMap: React.FC<WeatherMapProps> = ({isLocalHour,isDarkMode,lat, lon, cityName,weather,isCelsius,isWindySecond,isfarh,isKelvin,isMile,isKm }) => {
   // Construct the Google Maps embed URL directly on the frontend using lat & lon
   const mapUrl = `https://maps.google.com/maps?q=${lat},${lon}&z=12&output=embed`;
   
   return (
     <>
-    <div className = "grid grid-cols-auto justify-items-end">
-        <span className ={`relative justify-start right-85 top-30 border-b-2 pb-0 items-start text-xl w-22 h-full text-shadow-lg/20 ${!isDarkMode? "text-white":"text-black"}`}>Location: </span>
-        <div className="w-100 h-50  absolute right-8  top-45 opacity-80 rounded-2xl  overflow-hidden 
-        max-[600px]:w-100 max-[600px]:h-50
-        max-[400px]:w-50 max-[400px]:h-25">
+    {
+    (weather?.location.city !== undefined) ?
+    <div className = "text-nowrap grid grid-cols-auto justify-items-end max-[700px]:justify-around max-[700px]:items-start">
+        <span className ={`relative justify-start right-85 top-20 border-b-2 pb-0 items-start text-xl w-22 h-full text-shadow-lg/20
+          max-[900px]:right-75
+          max-[800px]:right-100
+          max-[700px]:right-80
+          max-[600px]:right-85
+          max-[500px]:right-75
+
+           ${!isDarkMode? "text-white":"text-black"}`}>Location: </span>
+        <div className="w-100 h-50  absolute right-6  top-35 opacity-80 rounded-2xl  overflow-hidden 
+       
+        max-[900px]:w-90 max-[900px]:h-60 
+        max-[800px]:w-90 max-[800px]:h-50 max-[800px]:right-25
+        max-[700px]:right-15 max-[700px]:w-100
+        max-[600px]:w-110 max-[600px]:h-50 max-[600px]:right-10
+       
+        max-[500px]:w-80 max-[500px]:h-50 max-[500px]:right-13">
             
-        <div className="absolute inset-0  overflow-hidden">
-          
+        <div className="absolute inset-0 overflow-hidden">
             <iframe
             title={`Map of ${cityName}`}
+            width= "100%"
+            height="100%"
             src={mapUrl}
             loading="lazy"
-            className="w-[calc(100%+40px)] h-[calc(100%+130px)] -ml-5 -mt-12.5 border-0"
+            className="w-[calc(100%+70px)] h-[calc(100%+200px)] -ml-14 -mt-12.5 border-0"
             />
          
         </div>
         
         </div>
-        <span className = {`text-xl  relative text-shadow-lg/30 my-5   top-100 right-0  flex ${!isDarkMode ? "text-white":'text-black'} max-[600px]:text-sm max-[600px]:block max-[600px]:mb-25`}>Weather Data Power By: 
-                 <span className = {isDarkMode ? "text-black":"text-white"}>Open Weather</span>
-                <img src ="/Icon/weather icon/feature/openweather-logo.svg" className = {`w-20  h-20 relative block  -top-6 ml-3  ${!isDarkMode ? "drop-shadow-white drop-shadow-lg/30":"drop-shadow-black drop-shadow-lg/80"}
-                max-[600px]:w-18 max-[600px]:h-18 max-[600px]:left-25 max-[600px]:my-4`}  alt= "OpenWeather" />
-        </span> 
-        <span className = {`text-xl  relative text-shadow-lg/30 mb-400  top-88 right-15  flex ${!isDarkMode ? "text-white":'text-black'} max-[600px]:text-sm max-[600px]:block max-[600px]:mb-25`}>Weather Data Power By: 
-                <span className = {isDarkMode ? "text-black":"text-white"}>Google Maps</span>
-                <img src ="/Icon/Google logo.avif" className = {`w-6  h-6 relative block top-0 ml-3  ${!isDarkMode ? "drop-shadow-white drop-shadow-lg/30":"drop-shadow-black drop-shadow-lg/80"}
-                max-[600px]:w-18 max-[600px]:h-18 max-[600px]:left-25 max-[600px]:my-4`}  alt= "OpenWeather" />
-        </span>
+        <div className="w-full h-auto relative top-85 right-3">
+            <WeatherStats isLocalHour = { isLocalHour} isWindySecond={isWindySecond} isKm ={isKm} isMile ={isMile} isKelvin={isKelvin}  isfarh= {isfarh} weather={weather} isDarkMode={isDarkMode} />
+        </div>
+      
+       <div className = "mr-10 relative \
+       max-[500px]:left-10  \
+       max-[600px]:top-10 \
+       max-[800px]:-left-15 \
+       max-[700px]:left-5 \
+       max-[900px]:left-10">
+            <span className = {`text-xl  relative text-shadow-lg/30 my-1   top-100 right-40  flex ${!isDarkMode ? "text-white":'text-black'}
+             max-[600px]:text-xl max-[600px]:block
+
+             `}>Weather Data Power By:</span> 
+                   <span className ={`text-xl  relative text-shadow-lg/30  my-3 top-100 right-40  flex text-slate-200/80`}>Open Weather
+                      <img src ="/Icon/weather icon/feature/openweather-logo.svg" className = {`w-20  h-20 relative flex  -top-6 ml-3  ${!isDarkMode ? "drop-shadow-white drop-shadow-lg/30":"drop-shadow-black drop-shadow-lg/80"}
+                      max-[600px]:w-18 max-[600px]:h-18 max-[600px]:left-0 max-[600px]:my-0
+                      max-[400px]:left-0 max-[400px]:-top-8
+                      `}  alt= "OpenWeather" />
+                    </span>
+            <span className = {`text-xl  relative text-shadow-lg/30   top-88 right-40  flex ${!isDarkMode ? "text-white":'text-black'}
+             max-[600px]:text-xl max-[600px]:block
+             `}>Location Data Power By:</span>
+                  <span className = {`text-xl relative text-shadow-lg/30 mt-3 mb-100 flex top-88 right-40 text-slate-200/80`}>Google Maps
+                      <img src ="/Icon/weather icon/feature/google-maps.svg" className = {`w-6  h-6 relative flex top-0 ml-3  ${!isDarkMode ? "drop-shadow-white drop-shadow-lg/30":"drop-shadow-black drop-shadow-lg/80"}
+                      
+                      max-[600px]:w-7 max-[600px]:h-7 max-[600px]:left-0 max-[600px]:-my-1
+                      max-[400px]:w-6 max-[400px]:h-6 max-[400px]:left-0 max-[400px]:-top-3
+                      `}  alt= "Google Maps" />
+                  </span>      
+        </div>       
       
     </div>
+    :
+    <span className = "px-50 py-80 rounded-md relative top-20  bg-white/10 max-[700px]:left-0 max-[700px]:">
+       <span className =" animate-pulse durataion-400 transition-all bg-gray-300 rounded-md p-30 absolute  left-20 top-75 "></span>
+           <span className =" animate-pulse durataion-400 transition-all bg-gray-300 rounded-md px-30 mb-50 py-5 absolute  left-20 top-145 "></span>
+    </span>
+}
     </>
     );
+
 };
 
 export default WeatherMap;
