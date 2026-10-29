@@ -110,6 +110,7 @@ async def Finding_Similar_City(
 
         # Fallback default values if lat/lon are missing
         tz_offset = 0
+        dt_time = 0
         if lat is not None and lon is not None:
             weather_params = {
                 "lat": lat,

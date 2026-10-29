@@ -66,7 +66,6 @@ export const useWeatherService = () => {
         const res = await fetchDefaultLocation();
         setCity(res.location.city);
         setCoord({lat:res.location.lat,lon:res.location.lon})
-        // បញ្ជូនទាំង city និង country ពី Default Location (បើមាន)
         fetchCityWeather(res.location.city, res.location.country || "");
       } catch (err) {
         setError(
@@ -84,7 +83,7 @@ export const useWeatherService = () => {
     const cityName = parts[0].trim();
     const countryOrTerritory = parts.length > 1 ? parts[1].trim() : "";
     
-    // ✅ បញ្ជូន countryOrTerritory ទៅជា suggestionTerritory ដែរ
+
     fetchCityWeather(cityName, "", 0, 0, countryOrTerritory);
   };
 

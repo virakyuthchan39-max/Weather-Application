@@ -46,7 +46,6 @@ async def Check_Valid_Token(credentials:str):
         await decode_token(token, expected_type="access")
     except HTTPException:
         raise
-    # ដាក់ token ចូល Redis blacklist
     await blacklist_token(token)
 
 

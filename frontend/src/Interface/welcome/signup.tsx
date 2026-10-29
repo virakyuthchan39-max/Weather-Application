@@ -132,10 +132,14 @@ export const SignUp: React.FC<SignUpProps> = ({
         onSuccess?.(res.user_info);
       } catch (err) {
         hasExchanged.current = false;
-        if (err instanceof Error) {
-          setErrorMsg(err.message.length > 34 ? err.message.slice(34) : err.message);
-        } else {
-          setErrorMsg('Something went wrong');
+        const errMsg = err instanceof Error ? err.message : "";
+        if (errMsg.includes("bad_verification_code")) {
+          setErrorMsg("");
+        } 
+        else if (errMsg.includes("400")){setErrorMsg(errMsg.slice(34))}
+        else {
+   
+          setErrorMsg(err instanceof Error ? err.message: "Something went wrong");
         }
       } finally {
         setGithubLoading(false);

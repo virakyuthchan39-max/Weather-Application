@@ -246,27 +246,31 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
   const isStarred = favList.some(
     (fav) => fav.city === weather?.location.city 
     && fav.country === weather?.location.country 
-    && fav.country_code === weather?.location.country_code 
+    || fav.country_code === weather?.location.country_code 
+
 
   );
 
  const handleStarClick = async () => {
    playAnimeClick();
   
-
+  
   if (!isStarred ) {
     const current_city = weather?.location.city;
     const current_country = weather?.location.country;
     const current_country_code= weather?.location.country_code;
-    if (!current_city || !current_country || !current_country_code ) return;
+    const isAntarctica = current_city?.toLowerCase().includes("antarctica");
+
+   if (!current_city || (!isAntarctica && (!current_country || !current_country_code))) return;
     const tempFav: FavoriteSchemes = {
         fav_id: "temp-" + Date.now(),
         user_id: user_id,
         city: current_city,
-        country: current_country,
-        country_code: current_country_code,
+        country: current_country || (isAntarctica ? "N/A":""),
+        country_code: current_country_code || "",
         daytime:weather.weather.daytime,
         climate: weather.weather.climate,
+        offset: weather.datetime.offset,
         temp:{
           kelvin: weather.temperature.kelvin,
           celsius: weather.temperature.celsius,
@@ -291,7 +295,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
     const target = favList.find(
       (fav) =>
         fav.city === weather?.location.city 
-      &&fav.country === weather?.location.country
+      || fav.country === weather?.location.country
         && fav.country_code === weather?.location.country_code
   
     );
@@ -369,7 +373,13 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
 
 
    const fetchFavoritesAdd = async () => {
-    if (!weather?.location.city || !weather?.location.country || !weather?.location.country_code) return;
+     const current_city = weather?.location.city;
+    const current_country = weather?.location.country;
+    const current_country_code = weather?.location.country_code;
+    const isAntarctica = current_city?.toLowerCase().includes("antarctica");
+
+
+    if (!current_city || (!isAntarctica && (!current_country || !current_country_code))) return
 
     try {
       const res = await getFavoriteAdd({
@@ -377,10 +387,11 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
         account_type: account_type,
         email: email,
         city: weather.location.city,
-        country: weather.location.country,
-        country_code:weather.location.country_code,
+        country: weather.location.country || "N/A",
+        country_code:weather.location.country_code || "",
         daytime:weather.weather.daytime,
         climate: weather.weather.climate,
+        offset: weather.datetime.offset,
         temp:{
           kelvin: weather.temperature.kelvin,
           celsius: weather.temperature.celsius,
@@ -395,14 +406,14 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
         },
         territory: weather.location.territory
       }); 
-
+     
       setFavList(res.fav_list);
     } catch (err) {
       console.error("Failed to fetch favorites", err);
     }
   };
 
-  // គណនាថាតើទីក្រុងបច្ចុប្បន្នមានក្នុង Favorites ហើយឬនៅ
+
 
   const fetchFavorites = async () => {
     try {
@@ -487,6 +498,60 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
     fetchCityWeather(item.city, item.country_code, item.lat, item.lon, item.type, item.country, item.country_code);
   
   };
+    const handleFormSubmit = async (e: React.SubmitEvent) => {
+      e.preventDefault();
+      
+      if (suggestions.length > 0) {
+        const targetCity = city.toLowerCase().trim();
+
+        if (targetCity === "antarctica") {
+        setCity("Antarctica");
+        setSuggestions([]);
+        fetchCityWeather("Antarctica", "");
+        return; // Stop here, don't look for suggestions
+        }
+
+        let currentSuggestions = suggestions;
+        if (currentSuggestions.length === 0 && city.trim().length >= 2) {
+            try {
+              const data = await FetchSimilarCity(city.trim());
+              currentSuggestions = data.city_list_info || [];
+              setSuggestions(currentSuggestions); // Update UI just in case
+            } catch (err) {
+              console.error("Failed to fetch suggestions on submit:", err);
+            }
+          }
+        // 1. Find exact match
+        const exactMatch = suggestions.find(s =>
+          s.city.toLowerCase() === targetCity ||
+          `${s.city}, ${s.country}`.toLowerCase() === targetCity ||
+          (s.type && `${s.city}, ${s.type}`.toLowerCase() === targetCity
+        )
+        );
+        
+        // 2. Fallback to the first suggestion if no exact match is found
+        const bestMatch = exactMatch || suggestions[0];
+
+        if (!bestMatch) return handleSearch(e as any);
+        
+        handleSelectSuggestion(bestMatch);
+        setSuggestions([]);
+      } else {
+        // If the user pressed Enter before the fetch finished, do a normal search
+        handleSearch(e as any);
+      }
+    };
+  const handleRefresh = () => {
+  playAnimeClick();
+  
+  const currentCity = weather?.location.city;
+  const currentCountry = weather?.location.country_code || "";
+  
+  if (currentCity) {
+     console.log("Refresh")
+    fetchCityWeather(currentCity, currentCountry);
+  }
+};
 
   return (
     <div className= {`relative font-weather  overflow-y-auto min-h-screen w-full  font-welcome transition-colors duration-500 ${!isDarkMode ? "bg-black":"bg-white"}`}>      {/* ---------- Hamburger Button ---------- */}
@@ -770,7 +835,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
       {/* ---------- Main Dashboard Content ---------- */}
     <main className="relative z-10 font-welcome flex min-h-screen items-center justify-center p-8">
       
-        <form onSubmit={handleSearch} className="pointer-events-auto fixed top-5 right-20 z-10 w-full max-w-md  mx-2
+        <form onSubmit={handleFormSubmit} className="pointer-events-auto fixed top-5 right-20 z-10 w-full max-w-md  mx-2
         max-[600px]:right-20 max-[600px]:w-80
         max-[500px]:w-65
         max-[400px]:w-50 max-[400px]:right-15
@@ -1012,6 +1077,9 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
             onSelect={(path) => setCurrentMusic(path)}
           />
           <FavoriteHistory
+        islocalHour={islocalHour}
+        weather={weather}
+        onRefresh={handleRefresh}
         onSearch={handleSearchFromHistory}
         isCelsius ={isCelsius}
         isfarh={isfarh}

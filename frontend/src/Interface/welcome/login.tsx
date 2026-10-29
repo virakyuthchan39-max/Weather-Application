@@ -129,7 +129,8 @@ const Login: React.FC<LoginProps> = ({
         if (errMsg.includes("bad_verification_code")) {
           setErrorMsg("");
         } else {
-          setErrorMsg(err instanceof Error ? err.message.slice(34) : "Something went wrong");
+   
+          setErrorMsg(err instanceof Error ? err.message: "Something went wrong");
         }
       } finally {
         setGithubLoading(false);

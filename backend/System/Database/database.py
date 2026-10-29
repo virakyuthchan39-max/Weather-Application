@@ -41,9 +41,7 @@ async def get_session():
     async with AsyncAccountSession() as session:
         yield session
 
-# ==========================================
-# 2. APPLICATION DATABASE CONFIG
-# ==========================================
+        
 DATABASE_URL_APPLICATION = f"mysql+aiomysql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME_APPLICATION}"
 
 engine_application = create_async_engine(DATABASE_URL_APPLICATION, echo=False, future=True)
@@ -77,7 +75,7 @@ async def create_table():
         
 
     application_tables = [
-        
+        NotificationUser.__table__,FavoriteCity.__table__
     ]
     async with engine_application.begin() as conn:
         await conn.run_sync(lambda sync_conn: SQLModel.metadata.create_all(sync_conn, tables=application_tables))

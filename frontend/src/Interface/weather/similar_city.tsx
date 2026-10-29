@@ -41,7 +41,7 @@ const SimilarCity: React.FC<SimilarCityProps> = ({ results, isDarkMode, onSelect
         <p className="text-center p-4 font-bold text-red-500">
           {error.toLowerCase().includes("weather service unreachable:") 
             ? "Failed the connection! Please check your network" 
-            : error}
+            : (error.toLowerCase().includes("429") ? `Too much request! Please wait for a minute` :"")}
         </p>
       )} 
     
