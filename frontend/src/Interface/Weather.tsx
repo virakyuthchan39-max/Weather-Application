@@ -41,6 +41,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
     cloneCity,
     weather,
     daytime,
+    setError,
     city,
     setCity,
     error,
@@ -258,7 +259,8 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
  const handleStarClick = async () => {
    playAnimeClick();
   
-  
+  if (favList.length >= 20) return  setError("Your limit favorite city is only 20 at below !")
+ ;
   if (!isStarred ) {
     const current_city = weather?.location.city;
     const current_country = weather?.location.country;
@@ -275,6 +277,8 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
         daytime:weather.weather.daytime,
         climate: weather.weather.climate,
         offset: weather.datetime.offset,
+        lon: weather.location.lon,
+        lat: weather.location.lat,
         wind_speed: weather.weather.wind.speed,
         temp:{
           kelvin: weather.temperature.kelvin,
@@ -381,10 +385,11 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
     const current_country = weather?.location.country;
     const current_country_code = weather?.location.country_code;
     const isAntarctica = current_city?.toLowerCase().includes("antarctica");
-
+    const FavLengthList = await getFavoriteList(user_id, email, account_type);
+    if (FavLengthList.fav_list.length >=20) return setError("Your limit favorite city is only 20 at below !")
 
     if (!current_city || (!isAntarctica && (!current_country || !current_country_code))) return
-
+    
     try {
       const res = await getFavoriteAdd({
         user_id: user_id,
@@ -395,6 +400,8 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
         country_code:weather.location.country_code || "",
         daytime:weather.weather.daytime,
         climate: weather.weather.climate,
+        lon: weather.location.lon,
+        lat: weather.location.lat,
         offset: weather.datetime.offset,
         wind_speed: weather.weather.wind.speed,
         temp:{
@@ -463,20 +470,22 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
   // const [allSimilarCities, setAllSimilarCities] = useState<SimilarSchemes[]>([]);
 
   const [suggestions, setSuggestions] = useState<SimilarSchemes[]>([]);
-  const handleSearchFromHistory = (selectCity:string) =>{
+  const handleSearchFromHistory = (selectCity:string,country_code:string,lat:number,lon:number) =>{
+    if(error.includes("429")) return
     setShowHistory(false);
     if (selectCity.includes(",")){
         const CityName = selectCity.split(",")[0].trim();
          setCity(CityName);
-        fetchCityWeather(CityName,"")
+        fetchCityWeather(CityName,country_code,lat,lon)
     }
     else {
     setCity(selectCity)
-    fetchCityWeather(selectCity,"")
+    fetchCityWeather(selectCity,country_code,lat,lon)
    
     }
   }
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if(error.includes("429")) return
     const val = e.target.value;
     setCity(val);
 
@@ -505,7 +514,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
   };
     const handleFormSubmit = async (e: React.SubmitEvent) => {
       e.preventDefault();
-      
+      if(error.includes("429")) return
       if (suggestions.length > 0) {
         const targetCity = city.toLowerCase().trim();
 
@@ -550,8 +559,9 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
     const refreshTimeoutRef = useRef<number|null>(null)
     const handleRefresh = async () => {
     playAnimeClick();
+    if(error.includes("429")) return
     setRefresh(true);
-
+    
     const currentCity = weather?.location.city;
     const currentCountry = weather?.location.country_code || "";
     
@@ -567,7 +577,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
           // Remove territory (e.g., "Phnom Penh, Cambodia" -> "Phnom Penh")
           const cityName = fav.city.split(",")[0].trim();
           
-          const res = await fetchWeather(cityName, fav.country_code || "", 0, 0);
+          const res = await fetchWeather(cityName, fav.country_code || "", fav.lat, fav.lon);
           
           if (res && res.weather) {
              // Update with fresh data from API
@@ -596,6 +606,51 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
       setRefresh(false);
     }, 1500);
   };
+
+  // handle countdown the limited request
+    const [count, setCount] = useState(60);
+    const targetTimeRef = useRef<number | null>(null);
+
+   useEffect(() => {
+      if (!error || !error.includes("429")) {
+        targetTimeRef.current = null; // Reset if error is gone
+        return;
+      }
+
+      // Only set a new target time if there isn't an active one
+      if (!targetTimeRef.current || Date.now() > targetTimeRef.current) {
+        targetTimeRef.current = Date.now() + 60000;
+      }
+
+      const updateCountdown = () => {
+        const remaining = Math.max(0, Math.ceil
+          
+        ((targetTimeRef.current! - Date.now()) / 1000));
+        setCount(remaining);
+
+        if (remaining === 0) {
+          targetTimeRef.current = null;
+        }
+      };
+
+      updateCountdown(); // Run immediately
+      const timer = setInterval(updateCountdown, 1000);
+
+      return () => clearInterval(timer);
+    }, [error]);
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   return (
     <div className= {`relative font-weather  overflow-y-auto min-h-screen w-full  font-welcome transition-colors duration-500 ${!isDarkMode ? "bg-black":"bg-white"}`}>      {/* ---------- Hamburger Button ---------- */}
@@ -915,6 +970,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
             />
           </div>
            <SimilarCity 
+             count={count}
             error={error}
             onClose={() => setSuggestions([])}
             results={suggestions} 
@@ -1127,6 +1183,8 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
             onSelect={(path) => setCurrentMusic(path)}
           />
           <FavoriteHistory
+        error={error}
+        count={count}
         isKm={isKm}
         isWindySecond={isWindySecond}
         isKelvin={isKevin}

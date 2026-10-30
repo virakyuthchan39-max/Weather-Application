@@ -4,7 +4,6 @@ import { playAnimeClick } from './sound_effect.tsx';
 import { getWeatherIcon } from '../Interface/Background.tsx';
 import { WeatherResponse } from './Api/service/open_weather.tsx';
 
-
 // ✅ 1. Create a dedicated ticking clock component for each city
 const FavoriteClock = ({ offset, islocalHour }: { offset?: number; islocalHour: boolean }) => {
   const [timeStr, setTimeStr] = useState("");
@@ -50,6 +49,7 @@ const FavoriteClock = ({ offset, islocalHour }: { offset?: number; islocalHour: 
 
 interface FavoriteHistoryProps {
   weather: WeatherResponse | null;
+  error: string;
   refresh: boolean;
   isKelvin: boolean;
   isKm:boolean;
@@ -60,7 +60,8 @@ interface FavoriteHistoryProps {
   isWindySecond: boolean;
   cloneCity: string | undefined;
   isOpen: boolean;
-  onSearch: (city: string) => void;
+  count: number;
+  onSearch: (city: string,country_code:string,lat:number,lon:number) => void;
   onClose: () => void;
   favList: FavoriteSchemes[];
   isDarkMode: boolean;
@@ -73,8 +74,10 @@ const FavoriteHistory: React.FC<FavoriteHistoryProps> = ({
   isCelsius,
   isWindySecond,
   isKelvin,
+  error,
   refresh,
   isMile,
+  count,
   isKm,
   weather,
   islocalHour,
@@ -105,8 +108,8 @@ const FavoriteHistory: React.FC<FavoriteHistoryProps> = ({
     onDelete(fav_id);
   };
 
-  const handleResearch = (city: string) => {
-    onSearch(city);
+  const handleResearch = (city: string,country_code:string,lat:number,lon:number) => {
+    onSearch(city,country_code,lat,lon);
   };
 
   
@@ -139,10 +142,20 @@ const FavoriteHistory: React.FC<FavoriteHistoryProps> = ({
           />
         </h2>
         
-        {refresh && 
-          <p className = {`text-md my-4 border-4 p-1 w-18 rounded-xl border-solid absolute transition-all duration-500  ${!isDarkMode ? "text-white":"text-black"}
+        {refresh ?
+          <p
+         className = {`text-md my-4 border-4 p-1 w-18 rounded-xl border-solid absolute transition-all duration-500  ${!isDarkMode ? "text-white":"text-black"}
           max-[500px]:top-1
-          `}>Updated</p>}
+          `}>Updated</p>
+          :
+          (error && count !== 0 )&& (
+        <p className="text-center p-4 font-bold text-red-500">
+          {error.toLowerCase().includes("weather service unreachable:") 
+            ? "Failed the connection! Please check your network" 
+            : (error.toLowerCase().includes("429") ? `Too much request! Please wait for a minute ${count <= 1? `${count} second`:`${count} seconds`} ` :error)}
+        </p>
+      )
+          }
         
         {/* ✅ 2. Fixed the Refresh Button onClick */}
         <button 
@@ -205,7 +218,7 @@ const FavoriteHistory: React.FC<FavoriteHistoryProps> = ({
                   {/* Content Layer */}
                   <div
                     className="relative z-10 w-full text-nowrap flex items-center justify-between"
-                    onClick={() => handleResearch(fav.city)}
+                    onClick={() => handleResearch(fav.city,fav.country_code,fav.lat,fav.lon)}
                   >
                     <div className="flex flex-col gap-1">
                       <h1 className="font-bold relative -top-5 flex items-center text-lg">

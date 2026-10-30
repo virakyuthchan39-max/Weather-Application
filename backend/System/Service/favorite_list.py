@@ -1,15 +1,16 @@
 from fastapi import APIRouter, Depends, status, HTTPException, Request
-from pydantic import BaseModel, EmailStr, Field
-from typing import Annotated, List, Optional
+from pydantic import BaseModel, EmailStr
+from typing import Annotated, List
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
-from datetime import datetime, timezone,timedelta
+from datetime import datetime, timezone, timedelta
 import uuid
 import httpx
 
-from Database.database import get_session
-from .temperature import TemperatureSchema,classify_level,classify_feel_like_level,convert_temperature
-from Database.model_account import UserLogin, UserSignIn, GoogleSignIn, FacebookSignIn, GithubSignIn
+from Database.database import get_session,get_application
+from .temperature import TemperatureSchema, convert_temperature
+from Database.model_account import UserSignIn, GoogleSignIn, FacebookSignIn, GithubSignIn
+from Database.model_application import FavoriteCity
 
 # ---------- Pydantic Models ----------
 class FavoriteAddRequest(BaseModel):
@@ -20,21 +21,25 @@ class FavoriteAddRequest(BaseModel):
     daytime: str
     climate: str
     wind_speed: float
+    lon: float = 0
+    lat: float = 0
     temp: TemperatureSchema
     country: str
-    country_code: str = "" # ✅ Default to empty string for Antarctica
-    offset: int = 0        # ✅ ADDED: Required for frontend timezone calculation
+    country_code: str = ""
+    offset: int = 0
 
 class FavoriteSchemes(BaseModel):
     fav_id: str
     user_id: int
     city: str
+    lon: float = 0
+    lat: float = 0
     daytime: str
     climate: str
     country: str
     wind_speed: float
     country_code: str
-    offset: int = 0        # ✅ ADDED: Required for frontend timezone calculation
+    offset: int = 0
     temp: TemperatureSchema
     time: str
     full_date: str
@@ -49,13 +54,9 @@ class DeleteResponse(BaseModel):
 
 router = APIRouter()
 
-# In-memory storage
-fav_data = {} 
-
 async def verify_user(db: AsyncSession, user_id: int, email: str, account_type: str):
     acc_type = account_type.lower()
     
-    # ✅ FIXED: Use & instead of 'and' for SQLAlchemy conditions
     if acc_type == "regular":
         stmt = select(UserSignIn).where((UserSignIn.id == user_id) & (UserSignIn.gmail == email))
     elif acc_type == "google":
@@ -68,32 +69,51 @@ async def verify_user(db: AsyncSession, user_id: int, email: str, account_type: 
         raise HTTPException(detail="Invalid account type!", status_code=status.HTTP_400_BAD_REQUEST)
 
     result = await db.scalars(stmt)
-    user = result.first()
-    if not user:
-        raise HTTPException(
-            detail=f"This {account_type} account isn't found!", 
-            status_code=status.HTTP_404_NOT_FOUND
-        )
-    
-    return user
+    if not result.first():
+        raise HTTPException(detail=f"This {account_type} account isn't found!", status_code=status.HTTP_404_NOT_FOUND)
 
+
+def map_to_schema(db_fav: FavoriteCity) -> FavoriteSchemes:
+    return FavoriteSchemes(
+        fav_id=db_fav.fav_id,
+        user_id=db_fav.user_id,
+        city=db_fav.city,
+        lon=db_fav.lon,
+        lat=db_fav.lat,
+        daytime=db_fav.daytime,      # ✅ អានពី DB
+        climate=db_fav.climate,      # ✅ អានពី DB
+        country=db_fav.country,
+        wind_speed=db_fav.wind_speed,# ✅ អានពី DB
+        country_code=db_fav.country_code,
+        offset=db_fav.offset,
+        temp=TemperatureSchema(
+            kelvin=db_fav.temp_kelvin,
+            celsius=db_fav.temp_celsius,
+            fahrenheit=db_fav.temp_fahrenheit,
+            feel_like_celsius=db_fav.feel_like_celsius,
+            feel_like_level=db_fav.feel_like_level,
+            feel_like_farhrenheit=db_fav.feel_like_fahreheit,
+            feel_like_kelvin=db_fav.feel_like_kelvin,
+            pressure=db_fav.pressure,
+            visibility=db_fav.visibility,
+            humidity=db_fav.humidity
+        ),
+        time=db_fav.time,
+        full_date=db_fav.full_date
+    )
 
 @router.post("/favorite_add", status_code=status.HTTP_200_OK, response_model=FavoriteResponse)
 async def Favorite_City(
     input: FavoriteAddRequest, 
     request: Request,
-    db: Annotated[AsyncSession, Depends(get_session)]
+    db_user: Annotated[AsyncSession , Depends(get_session)],
+    db: Annotated[AsyncSession, Depends(get_application)]
 ):
-    await verify_user(db, input.user_id, input.email, input.account_type)
+    await verify_user(db_user, input.user_id, input.email, input.account_type)
 
-    client_ip = request.headers.get("x-forwarded-for")
-    if client_ip:
-        client_ip = client_ip.split(",")[0].strip()
-    else:
-        client_ip = request.client.host
-
-    formatted_time = datetime.now(timezone.utc).strftime("%H:%M %p")
-    formatted_date = datetime.now(timezone.utc).strftime("%d %b %Y")
+    # IP Time Logic
+    formatted_time = datetime.now(timezone.utc).strftime("%I:%M %p")
+    formatted_date = datetime.now(timezone.utc).strftime("%a, %d %b %Y")
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             res = await client.get("https://ipwho.is/")
@@ -113,27 +133,79 @@ async def Favorite_City(
         pressure=input.temp.pressure,
         feel_like=input.temp.feel_like_kelvin
     )
-    
-    new_fav = FavoriteSchemes(
-        fav_id=str(uuid.uuid4()),
-        user_id=input.user_id,
-        city=input.city,
-        country=input.country,
-        country_code=input.country_code,
-        daytime=input.daytime,
-        climate=input.climate,
-        wind_speed=input.wind_speed,
-        offset=input.offset, # ✅ SAVED: Now it will return to frontend correctly
-        temp=result_temp,
-        time=formatted_time,
-        full_date=formatted_date,
-    )
 
-    if input.user_id not in fav_data:
-        fav_data[input.user_id] = []
-    fav_data[input.user_id].append(new_fav)
+    # ✅ ពិនិត្យមើលថាតើទីក្រុងនេះមានរួចហើយឬនៅ?
+    existing_fav_result = await db.scalars(
+        select(FavoriteCity)
+        .where(FavoriteCity.user_id == input.user_id)
+        .where(FavoriteCity.city == input.city)
+        .where(FavoriteCity.country == input.country)
+    )
+    existing_fav = existing_fav_result.first()
+
+    if existing_fav:
+  
+        existing_fav.daytime = input.daytime
+        existing_fav.climate = input.climate
+        existing_fav.wind_speed = input.wind_speed
+        existing_fav.offset = input.offset
+        existing_fav.time = formatted_time
+        existing_fav.full_date = formatted_date
+        
+        # Update សីតុណ្ហភាព
+        existing_fav.temp_kelvin = result_temp.kelvin
+        existing_fav.temp_celsius = result_temp.celsius
+        existing_fav.temp_fahrenheit = result_temp.fahrenheit
+        existing_fav.feel_like_celsius = result_temp.feel_like_celsius
+        existing_fav.feel_like_level = result_temp.feel_like_level
+        existing_fav.feel_like_fahreheit = result_temp.feel_like_farhrenheit
+        existing_fav.feel_like_kelvin = result_temp.feel_like_kelvin
+        existing_fav.pressure = result_temp.pressure
+        existing_fav.visibility = result_temp.visibility
+        existing_fav.humidity = result_temp.humidity
+        
+        db.add(existing_fav)
+    else:
+        # បើគ្មាន -> បង្កើតថ្មី
+        add_fav_city = FavoriteCity(
+            fav_id=str(uuid.uuid4()),
+            user_id=input.user_id,
+            account_type=input.account_type,
+            gmail=input.email,
+            city=input.city,
+            country=input.country,
+            country_code=input.country_code,
+            lon=input.lon,
+            lat=input.lat,
+            daytime=input.daytime,
+            climate=input.climate,
+            wind_speed=input.wind_speed,
+            offset=input.offset,
+            time=formatted_time,
+            full_date=formatted_date,
+            temp_kelvin=result_temp.kelvin,
+            temp_celsius=result_temp.celsius,
+            temp_fahrenheit=result_temp.fahrenheit,
+            feel_like_celsius=result_temp.feel_like_celsius,
+            feel_like_level=result_temp.feel_like_level,
+            feel_like_fahreheit=result_temp.feel_like_farhrenheit,
+            feel_like_kelvin=result_temp.feel_like_kelvin,
+            pressure=result_temp.pressure,
+            visibility=result_temp.visibility,
+            humidity=result_temp.humidity
+        )
+        db.add(add_fav_city)
+
+   
+    await db.commit()
+
+    # ទាញយក List ថ្មីពី Database
+    all_favs = await db.scalars(select(FavoriteCity).where(FavoriteCity.user_id == input.user_id))
     
-    return FavoriteResponse(fav_list=fav_data[input.user_id])
+    # ✅ ហៅ map_to_schema ដោយមិនបាច់ដាក់ input (ព្រោះវាអានពី DB ហើយ)
+    fav_list = [map_to_schema(f) for f in all_favs.all()]
+    
+    return FavoriteResponse(fav_list=fav_list)
 
 
 @router.get("/favorite_list", status_code=status.HTTP_200_OK, response_model=FavoriteResponse)
@@ -141,11 +213,16 @@ async def Favorite_List(
     user_id: int, 
     email: EmailStr, 
     account_type: str = "Regular",
-    db: AsyncSession = Depends(get_session)
+    db_user: AsyncSession = Depends(get_session),
+    db: AsyncSession = Depends(get_application)
 ):
-    await verify_user(db, user_id, email, account_type)
-    user_favorites = fav_data.get(user_id, [])
-    return FavoriteResponse(fav_list=user_favorites)
+    await verify_user(db_user, user_id, email, account_type)
+    
+    # Fetch from Database
+    all_favs = await db.scalars(select(FavoriteCity).where(FavoriteCity.user_id == user_id))
+    fav_list = [map_to_schema(f) for f in all_favs.all()]
+    
+    return FavoriteResponse(fav_list=fav_list)
 
 
 @router.delete("/favorite_delete/{fav_id}", response_model=DeleteResponse, status_code=status.HTTP_200_OK)
@@ -154,17 +231,27 @@ async def Delete_favorite(
     user_id: int, 
     email: EmailStr, 
     account_type: str = "Regular",
-    db: AsyncSession = Depends(get_session)
+    db_user: AsyncSession = Depends(get_session),
+    db: AsyncSession = Depends(get_application)
 ):
-    await verify_user(db, user_id, email, account_type)
+    await verify_user(db_user, user_id, email, account_type)
 
-    user_favs = fav_data.get(user_id, [])
-    target_fav = [f for f in user_favs if f.fav_id == fav_id]
+    # Find the specific city in the Database
+    target = await db.scalars(
+        select(FavoriteCity)
+        .where(FavoriteCity.fav_id == fav_id)
+        .where(FavoriteCity.user_id == user_id)
+    )
+    target_fav = target.first()
+    
     if not target_fav:
         raise HTTPException(detail="Favorite city not found!", status_code=status.HTTP_404_NOT_FOUND)
 
-    fav_data[user_id] = [f for f in user_favs if f.fav_id != fav_id]
-    return DeleteResponse(fav_delete=target_fav)
+    # Delete from Database
+    await db.delete(target_fav)
+    await db.commit()
+
+    return DeleteResponse(fav_delete=[map_to_schema(target_fav)])
 
 
 @router.delete("/favorite_delete_all", status_code=status.HTTP_200_OK, response_model=DeleteResponse)
@@ -172,14 +259,21 @@ async def Delete_favorite_all(
     user_id: int, 
     email: EmailStr,
     account_type: str = "Regular",
-    db: AsyncSession = Depends(get_session)
+    db_user: AsyncSession = Depends(get_session),
+    db: AsyncSession = Depends(get_application)
 ):
-    await verify_user(db, user_id, email, account_type)
+    await verify_user(db_user, user_id, email, account_type)
 
-    user_favs = fav_data.get(user_id, [])
-    fav_data[user_id] = []
+    # Find all favorites for this user
+    all_favs = await db.scalars(select(FavoriteCity).where(FavoriteCity.user_id == user_id))
+    favs_to_delete = all_favs.all()
+    
+    # Delete each one
+    for fav in favs_to_delete:
+        await db.delete(fav)
+    await db.commit()
 
     return DeleteResponse(
         detail="All favorite cities deleted successfully! ✅",
-        fav_delete=user_favs
+        fav_delete=[map_to_schema(f) for f in favs_to_delete]
     )

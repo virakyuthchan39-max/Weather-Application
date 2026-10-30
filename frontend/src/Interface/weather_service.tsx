@@ -96,6 +96,7 @@ export const useWeatherService = () => {
     setCity,
     setLoading,
     error,
+    setError,
     loading,
     handleSearch,
     fetchCityWeather, 

@@ -1,15 +1,16 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef ,useState} from 'react';
 import { SimilarSchemes } from '../../Effect_Service/Api/service/similar_city_fetch'; 
 
 interface SimilarCityProps {
   error: string;
   results: SimilarSchemes[];
   isDarkMode: boolean;
+  count: number;
   onSelect: (item: SimilarSchemes) => void;
   onClose: () => void; // ✅ បន្ថែម Prop សម្រាប់បិទ Dropdown
 }
 
-const SimilarCity: React.FC<SimilarCityProps> = ({ results, isDarkMode, onSelect, error, onClose }) => {
+const SimilarCity: React.FC<SimilarCityProps> = ({ results,count, isDarkMode, onSelect, error, onClose }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // ✅ ចាប់ Event ពេលចុចខាងក្រៅ ដើម្បីបិទ Dropdown
@@ -24,6 +25,7 @@ const SimilarCity: React.FC<SimilarCityProps> = ({ results, isDarkMode, onSelect
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
 
+   
   // បើគ្មានទាំង Error និង Results -> មិនបង្ហាញអ្វីទាំងអស់
   if (results.length === 0 && !error) return null;
 
@@ -37,11 +39,11 @@ const SimilarCity: React.FC<SimilarCityProps> = ({ results, isDarkMode, onSelect
       }`}
     >
       {/* ✅ បង្ហាញ Error ពេលគ្មាន Results ឬពេលមានបញ្ហា Connection */}
-      {error && (
+      {(error && count !== 0 )&& (
         <p className="text-center p-4 font-bold text-red-500">
           {error.toLowerCase().includes("weather service unreachable:") 
             ? "Failed the connection! Please check your network" 
-            : (error.toLowerCase().includes("429") ? `Too much request! Please wait for a minute` :error)}
+            : (error.toLowerCase().includes("429") ? `Too much request! Please wait for a minute ${count <= 1? `${count} second`:`${count} seconds`} ` :error)}
         </p>
       )} 
     

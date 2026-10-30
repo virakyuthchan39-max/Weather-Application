@@ -17,7 +17,7 @@ const WeatherStats: React.FC<WeatherStatsProps> = ({
 }) => {
   // ១. ត្រូវដាក់ Hooks ទាំងអស់នៅខាងលើគេ (មុនពេល return)
   const [feelLikeIcon, setFeelLike] = useState("");
-
+  
   useEffect(() => {
     if (!weather) return;
     

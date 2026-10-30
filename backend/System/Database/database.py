@@ -75,7 +75,7 @@ async def create_table():
         
 
     application_tables = [
-        NotificationUser.__table__,FavoriteCity.__table__
+        NotificationUser.__table__,FavoriteCity.__table__,DonationByUser.__table__
     ]
     async with engine_application.begin() as conn:
         await conn.run_sync(lambda sync_conn: SQLModel.metadata.create_all(sync_conn, tables=application_tables))

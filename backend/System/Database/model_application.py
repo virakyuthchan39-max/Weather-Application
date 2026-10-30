@@ -5,18 +5,42 @@ from sqlmodel import SQLModel,MetaData, Field, Relationship
 from typing import Annotated
 
 
-
-class FavoriteCity(SQLModel, table=True, ):
+    
+class FavoriteCity(SQLModel, table=True):
     __tablename__ = "favorite_city"
     
     id: Optional[int] = Field(default=None, primary_key=True, index=True)
-    city: Annotated[str, Field(default=None, unique=True)]
-    country: Annotated[str, Field(default=None, index=True)]
-    gmail: Annotated[str, Field(default=None, unique=True)]
-    username: Annotated[str, Field(default=None, index=True)]
-    added_at: Annotated[datetime, Field(default_factory=lambda: datetime.now(timezone.utc))]
+    fav_id: Annotated[str, Field(default=None, index=True)]
+    
+    user_id: Annotated[int, Field(default=None, index=True)]
     account_type: Annotated[str, Field(default=None)]
     
+    gmail: Annotated[str, Field(default=None, index=True)]
+    city: Annotated[str, Field(default=None, index=True)]
+    country: Annotated[str, Field(default=None, index=True)]
+    country_code: Annotated[str, Field(default="")]
+    
+    lon: Annotated[float, Field(default=0)]
+    lat: Annotated[float, Field(default=0)]
+    
+
+    daytime: Annotated[str, Field(default=None)]
+    climate: Annotated[str, Field(default=None)]
+    wind_speed: Annotated[float, Field(default=0)]
+    offset: Annotated[int, Field(default=0)]
+    time: Annotated[str, Field(default=None)]
+    full_date: Annotated[str, Field(default=None)]
+
+    temp_kelvin: Annotated[float, Field(default=0)]
+    temp_celsius: Annotated[float, Field(default=0)]
+    temp_fahrenheit: Annotated[float, Field(default=0)]
+    feel_like_celsius: Annotated[float, Field(default=0)]
+    feel_like_level: Annotated[str, Field(default=None)]
+    feel_like_fahreheit: Annotated[float, Field(default=0)]
+    feel_like_kelvin: Annotated[float, Field(default=0)]
+    pressure: Annotated[float, Field(default=0)]
+    visibility: Annotated[float, Field(default=0)]
+    humidity: Annotated[float, Field(default=0)]
     
 class NotificationUser(SQLModel, table=True, ):
     __tablename__ = "notifcation"
@@ -28,7 +52,7 @@ class NotificationUser(SQLModel, table=True, ):
 
 
     
-class NotificationUser(SQLModel, table=True, ):
+class DonationByUser(SQLModel, table=True, ):
     __tablename__ = "donation"
     id: Optional[int] = Field(default=None, primary_key=True, index=True)
     gmail: Annotated[str, Field(default=None)]
