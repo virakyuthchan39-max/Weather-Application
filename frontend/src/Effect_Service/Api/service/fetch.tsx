@@ -66,10 +66,10 @@ export const createAccount = (payload: CreateUserRequest): Promise<AuthResponse>
 export const loginAccount = (payload: LoginUserRequest): Promise<AuthResponse> =>
   request<AuthResponse>("/loginAccount", payload);
 
-
 // logout
 export interface LogoutUserRequest {
   gmail: string;
+
 }
 
 export interface LogoutSchema {
@@ -121,9 +121,13 @@ export const clearToken = () => localStorage.removeItem("access_token");
 
 export async function logoutGoogle(payload: LogoutUserRequest): Promise<LogoutResponse> {
   try {
+    const token = getToken()
     const res = await fetch(`${BASE_URL}/logout_google`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}` // ✅ ត្រូវការ Token តាម Backend
+      },
       body: JSON.stringify(payload),
     });
     const data = await res.json();
@@ -137,9 +141,13 @@ export async function logoutGoogle(payload: LogoutUserRequest): Promise<LogoutRe
 
 export async function logoutGithub(payload: LogoutUserRequest): Promise<LogoutResponse> {
   try {
+   const token = getToken()
     const res = await fetch(`${BASE_URL}/logout_github`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}` 
+      },
       body: JSON.stringify(payload),
     });
     const data = await res.json();
@@ -153,9 +161,13 @@ export async function logoutGithub(payload: LogoutUserRequest): Promise<LogoutRe
 
 export async function logoutFacebook(payload: LogoutUserRequest): Promise<LogoutResponse> {
   try {
+   const token = getToken()
     const res = await fetch(`${BASE_URL}/logout_facebook`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}` // ✅ ត្រូវការ Token តាម Backend
+      },
       body: JSON.stringify(payload),
     });
     const data = await res.json();

@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import "./weather.css";
 import "../Interface/welcome/account.css";
 import Background,{getWeatherIcon} from "./Background";
-import { useWeatherService } from "./weather_service";
+
+import { fetchWeather } from '../Effect_Service/Api/service/open_weather.tsx';
+import { useWeatherService} from "./weather_service";
 import { playButtonSound,playAnimeClick,playSlideOn,playSlideOff} from '../Effect_Service/sound_effect';
 import { WeatherMusicPlay } from '../Effect_Service/background_music';
 import MusicList from '../Interface/weather/music_list';
@@ -170,8 +172,11 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
      playSlideOff()
   }
 
+
+
   const handleForecastClick =()=>{
        if(isForecastOn) playSlideOn();
+  
        setIsForecastOn(!isForecastOn)
        playSlideOff()
   }
@@ -245,8 +250,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
   // ២. គណនា isStarred ដោយផ្ទាល់
   const isStarred = favList.some(
     (fav) => fav.city === weather?.location.city 
-    && fav.country === weather?.location.country 
-    || fav.country_code === weather?.location.country_code 
+    && fav.country_code === weather?.location.country_code 
 
 
   );
@@ -271,6 +275,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
         daytime:weather.weather.daytime,
         climate: weather.weather.climate,
         offset: weather.datetime.offset,
+        wind_speed: weather.weather.wind.speed,
         temp:{
           kelvin: weather.temperature.kelvin,
           celsius: weather.temperature.celsius,
@@ -295,7 +300,6 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
     const target = favList.find(
       (fav) =>
         fav.city === weather?.location.city 
-      || fav.country === weather?.location.country
         && fav.country_code === weather?.location.country_code
   
     );
@@ -392,6 +396,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
         daytime:weather.weather.daytime,
         climate: weather.weather.climate,
         offset: weather.datetime.offset,
+        wind_speed: weather.weather.wind.speed,
         temp:{
           kelvin: weather.temperature.kelvin,
           celsius: weather.temperature.celsius,
@@ -541,17 +546,56 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
         handleSearch(e as any);
       }
     };
-  const handleRefresh = () => {
-  playAnimeClick();
-  
-  const currentCity = weather?.location.city;
-  const currentCountry = weather?.location.country_code || "";
-  
-  if (currentCity) {
-     console.log("Refresh")
-    fetchCityWeather(currentCity, currentCountry);
-  }
-};
+    const [refresh,setRefresh] = useState(false);
+    const refreshTimeoutRef = useRef<number|null>(null)
+    const handleRefresh = async () => {
+    playAnimeClick();
+    setRefresh(true);
+
+    const currentCity = weather?.location.city;
+    const currentCountry = weather?.location.country_code || "";
+    
+    // 1. Refresh main dashboard weather
+    if (currentCity) {
+      fetchCityWeather(currentCity, currentCountry);
+    }
+
+    // 2. Refresh ALL favorite cities in the modal
+    try {
+      const updatedFavs = await Promise.all(
+        favList.map(async (fav) => {
+          // Remove territory (e.g., "Phnom Penh, Cambodia" -> "Phnom Penh")
+          const cityName = fav.city.split(",")[0].trim();
+          
+          const res = await fetchWeather(cityName, fav.country_code || "", 0, 0);
+          
+          if (res && res.weather) {
+             // Update with fresh data from API
+             return {
+               ...fav,
+               temp: res.temperature,
+               wind_speed: res.weather.wind.speed,
+               climate: res.weather.climate,
+               daytime: res.weather.daytime,
+               offset: res.datetime.offset,
+             };
+          }
+          return fav;
+        })
+      );
+      
+      // Update the UI with the new data
+      setFavList(updatedFavs);
+    } catch (error) {
+      console.error("Failed to refresh favorites", error);
+    }
+
+    // 3. Hide "Updated" text after 1.5s
+    if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
+    refreshTimeoutRef.current = window.setTimeout(() => {
+      setRefresh(false);
+    }, 1500);
+  };
 
   return (
     <div className= {`relative font-weather  overflow-y-auto min-h-screen w-full  font-welcome transition-colors duration-500 ${!isDarkMode ? "bg-black":"bg-white"}`}>      {/* ---------- Hamburger Button ---------- */}
@@ -640,7 +684,8 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
                   <img src = {!isDarkMode ? "/Icon/weather icon/feature/darkmode/meassure_white.svg":"/Icon/weather icon/feature/daymode/meassure_black.svg"}
                   className = {`${isDarkMode ? "w-10 h-10 pb-3 ml-1.5":"w-8.5 h-8.5 pb-1.5 ml-2"}  `}/>
               </span>
-         <div onClick={handleMeassureClick} className="relative flex py-3 cursor-pointer w-40 my-5 items-center justify-between px-2 rounded-full bg-gray-600 shadow-inner">
+         <button onClick={handleMeassureClick} className="relative flex py-3 cursor-pointer w-40 my-5 items-center justify-between px-2 rounded-full bg-gray-600 shadow-inner
+         ">
 
               <div className={`absolute h-9 w-11 rounded-full from-cyan-400 to-blue-500 drop-shadow-lg/90 shadow-md transition-transform duration-500 ease-in-out 
                 ${isKm ? "translate-x-0 bg-linear-to-r" : isMeter ? "translate-x-12 bg-linear-to-r" : "translate-x-25 bg-linear-to-r"}`} 
@@ -654,8 +699,33 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
               
               {/* អក្សរ K */}
               <div className={`relative z-10 w-10 text-center font-bold transition-colors ${isMile ? "text-white" : "text-gray-400 text-shadow-lg/80"}`}>Mi</div>
-            </div>
+          </button>
+             <span className = {` font-bold flex ${!isDarkMode ? "text-white":"text-black"} `}>Windy Speed
+              <img src = {!isDarkMode ? "/Icon/weather icon/feature/darkmode/wind_white.svg":"/Icon/weather icon/feature/daymode/wind_black.svg"}
+              className = "w-8 h-8 ml-2 pb-1"/>
+            </span>
+
+             <button  onClick={handleWindySpeedClick} className= "relative flex cursor-pointer w-35 my-5 items-center justify-center rounded-full bg-gray-600  shadow-inner">
+                  <div className = {`absolute h-9 w-17 rounded-full  from-cyan-400
+                    to-blue-500  shadow-md drop-shadow-lg/90 transition-transform duration-500 ease-in-out ${isWindySecond ? "-translate-x-8 bg-linear-to-r":"translate-x-8 bg-linear-to-l"}`}/>
+                  <div className = {`relative left-3 z-10 flex w-0.5  items-center justify-center py-2 font-bold transition-colors  ${isWindySecond ? "text-white":"text-gray-400 text-shadow-gray-900 text-shadow-lg/80"}`}>Second</div>
+                  <div className={`relative left-6 z-10 flex w-1/2 items-center ml-5 justify-center py-2 font-bold transition-colors  ${!isWindySecond ? 'text-white' : 'text-gray-400 text-shadow-gray-900 text-shadow-lg/80'}`}>Hour</div>
+             </button>
           
+            <span className = {` font-bold flex ${!isDarkMode ? "text-white":"text-black"} `}>Hours
+              <img src = {!isDarkMode ? "/Icon/weather icon/feature/darkmode/time_white.svg":"/Icon/weather icon/feature/daymode/time_black.svg"}
+              className = "w-8 h-8 ml-2 pb-1"/>
+            </span>
+
+
+             <div onClick={handleHourClick} className= "relative flex cursor-pointer w-35 my-5 items-center justify-center rounded-full bg-gray-600  shadow-inner">
+                  <div className = {`absolute h-9 w-17 rounded-full  from-cyan-400
+                    to-blue-500  shadow-md drop-shadow-lg/90 transition-transform duration-500 ease-in-out ${islocalHour ? "-translate-x-8 bg-linear-to-r":"translate-x-8 bg-linear-to-l"}`}/>
+                  <div className = {`relative left-3 z-10 flex w-0.5  items-center justify-center py-2 font-bold transition-colors  ${islocalHour ? "text-white":"text-gray-400 text-shadow-gray-900 text-shadow-lg/80"}`}>24H</div>
+                  <div className={`relative left-6 z-10 flex w-1/2 items-center ml-5 justify-center py-2 font-bold transition-colors  ${!islocalHour ? 'text-white' : 'text-gray-400 text-shadow-gray-900 text-shadow-lg/80'}`}>12H</div>
+             </div>
+           
+         
         
           <span className = {` font-bold flex ${!isDarkMode ? "text-white":"text-black"} `}>Mode
                <img
@@ -673,27 +743,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
                     <img src = {isDarkMode ? "/Icon/weather icon/feature/daymode/darkmoon.svg":"/Icon/weather icon/feature/darkmode/whitemoon.svg"} className = "w-7 h-7 z-20"/>
             </div>
           
-          <span className = {` font-bold flex ${!isDarkMode ? "text-white":"text-black"} `}>Hours
-              <img src = {!isDarkMode ? "/Icon/weather icon/feature/darkmode/time_white.svg":"/Icon/weather icon/feature/daymode/time_black.svg"}
-              className = "w-8 h-8 ml-2 pb-1"/>
-            </span>
-             <div onClick={handleHourClick} className= "relative flex cursor-pointer w-35 my-5 items-center justify-center rounded-full bg-gray-600  shadow-inner">
-                  <div className = {`absolute h-9 w-17 rounded-full  from-cyan-400
-                    to-blue-500  shadow-md drop-shadow-lg/90 transition-transform duration-500 ease-in-out ${islocalHour ? "-translate-x-8 bg-linear-to-r":"translate-x-8 bg-linear-to-l"}`}/>
-                  <div className = {`relative left-3 z-10 flex w-0.5  items-center justify-center py-2 font-bold transition-colors  ${islocalHour ? "text-white":"text-gray-400 text-shadow-gray-900 text-shadow-lg/80"}`}>24H</div>
-                  <div className={`relative left-6 z-10 flex w-1/2 items-center ml-5 justify-center py-2 font-bold transition-colors  ${!islocalHour ? 'text-white' : 'text-gray-400 text-shadow-gray-900 text-shadow-lg/80'}`}>12H</div>
-             </div>
-           
-             <span className = {` font-bold flex ${!isDarkMode ? "text-white":"text-black"} `}>Windy Speed
-              <img src = {!isDarkMode ? "/Icon/weather icon/feature/darkmode/wind_white.svg":"/Icon/weather icon/feature/daymode/wind_black.svg"}
-              className = "w-8 h-8 ml-2 pb-1"/>
-            </span>
-             <div onClick={handleWindySpeedClick} className= "relative flex cursor-pointer w-35 my-5 items-center justify-center rounded-full bg-gray-600  shadow-inner">
-                  <div className = {`absolute h-9 w-17 rounded-full  from-cyan-400
-                    to-blue-500  shadow-md drop-shadow-lg/90 transition-transform duration-500 ease-in-out ${isWindySecond ? "-translate-x-8 bg-linear-to-r":"translate-x-8 bg-linear-to-l"}`}/>
-                  <div className = {`relative left-3 z-10 flex w-0.5  items-center justify-center py-2 font-bold transition-colors  ${isWindySecond ? "text-white":"text-gray-400 text-shadow-gray-900 text-shadow-lg/80"}`}>Second</div>
-                  <div className={`relative left-6 z-10 flex w-1/2 items-center ml-5 justify-center py-2 font-bold transition-colors  ${!isWindySecond ? 'text-white' : 'text-gray-400 text-shadow-gray-900 text-shadow-lg/80'}`}>Hour</div>
-             </div>
+        
 
           <span className ={` font-bold flex  my-10 ${!isDarkMode ? "text-white":"text-black"} `}>Favorite
                <img
@@ -1077,6 +1127,11 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
             onSelect={(path) => setCurrentMusic(path)}
           />
           <FavoriteHistory
+        isKm={isKm}
+        isWindySecond={isWindySecond}
+        isKelvin={isKevin}
+        isMile= {isMile}
+        refresh={refresh}
         islocalHour={islocalHour}
         weather={weather}
         onRefresh={handleRefresh}

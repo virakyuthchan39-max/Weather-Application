@@ -27,3 +27,14 @@ class NotificationUser(SQLModel, table=True, ):
     type_msg: Annotated[str, Field(default=None)] 
 
 
+    
+class NotificationUser(SQLModel, table=True, ):
+    __tablename__ = "donation"
+    id: Optional[int] = Field(default=None, primary_key=True, index=True)
+    gmail: Annotated[str, Field(default=None)]
+    account_type: Annotated[str, Field(default=None)]
+    donated_at: Annotated[datetime, Field(default_factory=lambda: datetime.now(timezone.utc))]
+    description: Annotated[str,Field(default=None)]
+    amount: Annotated[str,Field(default=0)]
+    pay_by: Annotated[str,Field(default=None)]
+    succeed: Annotated[bool,Field(default=None)]

@@ -50,9 +50,14 @@ const FavoriteClock = ({ offset, islocalHour }: { offset?: number; islocalHour: 
 
 interface FavoriteHistoryProps {
   weather: WeatherResponse | null;
+  refresh: boolean;
+  isKelvin: boolean;
+  isKm:boolean;
+  isMile: boolean;
   isCelsius: boolean;
   islocalHour: boolean;
   isfarh: boolean;
+  isWindySecond: boolean;
   cloneCity: string | undefined;
   isOpen: boolean;
   onSearch: (city: string) => void;
@@ -66,6 +71,11 @@ interface FavoriteHistoryProps {
 
 const FavoriteHistory: React.FC<FavoriteHistoryProps> = ({
   isCelsius,
+  isWindySecond,
+  isKelvin,
+  refresh,
+  isMile,
+  isKm,
   weather,
   islocalHour,
   isfarh,
@@ -99,6 +109,7 @@ const FavoriteHistory: React.FC<FavoriteHistoryProps> = ({
     onSearch(city);
   };
 
+  
   return (
     <div className="fixed inset-0 z-200 flex items-center justify-center bg-black/60 transition-opacity duration-300">
       <div
@@ -111,8 +122,10 @@ const FavoriteHistory: React.FC<FavoriteHistoryProps> = ({
       >
         <h2
           className={`text-2xl mx-auto text-nowrap flex font-bold mb-4 text-center border-b-2 pb-5 ${
-            !isDarkMode ? "text-white" : "text-black"
-          }`}
+            !isDarkMode ? "text-white" : "text-black"}
+             max-[500px]:mt-15
+            `}
+            
         >
           Favorite History
           <img
@@ -126,6 +139,11 @@ const FavoriteHistory: React.FC<FavoriteHistoryProps> = ({
           />
         </h2>
         
+        {refresh && 
+          <p className = {`text-md my-4 border-4 p-1 w-18 rounded-xl border-solid absolute transition-all duration-500  ${!isDarkMode ? "text-white":"text-black"}
+          max-[500px]:top-1
+          `}>Updated</p>}
+        
         {/* ✅ 2. Fixed the Refresh Button onClick */}
         <button 
           onClick={onRefresh}
@@ -133,7 +151,7 @@ const FavoriteHistory: React.FC<FavoriteHistoryProps> = ({
         >
           <img
             src={isDarkMode ? "/Icon/weather icon/feature/daymode/refresh_black.svg" : "/Icon/weather icon/feature/darkmode/refresh_white.svg"}
-            className="w-10 h-10 max-[500px]:w-8 max-[500px]:h-8"
+            className="w-10 h-10 max-[500px]:w-8 max-[500px]:h-8 active:rotate-180 transition-all duration-200  cursor-pointer "
             alt="refresh button"
           />
         </button>
@@ -143,8 +161,19 @@ const FavoriteHistory: React.FC<FavoriteHistoryProps> = ({
           {favList.length === 0 ? (
             <p className="text-center italic opacity-70 mt-4">No favorites yet.</p>
           ) : (
-            favList.map((fav) => (
-              <React.Fragment key={fav.fav_id}>
+           favList.map((fav) => {
+
+              let windySpeed = "";
+              if (isMile) { windySpeed = `${((fav.wind_speed || 0) / 1609.344).toFixed(4)} mi`; }
+              else if (isKm) { windySpeed = `${((fav.wind_speed || 0) / 1000).toFixed(4)} km`; }
+              else { windySpeed = `${fav.wind_speed || 0} m`; }
+
+              let windySpeedPeriod = "";
+              if (!isWindySecond && isKm) { windySpeedPeriod = `${(((fav.wind_speed || 0) * 3600) / 1000).toFixed(2)} km/h`; }
+              else if (!isWindySecond && isMile) { windySpeedPeriod = `${(((fav.wind_speed || 0) * 3600) / 1609.344).toFixed(2)} mi/h`; }
+              else if (!isWindySecond) { windySpeedPeriod = `${((fav.wind_speed || 0) * 3600)} m/h`; }
+              else { windySpeedPeriod = `${windySpeed}/s`; }
+              return (<React.Fragment key={fav.fav_id}>
                 <div
                   className={`relative flex justify-between items-center p-4 rounded-2xl border shadow-sm cursor-pointer active:scale-98 hover:scale-[0.99] transition-all duration-200 ${
                     isDarkMode
@@ -155,7 +184,7 @@ const FavoriteHistory: React.FC<FavoriteHistoryProps> = ({
                   {/* Background Flag Layer */}
                   {(fav.country_code !== undefined || fav.city.toLowerCase() === "antarctica") && (
                     <div
-                      className="absolute inset-0 z-0 pointer-events-none top-1 rounded-2xl max-[500px]:left-0"
+                      className="absolute inset-0 z-0 pointer-events-none top-1 rounded-2xl max-[500px]:left-0 opacity-80"
                       style={{
                         backgroundImage: `${(!fav.country_code || fav.country_code === "") ? `url('/Icon/weather icon/feature/antartica_flag.svg')` : `url(https://flagcdn.com/w320/${fav.country_code.toLowerCase()}.png)`}`,
                         backgroundSize: `${(!fav.country_code || fav.country_code === "") ? "cover" : "40rem 15rem"}`, 
@@ -202,7 +231,8 @@ const FavoriteHistory: React.FC<FavoriteHistoryProps> = ({
                       </span>
 
                       {/* ✅ 3. Replaced the old liveClock logic with the dynamic FavoriteClock */}
-                      <h3 className="text-md opacity-80 relative top-8 pl-5">
+                      <h3 className="text-md opacity-80 relative top-8 pl-5
+                      max-[500px]:right-5">
                         <span className="mr-1 opacity-70">Local Time:</span>
                         <FavoriteClock 
                           offset={fav.offset} 
@@ -210,14 +240,36 @@ const FavoriteHistory: React.FC<FavoriteHistoryProps> = ({
                         />
                       </h3>
 
-                      <h3 className="text-md opacity-80 relative top-8 pl-5">
+                      <h3 className="text-md opacity-80 relative top-8 pl-5
+                       max-[500px]:right-5">
+                        <span className="mr-1 flex relaive opacity-70">Daytime:
+                                <span className=" ml-2 flex relative ">
+                                  {fav.daytime}
+                                { fav.daytime !== undefined ?
+                                    <img
+                                    src = {!isDarkMode ? (fav.daytime.toLowerCase().includes("night") ? "/Icon/weather icon/feature/darkmode/whitemoon.svg":"/Icon/weather icon/feature/darkmode/light_white.svg") 
+                                      :
+                                      (fav.daytime.toLowerCase().includes("day") ? "/Icon/weather icon/feature/daymode/light_black.svg" : "/Icon/weather icon/feature/daymode/darkmoon.svg" )} 
+                                      className = "w-6.5 h-6.5 ml-2 drop-shadow-lg/20 relative top-0 "
+                                      alt = "Mode icon"/>
+                                      : 
+                                      <span className = "px-10 py-4 rounded-sm animate-pulse durataion-400 transition-all bg-white"></span>
+                                    }
+                              </span>
+                        </span>
+                      </h3>
+                      
+                      <h3 className="text-md opacity-80 relative top-8 pl-5
+                       max-[500px]:right-5">
                         <span className="mr-1 opacity-70">Added:</span>
                         {fav.full_date}, {fav.time}
                       </h3>
                     </div>
-
-                    <div className="flex items-center gap-4 mr-12 max-[500px]:right-58 max-[500px]:top-3 relative">
-                      <span className="relative text-2xl my-15 font-semibold flex items-center gap-2">
+           
+                    <div className="flex items-center gap-4 mr-12 right-58 top-0 max-[500px]:right-58   max-[500px]:top-0 relative">
+                      <span className={`relative text-2xl my-18 font-semibold flex items-center gap-2 ${(fav.temp.celsius=== undefined || fav.temp.kelvin=== undefined || fav.temp.fahrenheit=== undefined) ? "px-2 py-1  bg-white rounded-md animate-pulse duration-500 transition-all":""}
+                       max-[500px]:text-xl`}>
+                       
                         {isCelsius
                           ? fav.temp.celsius === undefined
                             ? "Loading..."
@@ -230,15 +282,32 @@ const FavoriteHistory: React.FC<FavoriteHistoryProps> = ({
                         <img
                           src={getWeatherIcon(fav.climate, fav.daytime)}
                           alt="weather response"
-                          className="w-9 h-9 p-1"
+                          className={`w-9 h-9 p-1  drop-shadow-lg/10 ${!fav.climate || !fav.daytime ? "px-2 py-1  bg-white rounded-md opacity-0":""}
+                           max-[500px]:w-8  max-[500px]:h-8`}
                         />
                       </span>
+
                     </div>
+                     <div className="flex items-center gap-4 mr-12 right-58 top-0 max-[500px]:right-58  max-[500px]:top-0 relative">
+                      <span className={`relative text-2xl my-15 font-semibold flex items-center gap-2 ${(!fav.wind_speed || !windySpeedPeriod) ? "px-2 py-1  bg-white rounded-md animate-pulse duration-500 transition-all":""}
+                      max-[500px]:text-xl  max-[500px]:right-2`}>
+                         {windySpeedPeriod}
+                        <img
+                          src={isDarkMode ? "/Icon/weather icon/feature/daymode/wind_black.svg":"/Icon/weather icon/feature/darkmode/wind_white.svg"}
+                          alt="weather response"
+                          className={`w-9 h-9 p-1  ${!fav.wind_speed || !windySpeedPeriod ? "px-2 py-1  bg-white rounded-md opacity-0":""}
+                           max-[500px]:w-8  max-[500px]:h-8 `}
+                        />
+                      </span>
+
+                    </div>
+                    
                   </div>
 
                   {/* Delete Button Layer */}
                   <button
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 max-[500px]:top-4.5 max-[500px]:right-3"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 
+                    max-[500px]:top-6 max-[500px]:right-3"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDeleteByOne(fav.fav_id);
@@ -252,8 +321,9 @@ const FavoriteHistory: React.FC<FavoriteHistoryProps> = ({
                   </button>
                 </div>
               </React.Fragment>
-            ))
-          )}
+            );
+}))
+}
         </div>
 
         <div className="flex gap-4 pt-2">

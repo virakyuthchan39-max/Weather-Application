@@ -138,7 +138,6 @@ export const SignUp: React.FC<SignUpProps> = ({
         } 
         else if (errMsg.includes("400")){setErrorMsg(errMsg.slice(34))}
         else {
-   
           setErrorMsg(err instanceof Error ? err.message: "Something went wrong");
         }
       } finally {

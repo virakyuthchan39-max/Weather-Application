@@ -11,6 +11,7 @@ export interface FavoriteAddRequest {
   city: string ;
   offset:number;
   temp: Temperature;
+  wind_speed: number;
   daytime: string;
   climate: string;
   country: string;
@@ -23,6 +24,7 @@ export interface FavoriteSchemes {
   user_id: number;
   city: string;
   daytime: string;
+  wind_speed: number;
   climate: string;
   country: string;
   country_code: string;

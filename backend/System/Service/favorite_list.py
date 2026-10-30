@@ -19,6 +19,7 @@ class FavoriteAddRequest(BaseModel):
     city: str
     daytime: str
     climate: str
+    wind_speed: float
     temp: TemperatureSchema
     country: str
     country_code: str = "" # ✅ Default to empty string for Antarctica
@@ -31,6 +32,7 @@ class FavoriteSchemes(BaseModel):
     daytime: str
     climate: str
     country: str
+    wind_speed: float
     country_code: str
     offset: int = 0        # ✅ ADDED: Required for frontend timezone calculation
     temp: TemperatureSchema
@@ -100,7 +102,7 @@ async def Favorite_City(
                 offset_seconds = data["timezone"].get("offset", 0)
                 local_now = datetime.now(timezone.utc) + timedelta(seconds=offset_seconds)
                 formatted_time = local_now.strftime("%I:%M %p")
-                formatted_date = local_now.strftime("%d %b %Y")
+                formatted_date = local_now.strftime("%a, %d %b %Y")
     except Exception as e:
         print(f"IP lookup failed: {e}")
 
@@ -120,6 +122,7 @@ async def Favorite_City(
         country_code=input.country_code,
         daytime=input.daytime,
         climate=input.climate,
+        wind_speed=input.wind_speed,
         offset=input.offset, # ✅ SAVED: Now it will return to frontend correctly
         temp=result_temp,
         time=formatted_time,

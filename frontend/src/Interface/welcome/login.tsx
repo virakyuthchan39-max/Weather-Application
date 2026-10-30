@@ -90,7 +90,6 @@ const Login: React.FC<LoginProps> = ({
       const googleToken = await requestGoogleIdToken();
       const res = await googleLogin(googleToken);
       saveToken(res.access_token);
-      
       setSuccessMsg("Account login success !");
       onSuccess?.(res.user_info);
     } catch (err) {

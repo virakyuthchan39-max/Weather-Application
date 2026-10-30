@@ -9,26 +9,59 @@ interface BackgroundProps {
 const Background: React.FC<BackgroundProps> = ({ isEffectOn, climate,daytime }) => {
   const [videoName, setVideoName] = useState("");
  
-  useEffect(() => {
+ useEffect(() => {
+    if (!climate || !daytime) return;
+
     const lower = climate.toLowerCase();
-    const lower_daytime = daytime.toLowerCase()
+    const lower_daytime = daytime.toLowerCase();
+    const isDay = lower_daytime.includes("day");
+
+    // 1. Check specific storms/thunder FIRST
+    if (lower.includes("thunder") || lower.includes("storm")) {
+      setVideoName("Storm");
+    } 
+    
+    else if (lower.includes("heavy") && lower.includes("rain")) {
+      setVideoName("Heavy_Rain");
+    } 
+    else if (lower.includes("light rain")) {
+      setVideoName(isDay ? "Light_Rain" : "Light_Rain_Night");
+    } 
+    else if (lower.includes("rain") || lower.includes("drizzle")) {
+      setVideoName(isDay ? "Rain" : "Rain_Night");
+    } 
+    // 3. Snow
+    else if (lower.includes("snow")) {
+      setVideoName(isDay ? "Snow_Day" : "Snow");
+    } 
+    // 4. Mist, Fog, Wind
+    else if (lower.includes("mist") || lower.includes("fog") || lower.includes("haze")) {
+      setVideoName("Mist");
+    } 
+    else if (lower.includes("wind") || lower.includes("breeze")) {
+      setVideoName("Windy");
+    } 
+    // 5. Clouds
+    else if (lower.includes("overcast")) {
+      setVideoName(isDay ? "Overcast_Cloudy" : "Cloudy_Night");
+    } 
+    else if (lower.includes("cloud")) {
+      setVideoName(isDay ? "Cloudy" : "Cloudy_Night");
+    } 
+    // 6. Clear / Sunny (Always last)
+    else if (lower.includes("sunny")) {
+      setVideoName("Sunny");
+    } 
+    else if (lower.includes("clear")) {
+      setVideoName(isDay ? "Clear" : "Clear_Night");
+    } 
+    // 7. Fallback if unmapped
+    else {
+      setVideoName(isDay ? "Clear" : "Clear_Night");
+    }
+  }, [climate, daytime]);
 
 
- 
-    if ((lower.includes("rain") || lower.includes("drizzle")) && lower_daytime.includes("day")) {setVideoName("Rain");("/Icon/weather icon/weather/rain.svg")}
-    else if (lower.includes("thunder") || lower.includes("storm")) {
-      setVideoName("Storm")}
-    else if (lower.includes("snow") && lower_daytime.includes("night")) {setVideoName("Snow"); }
-    else if (lower.includes("mist") || lower.includes("fog") || lower.includes("haze")) {setVideoName("Mist");}
-    else if ((lower.includes("cloud") || lower.includes("overcast")) && lower_daytime.includes("day")) {setVideoName("Cloudy");}
-    else if (lower.includes("wind") || lower.includes("breeze")) {setVideoName("Windy");}
-    else if (lower.includes("sunny")){setVideoName("Sunny");}
-    else if (lower.includes("rain") && lower_daytime.includes("night")){setVideoName("Rain_Night")}
-    else if (lower.includes("clear") && lower_daytime.includes("day") ) {setVideoName("Clear")}
-    else if (lower.includes("cloud") &&  lower_daytime.includes("night") ){setVideoName("Cloudy_Night")}
-    else if (lower.includes("clear")  && lower_daytime.includes("night") ){setVideoName("Clear_Night")}
-    else if (lower.includes("snow") && lower_daytime.includes("day")){setVideoName("Snow_Day")}
-  }, [climate,daytime]);
     useEffect(() => {
     if (!isEffectOn || !climate || !daytime) {
       stopWeatherSound();
@@ -37,9 +70,11 @@ const Background: React.FC<BackgroundProps> = ({ isEffectOn, climate,daytime }) 
 
     const climates = climate.toLowerCase();
     const isNight = daytime.toLowerCase().includes("night");
-    if (climates.includes("rain")) {
+    if (climates.includes("rain") && !climates.includes("light rain")) {
       playWeatherSound("/Audio/Effect/feature/rain.mp3");
-    } else if (climates.includes("cloud")) {
+    } 
+    else if (climates.includes("light rain")){playWeatherSound("/Audio/Effect/feature/light_rain.mp3")}
+    else if (climates.includes("cloud")) {
     
       playWeatherSound("/Audio/Effect/feature/cloudy.mp3");
     } else if (climates.includes("snow")) {

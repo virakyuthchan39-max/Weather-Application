@@ -97,12 +97,14 @@ async def Finding_Similar_City(
     # Helper function to fetch real-time weather/timezone data using lat and lon
     async def fetch_city_details(client: httpx.AsyncClient, item: dict):
   
-        c_name =  item.get("name", "N/A")
+        c_raw_name =  item.get("name", "N/A")
+        c_name  = clean_territory_name(c_raw_name)
         country_code = item.get("country", "N/A")
         raw_name = item.get("state","")
-
+       
         
         state_name = clean_territory_name(raw_name)
+  
         formatted_country = convert_country_name(country_code)
    
         lat = item.get("lat")
@@ -125,7 +127,7 @@ async def Finding_Similar_City(
                     dt_time = item.get("dt",0)
             except Exception:
                 pass
-
+       
         dt = format_datetime(tz_offset,offset=tz_offset,dt=dt_time)
         daytime = get_detailed_time_phase(dt.hour)
         return {

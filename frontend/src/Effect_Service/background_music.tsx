@@ -58,9 +58,7 @@ export const BackgroundMusic: React.FC<BackgroundMusicStop> = ({ stop = false })
 
   return null;
 };
-
 export default BackgroundMusic;
-
 
 interface WeatherMusic {
   play: boolean;

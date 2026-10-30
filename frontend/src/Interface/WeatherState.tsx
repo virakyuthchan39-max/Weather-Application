@@ -49,7 +49,7 @@ const WeatherStats: React.FC<WeatherStatsProps> = ({
   let windySpeed = "";
   if(isMile){ windySpeed = `${(weather.weather.wind.speed/1609.344).toFixed(4)} mi`; }
   else if (isKm){ windySpeed = `${(weather.weather.wind.speed/1000).toFixed(4)} km`; }
-  else { windySpeed = `${weather.weather.wind.speed} m`; }
+  else { windySpeed = `${weather.weather.wind.speed.toFixed(2)} m`; }
    
   let visibility = "";
   if(isMile){ visibility = `${(weather.temperature.visibility/1609.344).toFixed(2)} mile`; }
@@ -59,7 +59,9 @@ const WeatherStats: React.FC<WeatherStatsProps> = ({
   let windySpeedPeriod = "";
   if (!isWindySecond && isKm){ windySpeedPeriod = `${((weather.weather.wind.speed * 3600)/1000).toFixed(2)} km/h`; }
   else if (!isWindySecond && isMile){ windySpeedPeriod = `${((weather.weather.wind.speed * 3600)/1609.344).toFixed(2)} mi/h`; }
-  else if (!isWindySecond){ windySpeedPeriod = `${(weather.weather.wind.speed * 3600)} m/h`; }
+  else if (!isWindySecond){
+     console.log(weather.weather.wind.speed * 3600)
+     windySpeedPeriod = `${((weather.weather.wind.speed * 3600).toFixed(0))} m/h`; }
   else { windySpeedPeriod = `${windySpeed}/s`; }
 
   // ៣. កែ Format ម៉ោងឱ្យត្រូវចិត្ត

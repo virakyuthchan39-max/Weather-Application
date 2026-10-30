@@ -56,32 +56,101 @@ def clean_territory_name(name: str):
     if not name or name == "N/A":
         return "N/A"
 
-    terms_to_remove = [
-        " province",
-        " governorate",
-        " department",
-        " state",
-        " region",
-        " prefecture",
-        " district",
-        " municipality",
-        " autonomous region",
-        " oblast",
-    ]
-
     cleaned = name.strip()
 
-    # 1. Strip suffixes from the end of the string
-    for term in terms_to_remove:
-        if cleaned.lower().endswith(term):
-            cleaned = cleaned[: -len(term)].strip()
+    # 1. Comprehensive Prefixes (Lowercased for matching)
+    prefixes_to_remove = [
+        "special capital region of ",
+        "autonomous region of ",
+        "national capital region of ",
+        "federal district of ",
+        "governorate of ",
+        "province of ",
+        "republic of ",
+        "territory of ",
+        "state of ",
+        "region of ",
+        "municipality of ",
+        "prefecture of ",
+        "department of ",
+        "district of ",
+        "county of ",
+        "city of ",
+        "town of "
+    ]
+
+    # Loop and strip prefix case-insensitively
+    cleaned_lower = cleaned.lower()
+    for prefix in prefixes_to_remove:
+        if cleaned_lower.startswith(prefix):
+            cleaned = cleaned[len(prefix):].strip()
+            cleaned_lower = cleaned.lower()
             break
 
-    # 2. Strip prefixes from the start of the string (e.g., "Province of ...", "State of ...")
-    prefixes_to_remove = ["province of ", "state of ", "governorate of "]
-    for prefix in prefixes_to_remove:
-        if cleaned.lower().startswith(prefix):
-            cleaned = cleaned[len(prefix) :].strip()
+    # 2. Comprehensive Suffixes
+    terms_to_remove = [
+        " autonomous region",
+        " autonomous republic",
+        " administrative region",
+        " national capital region",
+        " federal district",
+        " local municipality",
+        " metropolitan borough",
+        " municipal corporation",
+        " autonomous okrug",
+        " autonomous oblast",
+        " metropolitan city",
+        " prefecture",
+        " department",
+        " territory",
+        " republic",
+        " province",
+        " governorate",
+        " district",
+        " subdistrict",
+        " region",
+        " oblast",
+        " okrug",
+        " county",
+        " parish",
+        " borough",
+        " division",
+        " zone",
+        " sector",
+        " area",
+        " municipality",
+        " township",
+        " commune",
+        " canton",
+        " ward",
+        " city",
+        " town",
+        " village",
+        " state",
+        " kray",
+        " krai",
+        " raion",
+        " rayon",
+        " partido",
+        " comarca",
+        " kreis",
+        " landkreis",
+        " bezirk",
+        " kabupaten",
+        " kecamatan",
+        " kelurahan",
+        " desa",
+        " gun",
+        " shi",
+        " xian",
+        " zhen"
+    ]
+
+    cleaned_lower = cleaned.lower()
+    for term in terms_to_remove:
+        if cleaned_lower.endswith(term):
+            cleaned = cleaned[: -len(term)].strip()
+            cleaned_lower = cleaned.lower()
             break
 
     return cleaned

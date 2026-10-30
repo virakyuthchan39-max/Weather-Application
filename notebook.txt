@@ -6,7 +6,7 @@ docker compose --env-file backend/System/DevOp/.env.service up --build
 github_token: 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
 
 https://manus.im/app/fP47AnxWJW1CrlYGBJ5sEy?from=web (manus)
-${hideAll ? 'hidden':''}
+
 
 {'coord':
  {'lon': 104.916, 'lat': 11.5625}, 
