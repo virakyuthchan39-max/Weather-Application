@@ -1,7 +1,6 @@
 const BASE_URL = "http://127.0.0.1:8000";
 
- 
- 
+
 export interface GoogleUserInfo {
   id: number;
   full_name: string;
@@ -9,9 +8,9 @@ export interface GoogleUserInfo {
   role: string;
   is_active: boolean;
   account_type: string; 
+  profile: string;
   create_at: string;
 }
-
 
 export interface GoogleAuthResponse {
   detail: string;
@@ -30,8 +29,6 @@ async function postGoogle(path: string, token: string): Promise<GoogleAuthRespon
  
   const data = await res.json();
  
-  
-
   if (!res.ok) throw new Error(data?.detail ?? `Request failed (${res.status})`);
   return data as GoogleAuthResponse;
 }
@@ -49,12 +46,8 @@ declare global {
   }
 }
 
+
 const GOOGLE_CLIENT_ID="861684131854-noibsnasaj1rsqlpqe7onma2t3af6po6.apps.googleusercontent.com";
- 
-
- 
-console.log(window.location.href)
-
 
 export function requestGoogleIdToken(): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -69,10 +62,6 @@ export function requestGoogleIdToken(): Promise<string> {
         else reject(new Error("No credential returned from Google"));
       },
     });
- 
- 
-    
-
     window.google.accounts.id.prompt();
   });
 }

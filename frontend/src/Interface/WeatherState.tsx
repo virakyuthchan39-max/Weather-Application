@@ -143,7 +143,7 @@ const WeatherStats: React.FC<WeatherStatsProps> = ({
       </div>
 
         <div className={`flex justify-between border-b ${!isDarkMode ? "border-gray-200":"border-gray-900"} pb-1`}>
-        <span className="font-semibold flex text-sm">Wind Direction from
+        <span className="font-semibold flex text-sm">Wind Direction To
             <img src={!isDarkMode ? "/Icon/weather icon/feature/darkmode/direction_white.svg":"/Icon/weather icon/feature/daymode/direction_black.svg"} alt="Feels Like icon" className="ml-2 w-5.5 h-5.5"/>
         </span>
         <span className="font-bold text-sm">({weather.weather.wind.direction}) {weather.weather.wind.deg}°</span>

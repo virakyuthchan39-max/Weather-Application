@@ -26,6 +26,7 @@ from Security.ThirdParty.github.github_route import router as Github_Router
 # import the module
 # from  Router
 from Router.Account.account_route import router as Account_Router
+from Router.Notification.notification_main_route import router as Notification_Router
 from Router.OpenWeather.open_weather import router as OpenWeather_Router
 # from security
 from Security.ThirdParty.google.google_route import router as Google_Router
@@ -69,7 +70,7 @@ app.add_exception_handler(RateLimitExceeded,_rate_limit_exceeded_handler)
 # including the router
 app.include_router(Account_Router,tags=["Account Operation"])
 app.include_router(OpenWeather_Router,tags=["Open Weather Operation"])
-
+app.include_router(Notification_Router)
 app.include_router(Service_Router,tags=["Weather app's Service"])
 app.include_router(Google_Router)
 app.include_router(Facebook_Router)

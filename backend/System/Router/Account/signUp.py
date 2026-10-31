@@ -23,10 +23,8 @@ import asyncio
 
 router = APIRouter()
 
-
 class RefreshRequest(BaseModel):
     refresh_token: str
-
 
 class CreateUserRequest(BaseModel):
     first_name: Annotated[str,Field(max_length=20,min_length=3)]

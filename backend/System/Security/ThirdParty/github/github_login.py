@@ -38,6 +38,7 @@ class GithubSchema(BaseModel):
     role: str
     is_active: bool
     account_type: str
+    profile: str
     create_at: datetime
 
 class GithubSchemaResponse(BaseModel):
@@ -71,6 +72,7 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
             github_data = user_response.json()
             username = github_data.get("login") or "Github User"
             email = github_data.get("email")
+            profile = github_data.get("avatar_url","")
             
             if not email:
                 email_response = await client.get("https://api.github.com/user/emails", headers=headers)
@@ -108,6 +110,7 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
                 is_active=True,
                 role="user",
                 github_id=user.id,
+                profile=profile,
                 login_at=current_time,
                 password="GithubPassword",
             )
@@ -140,6 +143,7 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
             role=user.role,
             is_active=user.is_active,
             account_type= user.account_type,
+            profile=profile,
             create_at=user.create_at,
         )
 

@@ -14,7 +14,6 @@ class FavoriteCity(SQLModel, table=True):
     
     user_id: Annotated[int, Field(default=None, index=True)]
     account_type: Annotated[str, Field(default=None)]
-    
     gmail: Annotated[str, Field(default=None, index=True)]
     city: Annotated[str, Field(default=None, index=True)]
     country: Annotated[str, Field(default=None, index=True)]
@@ -43,11 +42,17 @@ class FavoriteCity(SQLModel, table=True):
     humidity: Annotated[float, Field(default=0)]
     
 class NotificationUser(SQLModel, table=True, ):
-    __tablename__ = "notifcation"
+    __tablename__ = "notification"
     id: Optional[int] = Field(default=None, primary_key=True, index=True)
-    gmail: Annotated[str, Field(default=None)]
-    account_type: Annotated[str, Field(default=None)]
-    sended_at: Annotated[datetime, Field(default_factory=lambda: datetime.now(timezone.utc))]
+    is_read: Annotated[bool,Field(default=False,index=True)]
+    title: Annotated[str,Field(default=None)]
+    notification_id: Annotated[str,Field(default=None)]
+    time_live: Annotated[int,Field(default=None)]
+    gmail: Annotated[str,Field(default=None)]
+    color: Annotated[str,Field(default=None)]
+    account_type: Annotated[str, Field(default=None,index=True)]
+    read_at: Optional[datetime] = Field(default=None)
+    sended_at: Annotated[str, Field(default_factory=lambda: str(datetime.now(timezone.utc)))]
     type_msg: Annotated[str, Field(default=None)] 
 
 
@@ -55,9 +60,9 @@ class NotificationUser(SQLModel, table=True, ):
 class DonationByUser(SQLModel, table=True, ):
     __tablename__ = "donation"
     id: Optional[int] = Field(default=None, primary_key=True, index=True)
-    gmail: Annotated[str, Field(default=None)]
+    gmail: Annotated[str, Field(default=None,index=True)]
     account_type: Annotated[str, Field(default=None)]
-    donated_at: Annotated[datetime, Field(default_factory=lambda: datetime.now(timezone.utc))]
+    donated_at:  Annotated[str, Field(default_factory=lambda: str(datetime.now(timezone.utc)))]
     description: Annotated[str,Field(default=None)]
     amount: Annotated[str,Field(default=0)]
     pay_by: Annotated[str,Field(default=None)]

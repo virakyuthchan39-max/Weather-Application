@@ -9,8 +9,10 @@ import httpx
 
 from Database.database import get_session,get_application
 from .temperature import TemperatureSchema, convert_temperature
+from Router.Account.logout_ThirdParty import Check_Valid_Token
 from Database.model_account import UserSignIn, GoogleSignIn, FacebookSignIn, GithubSignIn
 from Database.model_application import FavoriteCity
+from fastapi.security import HTTPAuthorizationCredentials,HTTPBearer
 
 # ---------- Pydantic Models ----------
 class FavoriteAddRequest(BaseModel):
@@ -53,6 +55,7 @@ class DeleteResponse(BaseModel):
     fav_delete: List[FavoriteSchemes]
 
 router = APIRouter()
+security = HTTPBearer()
 
 async def verify_user(db: AsyncSession, user_id: int, email: str, account_type: str):
     acc_type = account_type.lower()
@@ -134,7 +137,6 @@ async def Favorite_City(
         feel_like=input.temp.feel_like_kelvin
     )
 
-    # ✅ ពិនិត្យមើលថាតើទីក្រុងនេះមានរួចហើយឬនៅ?
     existing_fav_result = await db.scalars(
         select(FavoriteCity)
         .where(FavoriteCity.user_id == input.user_id)
@@ -195,14 +197,11 @@ async def Favorite_City(
             humidity=result_temp.humidity
         )
         db.add(add_fav_city)
-
-   
+        
     await db.commit()
-
-    # ទាញយក List ថ្មីពី Database
+    
     all_favs = await db.scalars(select(FavoriteCity).where(FavoriteCity.user_id == input.user_id))
     
-    # ✅ ហៅ map_to_schema ដោយមិនបាច់ដាក់ input (ព្រោះវាអានពី DB ហើយ)
     fav_list = [map_to_schema(f) for f in all_favs.all()]
     
     return FavoriteResponse(fav_list=fav_list)
@@ -214,10 +213,11 @@ async def Favorite_List(
     email: EmailStr, 
     account_type: str = "Regular",
     db_user: AsyncSession = Depends(get_session),
-    db: AsyncSession = Depends(get_application)
+    db: AsyncSession = Depends(get_application),
+  
 ):
     await verify_user(db_user, user_id, email, account_type)
-    
+
     # Fetch from Database
     all_favs = await db.scalars(select(FavoriteCity).where(FavoriteCity.user_id == user_id))
     fav_list = [map_to_schema(f) for f in all_favs.all()]
@@ -232,9 +232,11 @@ async def Delete_favorite(
     email: EmailStr, 
     account_type: str = "Regular",
     db_user: AsyncSession = Depends(get_session),
-    db: AsyncSession = Depends(get_application)
+    db: AsyncSession = Depends(get_application),
+    credential: HTTPAuthorizationCredentials = Depends(security)
 ):
     await verify_user(db_user, user_id, email, account_type)
+    await Check_Valid_Token(credential)
 
     # Find the specific city in the Database
     target = await db.scalars(
@@ -260,9 +262,11 @@ async def Delete_favorite_all(
     email: EmailStr,
     account_type: str = "Regular",
     db_user: AsyncSession = Depends(get_session),
-    db: AsyncSession = Depends(get_application)
+    db: AsyncSession = Depends(get_application),
+    credential: HTTPAuthorizationCredentials = Depends(security)
 ):
     await verify_user(db_user, user_id, email, account_type)
+    await Check_Valid_Token(credential)
 
     # Find all favorites for this user
     all_favs = await db.scalars(select(FavoriteCity).where(FavoriteCity.user_id == user_id))

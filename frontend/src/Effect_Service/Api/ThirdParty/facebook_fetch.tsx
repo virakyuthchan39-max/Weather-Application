@@ -9,15 +9,17 @@ declare global {
 
  
 export interface FacebookUserInfo {
+
   id: number;
   full_name: string;
   gmail: string;
   role: string;
   is_active: boolean;
+  profile: string;
   account_type:string
   create_at: string;
-}
 
+}
 
 export interface FacebookAuthResponse {
   detail: string;

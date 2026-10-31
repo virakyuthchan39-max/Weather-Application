@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef,useCallback } from 'react';
 import "./weather.css";
 import "../Interface/welcome/account.css";
 import Background,{getWeatherIcon} from "./Background";
-
+import Notification from './Notification.tsx';
 import { fetchWeather } from '../Effect_Service/Api/service/open_weather.tsx';
 import { useWeatherService} from "./weather_service";
 import { playButtonSound,playAnimeClick,playSlideOn,playSlideOff} from '../Effect_Service/sound_effect';
@@ -26,6 +26,7 @@ interface WeatherProps {
     account_type: string;
     username?: string;
     full_name?: string;
+    profile: string;
   };
   onLogout?: () => void;
   onDetail?: () => void;
@@ -36,6 +37,8 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
   const email = user.gmail;
   const account_type = user.account_type;
   const username = user.full_name;
+  const profile_user = user.profile
+  
   const {
     Coord,
     cloneCity,
@@ -99,6 +102,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
   const [favList, setFavList] = useState<FavoriteSchemes[]>([]);
   const [mapCoord,setMapCoords] = useState({lat:0,lon:0});
   const [isWindySecond,setWindySecond] = useState(true);
+  const [showNotification, setShowNotification] = useState(false);
 
   // play username overflow animation
   const textRef = useRef<HTMLSpanElement>(null);
@@ -642,7 +646,15 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
 
 
 
+  // make the notification content
+    const [hasUnreadNotif, setHasUnreadNotif] = useState(false);
+  const [notifPingColor, setNotifPingColor] = useState("green");
 
+  // ✅ Function សម្រាប់ទទួល Status ពី Notification.tsx
+  const handleNotifUpdate = useCallback((hasUnread: boolean, color: string) => {
+    setHasUnreadNotif(hasUnread);
+    if (color) setNotifPingColor(color);
+  }, []);
 
 
 
@@ -885,9 +897,12 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
             <img
             
               src={
-              (isDarkMode ? "/Icon/weather icon/feature/daymode/search_black.svg":"/Icon/weather icon/feature/darkmode/search_white.svg")
-            }  
-            className= " relative rounded-full top-0 object-contain w-5 h-5 mr-3 "
+              !profile_user ?
+            (isDarkMode ? "/Icon/weather icon/feature/daymode/profile_black.svg":"/Icon/weather icon/feature/darkmode/profile_white.svg")
+            :
+            profile_user
+          }  
+            className= " relative rounded-full border border-white/20 drop-shadow-lg/20 top-0 object-contain w-8 h-8 mr-3 mb-1 "
             alt="User profile" /> 
            <p className="w-full overflow-hidden whitespace-nowrap">
                 <span 
@@ -930,7 +945,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
               >
                 <img 
                 src= {(isDarkMode ? "/Icon/weather icon/feature/daymode/detail_black.svg":"/Icon/weather icon/feature/darkmode/detail_white.svg")} className="w-5 h-5 mr-2 " alt="detail" />
-                <li className="list-none">Details</li>
+                <li className="list-none">Setting</li>
               </div> 
             </ul>
           </div>
@@ -979,7 +994,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
           />
         </form>
         <button 
-             onClick = {playAnimeClick}
+             onClick = {() => { playAnimeClick(); setShowNotification(true); }}
              className = "transition-transform duration-200 fixed drop-shadow-lg/20  top-20 right-4 cursor-pointer hover:scale-95 active:scale-90 \
              max-[600px]:right-5.5 \
              max-[500px]:right-4.5 \
@@ -987,8 +1002,14 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
              <img src = {!isDarkMode ? "/Icon/weather icon/feature/darkmode/notification_white.svg":"/Icon/weather icon/feature/daymode/notification_black.svg"}
              alt = "Notification button"
              className = {` ${isDarkMode ? "w-13 h-13  max-[600px]:w-11 max-[600px]:h-11 max-[400px]:w-9 max-[400px]:h-9":"w-14 h-14 max-[600px]:w-12 max-[600px]:h-12  max-[400px]:w-9 max-[400px]:h-9"} `}/>
-             <div className = "animate-ping bg-red-500 w-4 h-4 rounded-full absolute right-0 drop-shadow-lg/50 bottom-2"></div>
-             <div className ="bg-red-500 w-4 h-4 rounded-full absolute right-0 drop-shadow-lg/50 bottom-2"></div>
+             
+             {/* ✅ បង្ហាញ Ping លុះត្រាតែមាន Notification មិនអាន និងបង្ហាញតាមពណ៌អាទិភាព */}
+             {hasUnreadNotif && (
+               <>
+                 <div className={`animate-ping ${notifPingColor === 'red' ? 'bg-red-500' : notifPingColor === 'yellow' ? 'bg-yellow-500' : 'bg-emerald-200'} w-4 h-4 rounded-full absolute right-0 drop-shadow-lg/50 bottom-2`}></div>
+                 <div className={`${notifPingColor === 'red' ? 'bg-red-500' : notifPingColor === 'yellow' ? 'bg-yellow-500' : 'bg-emerald-400'} w-4 h-4 rounded-full absolute right-0 drop-shadow-lg/50 bottom-2`}></div>
+               </>
+             )}
         </button>
 
   
@@ -1113,7 +1134,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
         max-[1200px]:w-120
         max-[900px]:w-100
         max-[800px]:h-70 max-[800px]:w-130 max-[800px]:relative max-[800px]:top-90
-        ${!isForecastOn ? "showForecast":"hideForecast"}
+        ${!isForecastOn ? "showForecast cursor-none":"hideForecast"}
       `}>
             <div className = "relative no-scrollbar overflow-y-auto top-0 left-2  pl-5 h-full">
                       <WeatherMap 
@@ -1204,6 +1225,13 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
         onDelete={handleDeleteFavorite}
         onDeleteAll={handleDeleteAllFavorites}
       />
+      <Notification
+      isOpen={showNotification}
+      onClose={() => setShowNotification(false)}
+      isDarkMode={isDarkMode}
+      user={user}
+      onUpdateStatus={handleNotifUpdate}
+    />
     </div>
   );
 };

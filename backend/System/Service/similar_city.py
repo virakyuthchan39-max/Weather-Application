@@ -104,9 +104,9 @@ async def Finding_Similar_City(
        
         
         state_name = clean_territory_name(raw_name)
-  
-        formatted_country = convert_country_name(country_code)
-   
+        country_raw_name = convert_country_name(country_code)
+        formatted_country = clean_country_name(country_raw_name)
+        
         lat = item.get("lat")
         lon = item.get("lon")
 
@@ -138,7 +138,7 @@ async def Finding_Similar_City(
                 lat = lat,
                 lon = lon,
                 country_code = country_code,
-                country=formatted_country,
+                country=clean_country_name(formatted_country),
                 timezone=dt,
                 daytime=daytime
             )

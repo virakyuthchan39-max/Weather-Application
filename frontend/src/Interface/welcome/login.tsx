@@ -226,6 +226,7 @@ const Login: React.FC<LoginProps> = ({
         <div>
           <label className={reuse_label}>Gmail / Email</label>
           <input
+            autoComplete='email'
             type="email"
             name="email"
             placeholder="Enter your Email"
@@ -239,15 +240,12 @@ const Login: React.FC<LoginProps> = ({
         <div>
           <label className= {reuse_label}>Password</label>
           <input
+            autoComplete='current-password'
             type="password"
             name="password"
             placeholder="Enter your password"
             value={formData.password}
             onChange={handleChange}
- 
- 
-            
-
             required
              className={reuse_form}
           />

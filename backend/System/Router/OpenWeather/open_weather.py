@@ -75,8 +75,6 @@ def clean_territory_name(name: str):
         "department of ",
         "district of ",
         "county of ",
-        "city of ",
-        "town of "
     ]
 
     # Loop and strip prefix case-insensitively
@@ -123,7 +121,6 @@ def clean_territory_name(name: str):
         " commune",
         " canton",
         " ward",
-        " city",
         " town",
         " village",
         " state",
@@ -174,6 +171,8 @@ def clean_country_name(name: str):
         "lao people's democratic republic": "Laos",
         "palestine, state of": "Palestine" ,
         "SVALBARD AND JAN MAYEN".lower():"Norway",
+        "HOLY SEE (VATICAN CITY STATE)".lower():"Vatican",
+        "CONGO, THE DEMOCRATIC REPUBLIC OF THE".lower():"Congo"
     }
     
     name_lower = name.lower().strip()

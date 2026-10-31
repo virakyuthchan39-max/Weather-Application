@@ -37,6 +37,7 @@ class GoogleSchema(BaseModel):
     gmail: str    
     role: str
     is_active:bool
+    profile: str
     account_type: str
     create_at: datetime
 class GoogleSchemaResponse(BaseModel):
@@ -61,7 +62,7 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
 
         email = idinfo.get("email")
         name = idinfo.get("name", "Google User")
-
+        profile = idinfo.get("picture","")
         
 
         # Check if user exists in database
@@ -72,7 +73,7 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
             raise HTTPException(detail="This Google's gmail had used !",status_code=status.HTTP_400_BAD_REQUEST)
 
     
-        add_google_user = GoogleSignIn(username=str(name).title(),gmail=email,is_active=True,role="user",create_at=datetime.now(timezone.utc),password="GooglePassword")    
+        add_google_user = GoogleSignIn(username=str(name).title(),profile=profile,gmail=email,is_active=True,role="user",create_at=datetime.now(timezone.utc),password="GooglePassword")    
         db.add(add_google_user)
         await asyncio.sleep(0.4)
         await db.commit()
@@ -90,6 +91,7 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
             id=add_google_user.id,
             full_name=add_google_user.username,
             gmail=add_google_user.gmail,
+            profile=profile,
             role=add_google_user.role,
             is_active=add_google_user.is_active,
             account_type= add_google_user.account_type,

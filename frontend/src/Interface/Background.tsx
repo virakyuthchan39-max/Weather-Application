@@ -42,8 +42,17 @@ const Background: React.FC<BackgroundProps> = ({ isEffectOn, climate,daytime }) 
       setVideoName("Windy");
     } 
     // 5. Clouds
+    else if (lower.includes("broken")) {
+      setVideoName(isDay ? "Broken_Cloud" : "Cloudy_Night");
+    } 
+    else if (lower.includes("few")) {
+      setVideoName(isDay ? "Few_Cloud" : "Cloudy_Night");
+    } 
+   else if (lower.includes("scatter")) {
+      setVideoName(isDay ? "Scatter_Cloud" : "Cloudy_Night");
+    } 
     else if (lower.includes("overcast")) {
-      setVideoName(isDay ? "Overcast_Cloudy" : "Cloudy_Night");
+      setVideoName(isDay ? "Overcast_Cloudy" : "Overcast_Cloud_Night");
     } 
     else if (lower.includes("cloud")) {
       setVideoName(isDay ? "Cloudy" : "Cloudy_Night");

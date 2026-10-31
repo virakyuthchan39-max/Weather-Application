@@ -188,7 +188,7 @@ const FavoriteHistory: React.FC<FavoriteHistoryProps> = ({
               else { windySpeedPeriod = `${windySpeed}/s`; }
               return (<React.Fragment key={fav.fav_id}>
                 <div
-                  className={`relative flex justify-between items-center p-4 rounded-2xl border shadow-sm cursor-pointer active:scale-98 hover:scale-[0.99] transition-all duration-200 ${
+                  className={`relative flex  justify-between items-center p-4 rounded-2xl border shadow-sm cursor-pointer active:scale-98 hover:scale-[0.99] transition-all duration-200 ${
                     isDarkMode
                       ? "border-white/10 shadow-lg/10 shadow-black bg-white/5"
                       : "bg-black/20 border-black/10 shadow-lg/20 shadow-white"
@@ -221,13 +221,13 @@ const FavoriteHistory: React.FC<FavoriteHistoryProps> = ({
                     onClick={() => handleResearch(fav.city,fav.country_code,fav.lat,fav.lon)}
                   >
                     <div className="flex flex-col gap-1">
-                      <h1 className="font-bold relative -top-5 flex items-center text-lg">
+                      <h1 className="font-bold relative -top-5  flex items-center text-lg">
                         <img
                           src={`${isDarkMode ? "/Icon/weather icon/feature/daymode/location_black.svg" : "/Icon/weather icon/feature/darkmode/location_white.svg"}`}
                           className={`w-5 h-5 block mr-2`}
                           alt="location icon"
                         />
-                        <span className="relative top-1 text-wrap">
+                        <span className="relative top-1 text-nowrap">
                           {fav.country_code === "" ? "Antarctica" : fav.city}
                         </span>
                       </h1>
@@ -252,7 +252,6 @@ const FavoriteHistory: React.FC<FavoriteHistoryProps> = ({
                           islocalHour={islocalHour} 
                         />
                       </h3>
-
                       <h3 className="text-md opacity-80 relative top-8 pl-5
                        max-[500px]:right-5">
                         <span className="mr-1 flex relaive opacity-70">Daytime:

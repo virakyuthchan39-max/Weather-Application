@@ -1,5 +1,5 @@
 import { Temperature } from "./open_weather";
-
+import { getToken } from "./fetch";
 const BASE_URL = "http://127.0.0.1:8000";
 
 /* ---------- Types ---------- */
@@ -67,7 +67,6 @@ export async function getFavoriteAdd(
     });
 
     const data = await res.json();
-
     if (!res.ok) {
       throw new Error(data?.detail ?? `Request failed (${res.status})`);
     }
@@ -116,9 +115,13 @@ export async function deleteAllFavorites(
       email: payload.email,
       account_type: payload.account_type
     })
+    const token = getToken()
     const res = await fetch(`${BASE_URL}/favorite_delete_all?${params}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
       body: JSON.stringify(payload),
     });
 
@@ -145,9 +148,13 @@ export async function deleteFavoriteById(
       email: payload.email,
       account_type: payload.account_type
     })
+    const token = getToken()
     const res = await fetch(`${BASE_URL}/favorite_delete/${fav_id}?${params}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
       body: JSON.stringify(payload),
     });
 

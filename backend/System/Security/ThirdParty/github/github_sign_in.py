@@ -39,6 +39,7 @@ class GithubSchema(BaseModel):
     password: str = "GithubPassword"
     gmail: EmailStr    
     role: str
+    profile: str
     is_active: bool
     account_type: str
     create_at: datetime
@@ -84,7 +85,7 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
             headers = {
                 "Authorization": f"Bearer {access_token}",
                 "Accept": "application/vnd.github+json"
-            }
+            }    
             
             # ទាញយក Profile របស់ User
             user_response = await client.get("https://api.github.com/user", headers=headers)
@@ -93,7 +94,7 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
             
             github_data = user_response.json()
             username = github_data.get("login") # Username របស់ GitHub
-            
+            profile = github_data.get("avatar_url","")
             # GitHub អាចលាក់ Email ដូច្នេះត្រូវស្នើសុំ Emails endpoint បន្ថែមប្រសិនបើ email ស្មើនឹង null
             email = github_data.get("email")
             if not email:
@@ -124,6 +125,7 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
                 username=username,
                 gmail=email,
                 is_active=True,
+                profile=profile,
                 role="user",
                 create_at=current_time,
                 password="GithubPassword"
@@ -138,6 +140,7 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
             full_name=user.username,
             gmail=user.gmail,
             role=user.role,
+            profile= profile,
             is_active=user.is_active,
             account_type=user.account_type,
             create_at=user.create_at

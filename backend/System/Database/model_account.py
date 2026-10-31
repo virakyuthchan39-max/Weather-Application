@@ -17,7 +17,7 @@ class FacebookSignIn(SQLModel, table=True, ):
     is_active: Annotated[bool, Field(default=True)]
     role: Annotated[str, Field(default="user")]
     account_type: Annotated[str, Field(default="Facebook")]
-    
+    profile: Annotated[str,Field(default=None)]   
     user_facebook_login: list["UserFacebookLogin"] = Relationship(back_populates="user")
 
 # ✅ កែ UserFacebookLogin (បន្ថែម Metadata និង Optional)
@@ -34,7 +34,7 @@ class UserFacebookLogin(SQLModel, table=True, ):
     role: Annotated[str, Field(default="user")]
     account_type: Annotated[str, Field(default="Facebook")]
     
-  
+    profile: Annotated[str,Field(default=None)]
     facebook_id: Annotated[Optional[int], Field(default=None, foreign_key="facebook_sign_in.id")]
     user: Optional[FacebookSignIn] = Relationship(back_populates="user_facebook_login")  
     user_facebook_logouts: list["UserLogout"] = Relationship(back_populates="facebook_login")
@@ -45,6 +45,7 @@ class GithubSignIn(SQLModel,table=True,):
     gmail: Annotated[str, Field(default =None,unique=True)]
     username: Annotated[str,Field(default=None,index = True)]
     password: Annotated[str,Field(default = "GithubPassword")]
+    profile: Annotated[str,Field(default=None)]
     create_at: Annotated[datetime, Field(default_factory=lambda: datetime.now(timezone.utc))]
     is_active: Annotated[bool ,Field(default=True)]
     role: Annotated[str,Field(default="user")]
@@ -59,7 +60,7 @@ class UserGithubLogin(SQLModel, table=True,):
     gmail: Annotated[str, Field(default =None,unique=True)]
     username: Annotated[str,Field(default=None,index = True)]
     password: Annotated[str,Field(default = "GithubPassword")]
-   
+    profile: Annotated[str,Field(default=None)]
     login_at: Annotated[datetime, Field(default_factory=lambda: datetime.now(timezone.utc))]
     is_active: Annotated[bool ,Field(default=True)]
     role: Annotated[str,Field(default="user")]
@@ -75,7 +76,7 @@ class GoogleSignIn(SQLModel, table=True,):
     id: Optional[int] = Field(default=None, primary_key=True, index=True)
     gmail: Annotated[str, Field(default=None)]
     username: Annotated[str, Field(default=None, index=True)]
-   
+    profile: Annotated[str,Field(default=None)]
     password: Annotated[str, Field(default="GooglePassword")]
     create_at: Annotated[datetime, Field(default_factory=lambda: datetime.now(timezone.utc))]
     is_active: Annotated[bool, Field(default=True)]
@@ -95,9 +96,11 @@ class UserGoogleLogin(SQLModel, table=True,):
     password: Annotated[str, Field(default="GooglePassword",max_length=72)]
     login_at: Annotated[datetime, Field(default_factory=lambda: datetime.now(timezone.utc))]
     is_active: Annotated[bool, Field(default=True)]
+    profile: Annotated[str,Field(default=None)]
     role: Annotated[str, Field(default="user")]
     account_type: Annotated[str,Field(default= "Google")]
     
+    profile: Annotated[str,Field(default=None)] 
     google_id: Annotated[Optional[int], Field(default=None, foreign_key="google_sign_in.id")]
     user: Optional[GoogleSignIn] = Relationship(back_populates="user_google_login")
     user_google_logouts: list["UserLogout"] = Relationship(back_populates="google_login")
@@ -115,7 +118,7 @@ class UserLogin(SQLModel, table=True,):
     role: str = Field(default="user")
     account_type: Annotated[str,Field(default= "Regular")]
     register_id: Annotated[Optional[int],  Field(default=None, foreign_key="user_signin.id")]
-    
+    profile: Annotated[str,Field(default="")]
     user: Optional["UserSignIn"] = Relationship(back_populates="logins")  
     logouts: List["UserLogout"] = Relationship(back_populates="user_login")
 
@@ -146,7 +149,6 @@ class UserLogout(SQLModel, table=True, ):
     signin_id: Annotated[Optional[int], Field(default=None, foreign_key="user_signin.id")]
     user_signin: Optional["UserSignIn"] = Relationship(back_populates="user_logouts")
     
-   
     google_login: Optional["UserGoogleLogin"] = Relationship(back_populates="user_google_logouts")
     github_login: Optional["UserGithubLogin"] = Relationship(back_populates="user_github_logouts")
     facebook_login: Optional["UserFacebookLogin"] = Relationship(back_populates="user_facebook_logouts")
@@ -162,6 +164,7 @@ class UserSignIn(SQLModel, table=True, ):
     create_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     is_active: bool = Field(default=True)
     role: str = Field(default="user")
+    profile: Annotated[str,Field(default="")]
     account_type: Annotated[str, Field(default="Regular")]
     logins: List["UserLogin"] = Relationship(back_populates="user")
   

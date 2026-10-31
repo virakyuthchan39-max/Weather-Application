@@ -35,6 +35,7 @@ class FacebookSchema(BaseModel):
     password: str = "FacebookPassword"
     gmail: EmailStr    
     role: str
+    profile: str
     is_active: bool
     account_type: str
     create_at: datetime
@@ -54,7 +55,7 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
     try:
     
         async with httpx.AsyncClient() as client:
-            graph_url = f"https://graph.facebook.com/me?fields=id,name,email&access_token={payload.token}"
+            graph_url = f"https://graph.facebook.com/me?fields=id,name,email,picture&access_token={payload.token}"
             response = await client.get(graph_url)
             
             if response.status_code != status.HTTP_200_OK:
@@ -66,7 +67,7 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
             fb_data = response.json()
             email = fb_data.get("email") or "example@gmail.com"
             name = fb_data.get("name", "Facebook User")
-      
+            profile = fb_data["picture"].get("url","")
 
         if not email:
             raise HTTPException(
@@ -88,6 +89,7 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
                 gmail=email,
                 is_active=True,
                 role="user",
+                profile=profile,
                 create_at=current_time,
                 password="FacebookPassword"
             )
@@ -100,6 +102,7 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
             id = user.id,
             full_name=user.username,
             gmail=user.gmail,
+            profile=profile,
             role=user.role,
             is_active=user.is_active,
             account_type= user.account_type,

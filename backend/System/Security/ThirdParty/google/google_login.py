@@ -37,12 +37,11 @@ class GoogleSchema(BaseModel):
     role: str
     is_active: bool 
     account_type: str
+    profile: str
     login_at: datetime
 
 class GoogleSchemaResponse(BaseModel):
     detail: str = "Google'user login successfully!✅"
- 
- 
     access_token: str
     refresh_token: str
     token_type: str = "Bearer"
@@ -60,14 +59,14 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
         )
 
         email = idinfo.get("email")
- 
+        profile=idinfo.get("picture","")
         name = idinfo.get("name", "Google User")
         if not email:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, 
                 detail="This email not found in our application! Please go to signing up here !."
             )
-
+  
         # Check if user exists in database
         statement = select(GoogleSignIn).where(GoogleSignIn.gmail == email)
         result = await db.scalars(statement)
@@ -78,10 +77,6 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="This Google's account didn't sign in yet !"
             )
-
-   
-
-        
         current_time = datetime.now(timezone.utc)
         query = await db.scalars(select(UserGoogleLogin).where(UserGoogleLogin.gmail == email))
         final_query = query.first()
@@ -97,6 +92,7 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
                 login_at=current_time,
                 username=user.username.title(),
                 gmail=user.gmail,
+                profile=profile,
                 role=user.role,
                 is_active=user.is_active,
             )
@@ -117,6 +113,7 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
             full_name=user.username.title(),
             gmail=user.gmail,
             role=user.role,        
+            profile=profile,
             is_active=user.is_active, 
             account_type= user.account_type,
             login_at=current_time

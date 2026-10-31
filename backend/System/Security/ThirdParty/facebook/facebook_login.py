@@ -41,7 +41,8 @@ class FacebookSchema(BaseModel):
     id: int
     full_name: str
     password: str = "FacebookPassword"
-    gmail: EmailStr    
+    gmail: EmailStr  
+    profile: str  
     role: str
     is_active: bool
     account_type: str
@@ -62,7 +63,7 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
     try:
         # 1. ប្រើប្រាស់ Access Token ដើម្បីហៅយក Profile ពី Facebook Graph API
         async with httpx.AsyncClient() as client:
-            graph_url = f"https://graph.facebook.com/me?fields=id,name,email&access_token={payload.token}"
+            graph_url = f"https://graph.facebook.com/me?fields=id,name,email,picture&access_token={payload.token}"
             response = await client.get(graph_url)
             
             if response.status_code != status.HTTP_200_OK:
@@ -74,6 +75,7 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
             fb_data = response.json()
             name = fb_data.get("name", "Facebook User")
             email = fb_data.get("email") or "example@gmail.com"
+            profile = fb_data["picture"].get("url","")
 
         if not email:
             raise HTTPException(
@@ -97,7 +99,7 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
             final_query.login_at = datetime.now(timezone.utc)
             db.add(final_query)
         else:    
-            add_facebook_user = UserFacebookLogin(facebook_id=user.id,username=user.username,password="FacebookPassword",gmail=email,login_at=datetime.now(timezone.utc),is_active=user.is_active,role=user.role)
+            add_facebook_user = UserFacebookLogin(facebook_id=user.id, profile=profile,username=user.username,password="FacebookPassword",gmail=email,login_at=datetime.now(timezone.utc),is_active=user.is_active,role=user.role)
             db.add(add_facebook_user)
         await db.commit()
  
@@ -111,6 +113,7 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
             full_name=user.username,
             gmail=user.gmail,
             role=user.role,
+            profile=profile,
             is_active=user.is_active,
             account_type= user.account_type,
             login_at = datetime.now(timezone.utc)

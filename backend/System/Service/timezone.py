@@ -17,7 +17,7 @@ def format_datetime(offset_seconds: int,offset:int,dt:int) -> DateTimeSchema:
     return DateTimeSchema(
         current_time=now.strftime("%I:%M %p"),
         local_time = now.strftime("%H:%M %p"),
-        full_date=now.strftime("%A %d %B %Y"),
+        full_date=now.strftime("%A, %d %B %Y"),
         offset=offset,
         dt=dt,
         hour = now.hour

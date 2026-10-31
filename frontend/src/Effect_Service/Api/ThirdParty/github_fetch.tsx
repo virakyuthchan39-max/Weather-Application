@@ -10,6 +10,7 @@ export interface GithubUserInfo {
   gmail: string;
   role: string;
   is_active: boolean;
+  profile: string;
   account_type:string
   create_at: string;
 }
@@ -19,7 +20,7 @@ export interface GithubAuthResponse {
   detail: string;
   access_token: string;
   token_type: string;
-
+  
   refresh_token:string;
   user_info: GithubUserInfo;
 

@@ -237,11 +237,13 @@ export const SignUp: React.FC<SignUpProps> = ({
           <div className="flex-1">
             <label className= {reuse_label}>First Name</label>
             <input
+             autoComplete='given-name'
               type="text"
               name="firstName"
               placeholder="First Name"
               value={formData.firstName}
               onChange={handleChange}
+              maxLength={8}
               required
               className = {reuse_form}
             />
@@ -249,13 +251,15 @@ export const SignUp: React.FC<SignUpProps> = ({
           <div className="flex-1">
             <label className= {reuse_label}>Last Name</label>
             <input
+              autoComplete='family-name'
               type="text"
               name="lastName"
+              maxLength={8}
               placeholder="Last Name"
               value={formData.lastName}
               onChange={handleChange}
               required
-               className = {reuse_form}
+              className = {reuse_form}
             />
           </div>
         </div>
@@ -263,19 +267,21 @@ export const SignUp: React.FC<SignUpProps> = ({
         <div>
           <label className = {reuse_label}>Gmail / Email</label>
           <input
+            autoComplete='gmail'
             type="email"
             name="email"
             placeholder="Enter your email"
             value={formData.email}
             onChange={handleChange}
             required
-           className = {reuse_form}
+            className = {reuse_form}
           />
         </div>
 
         <div>
           <label className= {reuse_label}>Password</label>
           <input
+           autoComplete='new-password'
             type="password"
             name="password"
             placeholder="Enter your password"
@@ -293,8 +299,6 @@ export const SignUp: React.FC<SignUpProps> = ({
               :
                <p className="text-center text-xl italic font-bold text-red-400 drop-shadow-red-700 drop-shadow-md/90 ">{errorMsg}</p>
             }
-
-
             <button
               type="submit"
               disabled={loading}
