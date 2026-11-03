@@ -114,8 +114,11 @@ const FavoriteHistory: React.FC<FavoriteHistoryProps> = ({
 
   
   return (
-    <div className="fixed inset-0 z-200 flex items-center justify-center bg-black/60 transition-opacity duration-300">
+    <div 
+    onClick={()=>{onClose()}}
+    className="fixed inset-0 z-200 flex items-center justify-center bg-black/60 transition-opacity duration-300">
       <div
+       onClick={(e) => {e.stopPropagation()}}
         className={`
           animate-modal-pop w-[95vw] max-w-2xl p-6 rounded-3xl shadow-2xl flex flex-col max-h-[85vh] backdrop-blur-md ${
             !isDarkMode
@@ -194,7 +197,7 @@ const FavoriteHistory: React.FC<FavoriteHistoryProps> = ({
                       : "bg-black/20 border-black/10 shadow-lg/20 shadow-white"
                   }`}
                 >
-                  {/* Background Flag Layer */}
+               
                   {(fav.country_code !== undefined || fav.city.toLowerCase() === "antarctica") && (
                     <div
                       className="absolute inset-0 z-0 pointer-events-none top-1 rounded-2xl max-[500px]:left-0 opacity-80"

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef ,useState} from 'react';
+import React, { useEffect, useRef} from 'react';
 import { SimilarSchemes } from '../../Effect_Service/Api/service/similar_city_fetch'; 
 
 interface SimilarCityProps {
@@ -7,13 +7,13 @@ interface SimilarCityProps {
   isDarkMode: boolean;
   count: number;
   onSelect: (item: SimilarSchemes) => void;
-  onClose: () => void; // ✅ បន្ថែម Prop សម្រាប់បិទ Dropdown
+  onClose: () => void;
 }
 
 const SimilarCity: React.FC<SimilarCityProps> = ({ results,count, isDarkMode, onSelect, error, onClose }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // ✅ ចាប់ Event ពេលចុចខាងក្រៅ ដើម្បីបិទ Dropdown
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       event.stopPropagation();
@@ -26,7 +26,7 @@ const SimilarCity: React.FC<SimilarCityProps> = ({ results,count, isDarkMode, on
   }, [onClose]);
 
    
-  // បើគ្មានទាំង Error និង Results -> មិនបង្ហាញអ្វីទាំងអស់
+
   if (results.length === 0 && !error) return null;
 
   return (

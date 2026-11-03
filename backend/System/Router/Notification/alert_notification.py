@@ -12,7 +12,7 @@ from Database.model_account import UserSignIn, GoogleSignIn, FacebookSignIn, Git
 from pydantic import BaseModel
 router = APIRouter()
 
-class Notification_Welcome(BaseModel):
+class Notification_Alert(BaseModel):
     notification_id: str
     title:str
     message:str
@@ -25,7 +25,7 @@ class Notification_Welcome(BaseModel):
         
 class  Welcome_Response(BaseModel):
     detail: str
-    notifcation_info: Notification_Welcome
+    notifcation_info: Notification_Alert
     
 async def return_username(db_user:AsyncSession,user_id:int,gmail:str,account_type:str):
     if account_type == "regular":
@@ -135,7 +135,7 @@ async def send_alert_notification(
     db.add(new_notification)
     await db.commit()
 
-    result_response = Notification_Welcome(
+    result_response = Notification_Alert(
         notification_id=notification_id,
         title=title,
         message=message,

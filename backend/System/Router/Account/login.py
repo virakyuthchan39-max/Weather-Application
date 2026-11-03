@@ -13,11 +13,8 @@ from fastapi.security import HTTPAuthorizationCredentials
 from Security.Encryption.hash import verify_password
 from Security.Encryption.token import create_access_token
 from Security.Encryption.refresh_token import (
-    get_current_user,
     create_refresh_token,
-    refresh_access_token,
-    blacklist_token,
-    bearer_scheme,
+
 )
 import asyncio
 
@@ -114,7 +111,7 @@ async def login_User(userAccount: LoginUserRequest,db: Annotated[AsyncSession, D
  
     result_response = LoginSchema(
         id=final_query.id, 
-        full_name=final_query.username, 
+        full_name=final_query.username.title(), 
         gmail=final_query.gmail, 
         login_at=target_user.login_at, 
         is_active=target_user.is_active, 

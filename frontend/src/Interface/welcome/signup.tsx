@@ -17,7 +17,7 @@ import { facebookSignIn, requestFacebookToken } from '../../Effect_Service/Api/T
 interface SignUpProps {
   onSwitchToLogin: () => void;
   onSwitchToHome: () => void;
-  onSuccess: (name:UserInfo ) => void;
+  onSuccess: (name:UserInfo ,token:string) => void;
   githubCode?: string | null;
   onSubmit?: (data: Record<string, string>) => void;
 }
@@ -63,7 +63,7 @@ export const SignUp: React.FC<SignUpProps> = ({
       saveToken(res.access_token);
       setSuccessMsg("Account created successfully!");
       saveUserInfo(res.user_info);
-      onSuccess?.(res.user_info);
+      onSuccess?.(res.user_info, res.access_token);
       onSubmit?.(formData);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
@@ -97,7 +97,7 @@ export const SignUp: React.FC<SignUpProps> = ({
       saveToken(res.access_token);
 
       setSuccessMsg("Account created successfully!");
-      onSuccess?.(res.user_info);
+      onSuccess?.(res.user_info,res.access_token);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -129,7 +129,7 @@ export const SignUp: React.FC<SignUpProps> = ({
         saveToken(res.access_token);
         setSuccessMsg("Account created successfully!");
         clearGithubIntent();
-        onSuccess?.(res.user_info);
+        onSuccess?.(res.user_info,res.access_token);
       } catch (err) {
         hasExchanged.current = false;
         const errMsg = err instanceof Error ? err.message : "";
@@ -162,14 +162,22 @@ export const SignUp: React.FC<SignUpProps> = ({
       saveToken(res.access_token);
       setSuccessMsg("Account created successfully!");
       
-      onSuccess?.(res.user_info);
+      onSuccess?.(res.user_info,res.access_token);
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
+      const errMsg = err instanceof Error ? err.message : "";
+      if (errMsg.includes("bad_verification_code")) {
+          setErrorMsg("");
+        } 
+        else if (errMsg.includes("400")){setErrorMsg(errMsg.slice(37))}
+        else {
+          setErrorMsg(err instanceof Error ? err.message: "Something went wrong");
+        }
     } finally {
       setFacebookLoading(false);
     }
   };
 
+   
 
   const reuse_button_logo:string = "flex h-12 w-12 items-center drop-shadow-lg/50 drop-shadow-blue-600 justify-center border-b-4 border-gray-500 rounded-full bg-white transition-all \
   hover:scale-110 hover:duration-150 \
@@ -247,6 +255,7 @@ export const SignUp: React.FC<SignUpProps> = ({
               required
               className = {reuse_form}
             />
+            <span className = {`${formData.firstName.length === 8 ? "text-red-500":"text-white"} font-bold opacity-70`}>{formData.firstName.length}/8</span>
           </div>
           <div className="flex-1">
             <label className= {reuse_label}>Last Name</label>
@@ -261,6 +270,7 @@ export const SignUp: React.FC<SignUpProps> = ({
               required
               className = {reuse_form}
             />
+                <span className = {`${formData.lastName.length=== 8 ? "text-red-500":"text-white"} font-bold opacity-70`}>{formData.lastName.length}/8</span>
           </div>
         </div>
 

@@ -8,11 +8,10 @@ from typing import Annotated
 from Database.database import get_session,get_application
 from Database.model_application import NotificationUser 
 from Database.model_account import UserSignIn, GoogleSignIn, FacebookSignIn, GithubSignIn
-from Service.timezone import format_datetime
 from pydantic import BaseModel
 router = APIRouter()
 
-class Notification_Welcome(BaseModel):
+class Notification_Update(BaseModel):
         notification_id: str
         title:str
         message:str
@@ -23,11 +22,12 @@ class Notification_Welcome(BaseModel):
         account_type: str
         gmail: str
         
-class  Welcome_Response(BaseModel):
+class Welcome_Response(BaseModel):
     detail: str
-    notifcation_info: Notification_Welcome
+    notifcation_info: Notification_Update
     
 async def return_username(db_user:AsyncSession,user_id:int,gmail:str,account_type:str):
+    account_type = account_type.lower()
     if account_type == "regular":
                stmt = select(UserSignIn).where((UserSignIn.id == user_id) & (UserSignIn.gmail == gmail))
     elif account_type == "google":
@@ -76,22 +76,23 @@ async def send_Update_notification(
     color = "green"
     time_live = 7  # Active for 7 days
     
+    query_notif_update = (await db.scalars(select(NotificationUser).where((NotificationUser.gmail == gmail)  & (NotificationUser.account_type == account_type)))).first()
+   
     new_notification = NotificationUser(
-        gmail=gmail,
-        title=title,
-        is_read=False,
-        notification_id=notification_id,
-        time_live=time_live,
-        account_type=account_type,
-        sended_at=current_time_utc,
-        type_msg=notification_type,
-        color=color,  
-    )
+            gmail=gmail,
+            title=title,
+            is_read=False,
+            notification_id=notification_id,
+            time_live=time_live,
+            account_type=account_type,
+            sended_at=current_time_utc,
+            type_msg=notification_type,
+            color=color,  
+        )
 
-    # 5. Save to Database
     db.add(new_notification)
     await db.commit()
-    result_response = Notification_Welcome(
+    result_response = Notification_Update(
             notification_id= notification_id,
             title= title,
             message= message,

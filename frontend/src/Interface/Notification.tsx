@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { fetchWelcomeLogin, deleteNotificationById, deleteAllNotifications, NotificationData } from '../Effect_Service/Api/service/notification_fetch';
+import React, { useEffect, useState,useRef } from 'react';
+import { deleteNotificationById, deleteAllNotifications, NotificationData, fetchReadNotif, fetchReadAllNotif } from '../Effect_Service/Api/service/notification_fetch';
 import { playAnimeClick } from '../Effect_Service/sound_effect';
 
 interface NotificationProps {
@@ -7,41 +7,53 @@ interface NotificationProps {
   onClose: () => void;
   isDarkMode: boolean;
   user: any;
-  onUpdateStatus?: (hasUnread: boolean, color: string) => void; // ✅ បន្ថែម
+  onUpdateStatus?: (hasUnread: boolean, color: string) => void; 
 }
 
 export const Notification: React.FC<NotificationProps> = ({ isOpen, onClose, isDarkMode, user, onUpdateStatus }) => {
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
-  const [loading, setLoading] = useState(false);
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
   
   const token = localStorage.getItem("access_token") || "";
+  const loadNotifications = () => {
+    const saved = localStorage.getItem("user_notification");
+    if (saved) {
+      try {
+        const notif = JSON.parse(saved);
+        setNotifications([notif]);
+        // កំណត់ Read ឬ Unread តាមទិន្នន័យដែលបាន Save ទុក
+        if (notif.is_read) {
+          setReadIds(new Set([notif.notification_id]));
+        } else {
+          setReadIds(new Set());
+        }
+      } catch (err) {
+        console.error("Failed to parse notification from storage", err);
+      }
+    } else {
+      setNotifications([]);
+      setReadIds(new Set());
+    }
+  };
 
-  // ✅ ទាញយកទិន្នន័យភ្លាមៗពេលមាន User (មិនរង់ចាំ isOpen ទេ)
   useEffect(() => {
-    if (user) {
+    if (user && !isOpen) {
       loadNotifications();
     }
-  }, [user]);
-
-  // ✅ គណនា និងផ្ញើ Status ទៅ Weather.tsx រាល់ពេលមានការផ្លាស់ប្តូរ
+  }, [user,isOpen]); 
+  // គណនា Ping និងពណ៌
   useEffect(() => {
     if (!onUpdateStatus) return;
-    
     const unreadNotifs = notifications.filter(n => !readIds.has(n.notification_id));
     
     if (unreadNotifs.length === 0) {
-      onUpdateStatus(false, "green"); // គ្មានអាន = បិទ Ping
+      onUpdateStatus(false, "green"); 
       return;
     }
     
-    // កំណត់អាទិភាពពណ៌៖ ក្រហម -> លឿង -> បៃតង
     let topColor = "green";
-    if (unreadNotifs.some(n => n.color.toLowerCase() === 'red')) {
-      topColor = "red";
-    } else if (unreadNotifs.some(n => n.color.toLowerCase() === 'yellow')) {
-      topColor = "yellow";
-    }
+    if (unreadNotifs.some(n => n.color.toLowerCase() === 'red')) topColor = "red";
+    else if (unreadNotifs.some(n => n.color.toLowerCase() === 'yellow')) topColor = "yellow";
     
     onUpdateStatus(true, topColor);
   }, [notifications, readIds, onUpdateStatus]);
@@ -53,37 +65,57 @@ export const Notification: React.FC<NotificationProps> = ({ isOpen, onClose, isD
     return { ping: "bg-red-500", outline: "bg-red-400" };
   };
 
-  const handleReadClick = (id: string) => {
+  // ✅ ២. ពេលចុច Read ត្រូវ Update ក្នុង LocalStorage ផង
+  const handleReadClick = async (id: string) => {
     playAnimeClick();
     const newReadIds = new Set(readIds);
     newReadIds.add(id); 
     setReadIds(newReadIds);
+
+    // Update LocalStorage
+    const saved = localStorage.getItem("user_notification");
+    if (saved) {
+      const notif = JSON.parse(saved);
+      notif.is_read = true;
+      localStorage.setItem("user_notification", JSON.stringify(notif));
+    }
+
+    try {
+      await fetchReadNotif(id, user.id, user.gmail, user.account_type);
+    } catch (err) {
+      console.error("Failed to save read status: ", err);
+    }
   };
 
-  const handleReadAll = () => {
+  // ✅ ៣. ពេលចុច Read All ត្រូវ Update ក្នុង LocalStorage ផង
+  const handleReadAll = async () => {
     playAnimeClick();
     const allIds = notifications.map(n => n.notification_id);
     setReadIds(new Set(allIds));
-  };
 
-  const loadNotifications = async () => {
-    setLoading(true);
-    try {
-      const res = await fetchWelcomeLogin(user.id, user.gmail, user.account_type);
-      if (res && res.notifcation_info) {
-        setNotifications([res.notifcation_info]);
-      }
-    } catch (err) {
-      console.error(err);
+    // Update LocalStorage
+    const saved = localStorage.getItem("user_notification");
+    if (saved) {
+      const notif = JSON.parse(saved);
+      notif.is_read = true;
+      localStorage.setItem("user_notification", JSON.stringify(notif));
     }
-    setLoading(false);
+
+    try {
+      await fetchReadAllNotif(user.id, user.gmail, user.account_type);
+    } catch (err) {
+      console.error("Failed to save read all status: ", err);
+    }
   };
 
   const handleDelete = async (id: string) => {
     playAnimeClick();
     try {
-      await deleteNotificationById(id, user.id, user.gmail, user.account_type,token);
+      await deleteNotificationById(id, user.id, user.gmail, user.account_type, token);
       setNotifications((prev) => prev.filter(n => n.notification_id !== id));
+      
+      // លុបចេញពី LocalStorage
+      localStorage.removeItem("user_notification");
     } catch (err) {
       console.error(err);
     }
@@ -94,6 +126,9 @@ export const Notification: React.FC<NotificationProps> = ({ isOpen, onClose, isD
     try {
       await deleteAllNotifications(user.id, user.gmail, user.account_type, token);
       setNotifications([]);
+      
+      // លុបចេញពី LocalStorage
+      localStorage.removeItem("user_notification");
     } catch (err) {
       console.error(err);
     }
@@ -102,17 +137,17 @@ export const Notification: React.FC<NotificationProps> = ({ isOpen, onClose, isD
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-200 flex items-center justify-center bg-black/60 transition-opacity duration-300">
-      <div className={`animate-modal-pop w-[90vw] max-w-2xl h-400  p-6 rounded-3xl shadow-2xl flex flex-col max-h-[80vh] backdrop-blur-md ${!isDarkMode ? "bg-black/20 text-white" : "bg-white/20 text-black"}`}>
+    // ... (UI របស់អ្នកនៅដដែល គ្មានអ្វីផ្លាស់ប្តូរទេ)
+    <div onClick={() => { onClose(); }} className="fixed inset-0 z-200 flex items-center justify-center bg-black/60 transition-opacity duration-300">
+      <div
+        onClick={(e) => e.stopPropagation()}  
+       className={`animate-modal-pop w-[90vw] max-w-2xl h-400  p-6 rounded-3xl shadow-2xl flex flex-col max-h-[80vh] backdrop-blur-md
+         ${!isDarkMode ? "bg-black/20 text-white" : "bg-white/20 text-black"}`}>
         
         <div className="flex justify-between items-center border-b-2 pb-4 mb-4">
           <h2 className="text-2xl flex font-bold">
             Notifications
-            <img 
-            src ={!isDarkMode ? "/Icon/weather icon/feature/darkmode/notification_white.svg":"/Icon/weather icon/feature/daymode/notification_black.svg"} 
-            className="w-8 h-8 ml-2"
-            alt="Notification icon"
-            />
+            <img src ={!isDarkMode ? "/Icon/weather icon/feature/darkmode/notification_white.svg":"/Icon/weather icon/feature/daymode/notification_black.svg"} className="w-8 h-8 ml-2" alt="Notification icon" />
           </h2>
           <button onClick={() => { playAnimeClick(); onClose(); }} className="text-2xl font-bold hover:text-red-500 active:scale-90 transition-transform">
               <img src="/Icon/weather icon/feature/red_cross.svg" className="w-8 h-8 ml-2" alt="Close icon" />
@@ -120,10 +155,8 @@ export const Notification: React.FC<NotificationProps> = ({ isOpen, onClose, isD
         </div>
 
         <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-4">
-          {loading ? (
-            <p className="text-center animate-pulse">Loading...</p>
-          ) : notifications.length === 0 ? (
-            <p className="text-center italic opacity-70">No notifications yet.</p>
+          {notifications.length === 0 ? (
+            <p className="text-center text-4xl  absolute top-[50%] bottom-0 right-0 left-0 italic opacity-70">No notifications yet.</p>
           ) : (
             notifications.map((notif) => {
               const colors = getColorClasses(notif.color);
@@ -148,22 +181,21 @@ export const Notification: React.FC<NotificationProps> = ({ isOpen, onClose, isD
                     
                     <button onClick={() => handleReadClick(notif.notification_id)} className="absolute top-2 right-20 text-red-600 font-bold hover:scale-110 active:scale-90 transition-transform">
                       <img 
-                        src={
-                          isRead 
-                            ? "/Icon/weather icon/feature/read_green.svg" 
-                            : (isDarkMode ? "/Icon/weather icon/feature/daymode/read_black.svg" : "/Icon/weather icon/feature/darkmode/read_white.svg")
-                        }
-                        className="w-8 h-8 ml-2"
-                        alt="Read icon"
-                      />
+                        src={isRead ? "/Icon/weather icon/feature/read_green.svg" : (isDarkMode ? "/Icon/weather icon/feature/daymode/read_black.svg" : "/Icon/weather icon/feature/darkmode/read_white.svg")}
+                        className="w-8 h-8 ml-2" alt="Read icon" />
                     </button>
                   
-                    <h3 className={`font-bold text-2xl mb-2 pr-6`}>{notif.title}</h3>
-                    <p className="text-lg opacity-60 mb-3 absolute bottom-1.5 whitespace-pre-wrap">
+                    <h3 className={`font-bold border-b-2 pb-2 text-2xl mb-2 pr-6 
+                      max-[500px]:mt-8 max-[500px]:text-xl`}>{notif.title}
+                    </h3>
+                    <p className="text-lg text-nowrap opacity-60 mb-3 absolute bottom-1.5
+                    max-[500px]:text-sm">
                       ({notif.time_live <= 1 ? `${notif.time_live} day before delete` : `${notif.time_live} days before delete`})
                     </p>
-                    <p className="text-lg opacity-90 mb-3 whitespace-pre-wrap pr-12">{notif.message}</p>
-                    <p className="text-md text-right opacity-60 font-semibold">{notif.sended_at}</p>
+                    <p className="text-lg opacity-90 mb-3 whitespace-pre-wrap pr-12 \
+                    max-[500px]:text-sm max-[500px]:pr-5">{notif.message}</p>
+                    <p className="text-md text-right opacity-60  text-nowrap font-semibold
+                    max-[500px]:text-sm max-[500px]:my-10 max-[500px]:text-left">{notif.sended_at}</p>
                   </div>
                 </React.Fragment>
               )
@@ -172,14 +204,14 @@ export const Notification: React.FC<NotificationProps> = ({ isOpen, onClose, isD
         </div>
 
         <div className="mt-4 flex gap-4 pt-2">
-          <button onClick={handleDeleteAll} disabled={notifications.length === 0} className="flex-1 py-2 bg-red-800 hover:bg-red-600 disabled:opacity-50 text-white font-bold rounded-xl transition-all active:scale-95">
+          <button onClick={handleDeleteAll} disabled={notifications.length === 0} className="flex-1 py-2 bg-red-800 hover:bg-red-600 disabled:opacity-50 text-white font-bold rounded-xl transition-all active:scale-95
+          disabled:cursor-not-allowed">
             Clear All
           </button>
           <button onClick={handleReadAll} disabled={notifications.length === 0} className={`flex-1 py-2 font-bold rounded-xl transition-all active:scale-95 disabled:opacity-50 ${!isDarkMode ? "bg-gray-700 hover:bg-gray-600 text-white" : "bg-gray-300 hover:bg-gray-400 text-black"}`}>
             Read All
           </button>
         </div>
-
       </div>
     </div>
   );

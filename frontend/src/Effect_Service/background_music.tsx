@@ -63,38 +63,64 @@ export default BackgroundMusic;
 interface WeatherMusic {
   play: boolean;
   track: string;
+  loop: boolean;
+  random: boolean;
+  tracks: string[];
+  onNext: (path: string) => void;
 }
 
-export const WeatherMusicPlay: React.FC<WeatherMusic> = ({ play, track }) => {
+export const WeatherMusicPlay: React.FC<WeatherMusic> = ({
+  play, track, loop, random, tracks, onNext,
+}) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // latest config, read inside handleEnded (avoids stale closures)
+  const configRef = useRef({ loop, random, tracks, onNext });
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
-    audioRef.current = new Audio(track);
-    audioRef.current.loop = true;
-    audioRef.current.volume = 0.2;
+    configRef.current = { loop, random, tracks, onNext };
+  }, [loop, random, tracks, onNext]);
 
-    if (play) {
-      audioRef.current.play().catch(() => {});
-    }
+  // create audio when track changes
+  useEffect(() => {
+    audioRef.current?.pause();
+
+    const audio = new Audio(track);
+    audio.volume = 0.2;
+    audio.loop = configRef.current.loop;
+    audioRef.current = audio;
+
+    const handleEnded = () => {
+      const { loop, random, tracks, onNext } = configRef.current;
+      if (loop) return;                
+      if (random) {
+        const others = tracks.filter((t) => t !== track); 
+        const next = others[Math.floor(Math.random() * others.length)];
+        if (next) onNext(next);
+        return;
+      }
+      const i = tracks.indexOf(track);
+      onNext(tracks[i + 1] ?? tracks[0]);
+    };
+    audio.addEventListener('ended', handleEnded);
+
+    if (play) audio.play().catch(() => {});
 
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
+      audio.removeEventListener('ended', handleEnded);
+      audio.pause();
     };
   }, [track]);
 
+  // loop toggle — no audio recreation, just flip the flag
   useEffect(() => {
-    if (audioRef.current) {
-      if (play) {
-        audioRef.current.play().catch(() => {});
-      } else {
-        audioRef.current.pause();
-      }
-    }
+    if (audioRef.current) audioRef.current.loop = loop;
+  }, [loop]);
+
+  // play/pause
+  useEffect(() => {
+    if (!audioRef.current) return;
+    if (play) audioRef.current.play().catch(() => {});
+    else audioRef.current.pause();
   }, [play]);
 
   return null;

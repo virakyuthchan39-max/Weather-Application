@@ -12,11 +12,10 @@ import {
   githubLogin,
 } from '../../Effect_Service/Api/ThirdParty/github_fetch';
 
-
 interface LoginProps {
   onSwitchToSignUp: () => void;
   onSwitchToHome: () => void;
-  onSuccess?: (user:UserInfo) => void;
+  onSuccess?: (user:UserInfo,token:string) => void;
   githubCode?: string | null;
   onSubmit?: (data: Record<string, string>) => void;
 }
@@ -45,7 +44,7 @@ const Login: React.FC<LoginProps> = ({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
-
+    
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -61,7 +60,7 @@ const Login: React.FC<LoginProps> = ({
       saveToken(res.access_token);
       saveUserInfo(res.user_info);
       setSuccessMsg("Account login success !");
-      onSuccess?.(res.user_info);
+      onSuccess?.(res.user_info, res.access_token);
       onSubmit?.(formData);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
@@ -69,7 +68,7 @@ const Login: React.FC<LoginProps> = ({
       setLoading(false);
     }
   };
-
+  
   const handleSwitch = () => {
     playButtonSound();
     onSwitchToSignUp();
@@ -91,7 +90,7 @@ const Login: React.FC<LoginProps> = ({
       const res = await googleLogin(googleToken);
       saveToken(res.access_token);
       setSuccessMsg("Account login success !");
-      onSuccess?.(res.user_info);
+      onSuccess?.(res.user_info,res.access_token);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -121,7 +120,7 @@ const Login: React.FC<LoginProps> = ({
         setSuccessMsg("Account login success !");
         
         clearGithubIntent();
-        onSuccess?.(res.user_info);
+         onSuccess?.(res.user_info,res.access_token);
       } catch (err) {
         hasExchanged.current = false;
         const errMsg = err instanceof Error ? err.message : "";
@@ -150,7 +149,7 @@ const Login: React.FC<LoginProps> = ({
       saveToken(res.access_token);
   
       setSuccessMsg("Account login success !");
-     onSuccess?.(res.user_info);
+      onSuccess?.(res.user_info,res.access_token);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message.slice(36) : 'Something went wrong');
     } finally {

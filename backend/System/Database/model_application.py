@@ -5,7 +5,6 @@ from sqlmodel import SQLModel,MetaData, Field, Relationship
 from typing import Annotated
 
 
-    
 class FavoriteCity(SQLModel, table=True):
     __tablename__ = "favorite_city"
     
@@ -22,7 +21,6 @@ class FavoriteCity(SQLModel, table=True):
     lon: Annotated[float, Field(default=0)]
     lat: Annotated[float, Field(default=0)]
     
-
     daytime: Annotated[str, Field(default=None)]
     climate: Annotated[str, Field(default=None)]
     wind_speed: Annotated[float, Field(default=0)]
@@ -51,12 +49,10 @@ class NotificationUser(SQLModel, table=True, ):
     gmail: Annotated[str,Field(default=None)]
     color: Annotated[str,Field(default=None)]
     account_type: Annotated[str, Field(default=None,index=True)]
-    read_at: Optional[datetime] = Field(default=None)
-    sended_at: Annotated[str, Field(default_factory=lambda: str(datetime.now(timezone.utc)))]
-    type_msg: Annotated[str, Field(default=None)] 
+    read_at: Optional[str] = Field(default=None)
+    sended_at: Annotated[str, Field(default_factory=lambda: datetime.now(timezone.utc))]
+    type_msg: Annotated[str, Field(default=None)]
 
-
-    
 class DonationByUser(SQLModel, table=True, ):
     __tablename__ = "donation"
     id: Optional[int] = Field(default=None, primary_key=True, index=True)

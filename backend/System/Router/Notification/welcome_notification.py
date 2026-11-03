@@ -19,6 +19,7 @@ class Notification_Welcome(BaseModel):
         color:str
         sended_at:str
         time_live:int
+        is_read: bool
         account_type: str
         gmail: str
         
@@ -52,7 +53,8 @@ async def send_welcome_notification(
     db_user: Annotated[AsyncSession, Depends(get_session)],
     user_id:int,
     gmail: str,
-    account_type: str
+    account_type: str,
+
     ):
     """
     Creates and saves a welcome notification to the database for a newly authenticated user.
@@ -80,7 +82,6 @@ async def send_welcome_notification(
     query_notification_signin = (await db.scalars(select(NotificationUser).where((NotificationUser.gmail == gmail) & (NotificationUser.type_msg == notification_type)))).first()
     if query_notification_signin:
         query_notification_signin.sended_at = current_time_utc.strftime("%A %d %B %Y, %I:%M %p")
-        query_notification_signin.is_read = False
         query_notification_signin.time_live=7
         new_notification = query_notification_signin
         db.add(new_notification)
@@ -99,16 +100,16 @@ async def send_welcome_notification(
         db.add(new_notification)
     await db.commit()
     result_response = Notification_Welcome(
-            notification_id= notification_id,
+            notification_id= new_notification.notification_id,
             title= title,
             gmail=gmail,
+            is_read=new_notification.is_read,
             message= message,
             type= notification_type,
             color= color,
             sended_at= formatted_date_time,
             time_live= time_live,
             account_type= account_type,
-           
     )
 
     return Welcome_Response(
@@ -123,7 +124,7 @@ async def send_welcome_notification(
     db_user: Annotated[AsyncSession, Depends(get_session)],
     user_id:int,
     gmail: str,
-    account_type: str
+    account_type: str,
     ):
     """
     Creates and saves a welcome notification to the database for a newly authenticated user.
@@ -151,7 +152,6 @@ async def send_welcome_notification(
     query_notification_login = (await db.scalars(select(NotificationUser).where((NotificationUser.gmail == gmail) & (NotificationUser.type_msg == notification_type)))).first()
     if query_notification_login:
         query_notification_login.sended_at = current_time_utc.strftime("%A %d %B %Y, %I:%M %p")
-        query_notification_login.is_read = False
         query_notification_login.time_live=7
         new_notification = query_notification_login
         db.add(new_notification)
@@ -172,9 +172,10 @@ async def send_welcome_notification(
         db.add(new_notification)
     await db.commit()
     result_response = Notification_Welcome(
-            notification_id= notification_id,
+            notification_id= new_notification.notification_id,
             title= title,
             message= message,
+            is_read= new_notification.is_read,
             type= notification_type,
             color= color,
             gmail= gmail,

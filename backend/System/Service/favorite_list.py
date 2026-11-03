@@ -83,10 +83,10 @@ def map_to_schema(db_fav: FavoriteCity) -> FavoriteSchemes:
         city=db_fav.city,
         lon=db_fav.lon,
         lat=db_fav.lat,
-        daytime=db_fav.daytime,      # ✅ អានពី DB
-        climate=db_fav.climate,      # ✅ អានពី DB
+        daytime=db_fav.daytime,
+        climate=db_fav.climate,      
         country=db_fav.country,
-        wind_speed=db_fav.wind_speed,# ✅ អានពី DB
+        wind_speed=db_fav.wind_speed,
         country_code=db_fav.country_code,
         offset=db_fav.offset,
         temp=TemperatureSchema(

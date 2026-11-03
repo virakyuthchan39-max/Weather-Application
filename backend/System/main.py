@@ -13,7 +13,7 @@ from slowapi import _rate_limit_exceeded_handler
 from Router.OpenWeather.open_weather import limiter
 
 
-from Database.database import create_table, engine_account,engine_application,engine_role
+from Database.database import create_table,engine
 
 # import the module
 # from  Router
@@ -45,10 +45,7 @@ async def lifespan(app: FastAPI):
     try:
         yield
     finally:
-        await engine_account.dispose()
-        await engine_application.dispose()
-        await engine_role.dispose()
-
+        await engine.dispose()
 app = FastAPI(
     title="Weather Application ~ Oragnization/Operation",
     lifespan=lifespan,)

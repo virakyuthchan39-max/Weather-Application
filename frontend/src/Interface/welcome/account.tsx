@@ -10,7 +10,7 @@ import SignUp from './signup';
 import Login from './login';
 import "./account.css";
  
-
+import { getToken } from '../../Effect_Service/Api/service/fetch.tsx';
 import { UserInfo } from '../../Effect_Service/Api/service/fetch.tsx';
 // import the data streaming
 import DataStreaming from '../../Effect_Service/Api/service/data_streaming';
@@ -22,8 +22,8 @@ type AuthView = 'welcome' | 'signup' | 'login' | 'streaming';
 
 // បន្ថែម Prop ថ្មី
 interface AccountProps {
-  onLoginSuccess: (user: UserInfo) => void;
-  onRegisterSuccess:(user: UserInfo) => void;
+  onLoginSuccess: (user: UserInfo,token:string) => void;
+  onRegisterSuccess:(user: UserInfo,token:string) => void;
 }
 
 const Account: React.FC<AccountProps> = memo(({onLoginSuccess,onRegisterSuccess}) => {
@@ -53,9 +53,11 @@ const Account: React.FC<AccountProps> = memo(({onLoginSuccess,onRegisterSuccess}
     // 1.5s fade → swap view
     setPageFade('anim-fade-page');
     window.setTimeout(() => {
+      const token = getToken()
+      if (!token) return null
       setHideAll(true); 
-      onLoginSuccess(user);
-      onRegisterSuccess(user)
+      onLoginSuccess(user,token);
+      onRegisterSuccess(user,token)
       
       setPageFade('');
       setRedirecting(false);
@@ -72,13 +74,12 @@ const Account: React.FC<AccountProps> = memo(({onLoginSuccess,onRegisterSuccess}
   const code = getGithubCodeFromUrl();
   const intent = getGithubIntent();
 
-  // ❌ បើគ្មាន code តែមាន intent ចាស់ជាប់ → clear intent (stale)
+
   if (!code) {
     if (intent) clearGithubIntent();
     return;
   }
 
-  // ❌ បើមាន code តែគ្មាន intent → clear code (security)
   if (!intent) {
     clearGithubCodeFromUrl();
     return;

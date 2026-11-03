@@ -29,37 +29,52 @@ services:
         environment:
             - BACKEND_URL=http://backend:${BACKEND_PORT}
             - DATABASE_HOST=database
-            - DATABASE_CONTAINER_PORT=3306
+            - DATABASE_CONTAINER_PORT=5432
             - DATABASE_USERNAME=${DATABASE_USERNAME}
             - DATABASE_PASSWORD=${DATABASE_PASSWORD}
-            - DATABASE_NAME_ACCOUNT=${DATABASE_NAME_ACCOUNT}
-            - DATABASE_NAME_APPLICATION=${DATABASE_NAME_APPLICATION}
+            - DATABASE_NAME=${DATABASE_NAME}
             - REDIS_URL=${REDIS_CONTAINER_URL}
         depends_on:
             database:
                 condition: service_healthy
             memory-cache:
                 condition: service_started
-
+    # is for MYSQL server
+    # database:
+    #     image: mysql:8.4
+    #     container_name: ${DATABASE_CONTAINER_NAME}
+    #     restart: always
+    #     ports:
+    #         - "3307:3306" 
+    #     environment:
+    #         MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
+    #         MYSQL_DATABASE: ${DATABASE_NAME_ACCOUNT}
+    #     volumes:
+    #         - mysql_data:/var/lib/mysql
+            
+       
+    #     healthcheck:
+    #         test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DATABASE_PASSWORD}"]
+    #         interval: 5s
+    #         timeout: 5s
+    #         retries: 10
     database:
-        image: mysql:8.4
+        image: postgres:16
         container_name: ${DATABASE_CONTAINER_NAME}
         restart: always
         ports:
-            - "3307:3306" 
+            - "5432:5432"  # ផ្លាស់ប្តូរ Port ពី 3307:3306 មកជា PostgreSQL port (5432)
         environment:
-            MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
-            MYSQL_DATABASE: ${DATABASE_NAME_ACCOUNT}
+            POSTGRES_USER: ${DATABASE_USERNAME}  # ឈ្មោះ User របស់ Postgres (defaults ជា postgres)
+            POSTGRES_PASSWORD: ${DATABASE_PASSWORD}        # Password របស់អ្នក
+            POSTGRES_DB: ${DATABASE_NAME}          # ឈ្មោះ Database ដំបូង
         volumes:
-            - mysql_data:/var/lib/mysql
-            
-       
+            - postgres_data:/var/lib/postgresql/data       # ផ្លាស់ប្តូរ Volume path ឱ្យត្រូវជាមួយ Postgres
         healthcheck:
-            test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DATABASE_PASSWORD}"]
+            test: ["CMD-SHELL", "pg_isready -U ${DATABASE_NAME}"]  # ប្រើ pg_isready ជំនួស mysqladmin ping
             interval: 5s
             timeout: 5s
             retries: 10
-
     memory-cache: 
         image: redis:7-alpine
         container_name: ${REDIS_CONTAINER_NAME}
@@ -68,5 +83,5 @@ services:
         restart: always
 
 volumes:
-    mysql_data:
+    postgres_data:
         driver: local

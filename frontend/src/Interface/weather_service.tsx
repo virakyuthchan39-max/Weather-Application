@@ -18,8 +18,8 @@ export const useWeatherService = () => {
     lat: number = 0, 
     lon: number = 0,
     suggestionTerritory: string = "",
-    suggestionCountry: string = "",     // ✅ បន្ថែម Parameter នេះ
-    suggestionCountryCode: string = "" // ✅ បន្ថែម Parameter ថ្មីនេះ
+    suggestionCountry: string = "",    
+    suggestionCountryCode: string = "" 
   ) => {
     if (!targetCity) return;
     setLoading(true);
@@ -76,7 +76,7 @@ export const useWeatherService = () => {
     loadDefault();
   }, []);
 
-  // ២. ចាប់យកការវាយអក្សរដោយខ្លួនឯង (បើវាយ "Rome, Italy" វានឹងកាត់យកតែឈ្មោះ)
+
   const handleSearch = (e: React.SubmitEvent) => {
     e.preventDefault();
     const parts = city.split(",");

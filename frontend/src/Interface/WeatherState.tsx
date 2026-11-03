@@ -60,7 +60,7 @@ const WeatherStats: React.FC<WeatherStatsProps> = ({
   if (!isWindySecond && isKm){ windySpeedPeriod = `${((weather.weather.wind.speed * 3600)/1000).toFixed(2)} km/h`; }
   else if (!isWindySecond && isMile){ windySpeedPeriod = `${((weather.weather.wind.speed * 3600)/1609.344).toFixed(2)} mi/h`; }
   else if (!isWindySecond){
-     console.log(weather.weather.wind.speed * 3600)
+
      windySpeedPeriod = `${((weather.weather.wind.speed * 3600).toFixed(0))} m/h`; }
   else { windySpeedPeriod = `${windySpeed}/s`; }
 
@@ -88,7 +88,10 @@ const WeatherStats: React.FC<WeatherStatsProps> = ({
   };
 
   return (
-    <div className={`p-4 rounded-xl mt-2 flex flex-col gap-2 w-full ${!isDarkMode ? "text-white":"text-black"}`}>
+    <div className={`p-4 rounded-xl relative -bottom-10 mt-2 flex flex-col gap-2 w-full ${!isDarkMode ? "text-white":"text-black"}
+    max-[600px]:w-md
+    max-[500px]:w-sm
+    max-[400px]:w-xs`}>
       <div className={`flex justify-between border-b ${!isDarkMode ? "border-gray-200":"border-gray-900"} pb-1`}>
         <span className="font-semibold flex text-sm">Wind Speed 
                 <img src={!isDarkMode ? "/Icon/weather icon/feature/darkmode/wind_white.svg" : "/Icon/weather icon/feature/daymode/wind_black.svg"} 
@@ -134,9 +137,14 @@ const WeatherStats: React.FC<WeatherStatsProps> = ({
                 alt="visibility icon" className="ml-2 w-5.5 h-5.5"/>
         </span>
 
-        <span className="font-bold text-sm"> 
-          <span className="mx-10 relative -right-8">
-            ({weather.location.country.toLowerCase() === "" ? "Antarctica" : weather.location.country}) 
+        <span className="font-bold flex  text-sm"> 
+          <span className="mx-10 relative flex -right-8
+          max-[500px]:-right-4">
+              <img
+                          src={weather.location.country_code !== "" ? `https://flagcdn.com/w80/${weather.location.country_code.toLowerCase()}.png` : "/Icon/weather icon/feature/antartica_flag.svg"}
+                          alt="Country Flag"
+                          className="w-7 h-7 drop-shadow-lg/20 bottom-1 ml-2 object-contain rounded-sm relative
+                          max-[500px]:w-9 max-[500px]:h-9 max-[500px]:bottom-2"/>
           </span>
           {formatWeatherDataTime(weather.datetime.dt, weather.datetime.offset)}
         </span>

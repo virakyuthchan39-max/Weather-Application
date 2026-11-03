@@ -1,7 +1,7 @@
-import React from 'react';
+import React,{useRef} from 'react';
 import '../weather.css';
-import { playAnimeClick } from '../../Effect_Service/sound_effect';
-import { playButtonSound } from '../../Effect_Service/sound_effect';
+import { playAnimeClick,playButtonSound } from '../../Effect_Service/sound_effect';
+
 const TRACKS = [
   { id: 1, name: "Calm Piano", path: "/Audio/Music/weather/relax/Calm_Panio.mp3" },
   { id: 2, name: "Ocean of Peace", path: "/Audio/Music/weather/relax/Ocrean_Of_Peace.mp3" },
@@ -33,17 +33,21 @@ const ORC = [
   {id:3, name: "Calming",path:"/Audio/Music/weather/orchestra/Calming.mp3"},
   {id:4, name:"Peace of love", path:"/Audio/Music/weather/orchestra/peace_and_love.mp3"}
 ];
-
+export const ALL_TRACKS = [...ORC, ...TRACKS, ...EDM, ...Musician];
 interface MusicListProps {
   isOpen: boolean;
+  loop: boolean;
+  random: boolean;
   isDarkMode: boolean;
-  isMusicStart: boolean
+  randomSwitch: () => void;
+  loopMusic: ()=> void;
+  isMusicStart: boolean;
   onClose: () => void;
   currentTrack: string;
   onSelect: (path: string) => void;
 }
 
-const MusicList: React.FC<MusicListProps> = ({ isOpen,isDarkMode, isMusicStart,onClose, currentTrack, onSelect }) => {
+const MusicList: React.FC<MusicListProps> = ({ isOpen,isDarkMode, random,loop,loopMusic,randomSwitch,isMusicStart,onClose, currentTrack, onSelect }) => {
   if (!isOpen) return null;
   const handleCloseBanner = () =>{
     playButtonSound();
@@ -51,24 +55,29 @@ const MusicList: React.FC<MusicListProps> = ({ isOpen,isDarkMode, isMusicStart,o
   }
   const handleSelect = (track:string) =>{
     playAnimeClick();
+
     onSelect(track);
   }
+
+
   return (
     <>    
-    <div className={`fixed inset-0 z-200 h-full  flex items-center justify-center backdrop-blur-[2px] ${!isDarkMode ? "bg-black":"bg-white"} transition-opacity duration-300`}>
+    <div 
+    onClick={(e) => e.stopPropagation()}
+    className={`fixed inset-0 z-200 h-full  flex items-center justify-center backdrop-blur-[2px] ${!isDarkMode ? "bg-black":"bg-white"} transition-opacity duration-300`}>
      <div className={` animate-modal-pop  w-full h-full rounded-3xl p-6  text-white  hide-scrollbar shadow-2xl`}>
       <div className = {` bg-[url('/Icon/Amano_Hina.avif')]  bg-cover  bg-center opacity-80  w-full h-full absolute blur-md drop-shadow-lg/90 drop-shadow-blue-400 -z-1
         max-[500px]:blur-sm max-[500px]:left-0`}/> 
         <button
           onClick={handleCloseBanner}
-          className="flex justify-end cursor-pointer items-end w-full h-auto"
+          className="flex cursor-pointer relative left-[95%] "
         >
           <img 
           src ="/Icon/weather icon/feature/red_cross.svg" 
           className = "w-8 h-8 drop-shadow-lg/90 hover:scale-90 active:scale-80  "
           alt = "exit button"/>
         </button>
-        <div className = "block mx-15 text-nowrap border-b-2 -pb-1 ">
+        <div className = "flex mx-15 text-nowrap border-b-2 -pb-1 ">
             <h2 className={`text-2xl flex font-bold mb-10  ${isDarkMode ? "text-black":"text-white"}  text-center tracking-wider
             `}>
               Music Playlist
@@ -76,7 +85,21 @@ const MusicList: React.FC<MusicListProps> = ({ isOpen,isDarkMode, isMusicStart,o
               className = "w-8 h-8 ml-3 drop-shadow-lg/50"/>
               :
             </h2>
-        </div> 
+            <div className="gap-15 flex">
+              <button onClick = {loopMusic}
+               className= {`w-20 h-10 border-b-6 rounded-xl relative bottom-0 left-20 
+              transition-all duration-500 
+              hover:scale-95 hover:translate-y-1 hover:border-b-4
+              active:border-b-transparent active:text-blue-600 active:scale-90
+                 ${loop ? "text-white bg-cyan-400 border-cyan-700":"text-black bg-white/80 hover:bg-gray-700 hover:border-gray-800 border-gray-400"}`}>Loop</button>
+              <button  onClick = {randomSwitch}
+               className= {`w-20 h-10 rounded-xl relative bottom-0 left-20 border-b-6
+              transition-all duration-500
+              hover:scale-95 hover:translate-y-1 hover:border-b-4
+              active:border-b-transparent active:text-blue-600 active:scale-90
+              ${random ? "text-white bg-cyan-400 border-cyan-700":"text-black bg-white/80 hover:bg-gray-700 hover:border-gray-800 border-gray-400"}`}>Random</button>
+           </div>
+      </div>
      <div className = "flex gap-15 mt-5 w-full overflow-y-auto no-scrollbar h-full \
      max-[600px]:block  \
      max-[1800px]:grid max-[1800px]:grid-cols-3 max-[1800px]:justify-items-center max-[1800px]:content-normal \

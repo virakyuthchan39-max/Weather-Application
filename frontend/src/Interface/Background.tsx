@@ -22,7 +22,7 @@ const Background: React.FC<BackgroundProps> = ({ isEffectOn, climate,daytime }) 
     } 
     
     else if (lower.includes("heavy") && lower.includes("rain")) {
-      setVideoName("Heavy_Rain");
+      setVideoName(isDay ? "Heavy_Rain":"Heavy_Rain_Night");
     } 
     else if (lower.includes("light rain")) {
       setVideoName(isDay ? "Light_Rain" : "Light_Rain_Night");
@@ -43,13 +43,13 @@ const Background: React.FC<BackgroundProps> = ({ isEffectOn, climate,daytime }) 
     } 
     // 5. Clouds
     else if (lower.includes("broken")) {
-      setVideoName(isDay ? "Broken_Cloud" : "Cloudy_Night");
+      setVideoName(isDay ? "Broken_Cloud" : "Broken_Cloud_Night");
     } 
     else if (lower.includes("few")) {
-      setVideoName(isDay ? "Few_Cloud" : "Cloudy_Night");
+      setVideoName(isDay ? "Few_Cloud" : "Few_Cloud_Night");
     } 
    else if (lower.includes("scatter")) {
-      setVideoName(isDay ? "Scatter_Cloud" : "Cloudy_Night");
+      setVideoName(isDay ? "Scatter_Cloud" : "Scatter_Cloud_Night");
     } 
     else if (lower.includes("overcast")) {
       setVideoName(isDay ? "Overcast_Cloudy" : "Overcast_Cloud_Night");
@@ -117,14 +117,12 @@ const Background: React.FC<BackgroundProps> = ({ isEffectOn, climate,daytime }) 
         <source src={`/Audio/Video/mp4/${videoName}.mp4`} type="video/mp4" />
         Your browser does not support the video tag.
       </video>
-   
     </div>
     </>
   );
 };
 
 export default Background;
-
 
 export const getWeatherIcon = (climate: string, daytime: string) => {
   const lower = climate.toLowerCase();

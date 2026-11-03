@@ -1,3 +1,4 @@
+import { WeatherResponse } from "./open_weather";
 
 const BASE_URL = "http://127.0.0.1:8000";
 
@@ -8,6 +9,7 @@ export interface NotificationData {
   type: string;
   color: string;
   sended_at: string;
+  is_read: boolean;
   time_live: number;
   account_type: string;
   gmail: string;
@@ -57,5 +59,40 @@ export async function deleteAllNotifications(user_id: number, gmail: string, acc
     },
   });
   if (!res.ok) throw new Error("Failed to delete all notifications");
+  return res.json();
+}
+export async function fetchReadNotif(notification_id:string,user_id: number, gmail: string, account_type: string): Promise<NotificationResponse> {
+  const res = await fetch(`${BASE_URL}/notification_read/${notification_id}?user_id=${user_id}&gmail=${gmail}&account_type=${account_type}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) throw new Error("Failed to fetch read notification");
+  return res.json();
+}
+export async function fetchReadAllNotif(user_id: number, gmail: string, account_type: string): Promise<NotificationResponse> {
+  const res = await fetch(`${BASE_URL}/notification_read_all?user_id=${user_id}&gmail=${gmail}&account_type=${account_type}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) throw new Error("Failed to fetch read all notification");
+  return res.json();
+}
+
+export async function fetchNotificationAlert(input:WeatherResponse,user_id: number, gmail: string, account_type: string): Promise<NotificationResponse> {
+  const res = await fetch(`${BASE_URL}/weather_notification_alert?user_id=${user_id}&gmail=${gmail}&account_type=${account_type}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input)
+  });
+  if (!res.ok) throw new Error("Failed to fetch login notification");
+  return res.json();
+}
+export async function fetchNotificationUpdate(user_id: number, gmail: string, account_type: string): Promise<NotificationResponse> {
+  const res = await fetch(`${BASE_URL}/weather_notification_update?user_id=${user_id}&gmail=${gmail}&account_type=${account_type}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+
+  });
+  if (!res.ok) throw new Error("Failed to fetch login notification");
   return res.json();
 }

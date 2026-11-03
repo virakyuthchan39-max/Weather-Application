@@ -19,6 +19,7 @@ class DeleteResponse(BaseModel):
     detail: str
 
 async def return_username(db_user: AsyncSession, user_id: int, gmail: str, account_type: str):
+    account_type = account_type.lower()
     if account_type == "regular":
         stmt = select(UserSignIn).where((UserSignIn.id == user_id) & (UserSignIn.gmail == gmail))
     elif account_type == "google":
