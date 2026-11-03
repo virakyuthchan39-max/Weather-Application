@@ -51,12 +51,20 @@ app = FastAPI(
     lifespan=lifespan,)
 
 
+
+# កំណត់ Domain ដែលត្រូវបានអនុញ្ញាតឱ្យហៅ API
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+ 
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_headers=["*"],
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"]
+    allow_methods=["*"],  # អនុញ្ញាតគ្រប់ Method (GET, POST, etc.)
+    allow_headers=["*"],  # អនុញ្ញាតគ្រប់ Headers
 )
 
  
