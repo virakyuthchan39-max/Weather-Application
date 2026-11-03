@@ -51,12 +51,21 @@ app = FastAPI(
     lifespan=lifespan,)
 
 
+
+# កំណត់ Domain ដែលត្រូវបានអនុញ្ញាតឱ្យហៅ API
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://weather-application-t633.onrender.com",
+ 
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_headers=["*"],
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"]
+    allow_methods=["*"], 
+    allow_headers=["*"], 
 )
 
  

@@ -7,7 +7,10 @@ export default defineConfig({
   plugins: [react(),tailwindcss()],
   server:{
     allowedHosts:[
-      "vividly-greyhound-coffee.ngrok-free.dev"
+      "vividly-greyhound-coffee.ngrok-free.dev",
+      'weather-application-qg3s.onrender.com',
+      '.onrender.com'
     ]
   },
 })
+// https://weather-application-t633.onrender.com
