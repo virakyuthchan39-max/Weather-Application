@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
-from Database.model import UserLogout, UserSignIn,UserLogin
+from Database.model_account import (UserLogout, UserSignIn,UserLogin)
                          
 from Database.database import get_session
 
@@ -20,7 +20,7 @@ from Security.Encryption.refresh_token import (
     blacklist_token,
     bearer_scheme,
 )
-import asyncio
+
 
 router = APIRouter()
 
@@ -72,30 +72,39 @@ async def Logout_User(
             detail="Cannot find this account in our data! Please try again!",
             status_code=status.HTTP_400_BAD_REQUEST,
         )
+        
     final_query.is_active = False
     db.add(final_query)
     target_user = final_query
 
+    # ២. Update UserLogin (បើមាន)
     query_Login = await db.scalars(select(UserLogin).where(UserLogin.gmail == userAccount.gmail))
     final_query_Login = query_Login.first()
+    
     if final_query_Login:
         final_query_Login.is_active = False
         db.add(final_query_Login)
-        target_user = final_query_Login
+        target_user = final_query_Login # យក Login ជា Target ចម្បង
 
+    # ៣. Update ឬ បង្កើត UserLogout ថ្មី
     query_logout = await db.scalars(select(UserLogout).where(UserLogout.gmail == userAccount.gmail))
     final_query_logout = query_logout.first()
+    
     if final_query_logout:
+        # ✅ កែត្រង់នេះ៖ ត្រូវ Update ម៉ោង និងកំណត់ is_active=False
         final_query_logout.logout_at = datetime.now(timezone.utc)
+        final_query_logout.is_active = False 
         db.add(final_query_logout)
-    elif final_query_Login:
+    else:
+        # ✅ កែត្រង់នេះ៖ ប្តូរពី elif មក else ធម្មតា ហើយប្រើ final_query (UserSignIn)
         add_user_logout = UserLogout(
-            username=final_query_Login.username,
-            login_id=final_query_Login.id,
-            gmail=final_query_Login.gmail,
+            username=final_query.username,
+            login_id=final_query_Login.id if final_query_Login else None, # បើគ្មាន Login ទេ ទុក None
+            signin_id=final_query.id, # ✅ បន្ថែម signin_id
+            gmail=final_query.gmail,
             logout_at=datetime.now(timezone.utc),
             is_active=False,
-            role=final_query_Login.role,
+            role=final_query.role,
         )
         db.add(add_user_logout)
 

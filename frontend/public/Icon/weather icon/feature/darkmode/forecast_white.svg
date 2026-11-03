@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none">
+  <!-- Top Radar Sphere -->
+  <circle cx="12" cy="6" r="4.5" fill="#FFFFFF" />
+
+  <!-- Lattice Tower Base Structure -->
+  <g stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Vertical Support Pillars -->
+    <line x1="7" y1="10" x2="7" y2="22" />
+    <line x1="12" y1="10" x2="12" y2="22" />
+    <line x1="17" y1="10" x2="17" y2="22" />
+
+    <!-- Upper Cross Bracing -->
+    <path d="M7 13.5L12 10.5L17 13.5" fill="none" />
+    <path d="M7 13.5L12 16.5L17 13.5" fill="none" />
+
+    <!-- Lower Cross Bracing -->
+    <path d="M7 19.5L12 16.5L17 19.5" fill="none" />
+    <path d="M7 19.5L12 22.5L17 19.5" fill="none" />
+  </g>
+</svg>

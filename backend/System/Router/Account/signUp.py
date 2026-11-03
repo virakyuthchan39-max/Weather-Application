@@ -5,7 +5,7 @@ from datetime import datetime,timezone
 
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
-from Database.model import UserSignIn
+from Database.model_account import UserSignIn
 from Database.database import get_session
 
 from Security.Encryption.hash import hash_password
@@ -23,10 +23,8 @@ import asyncio
 
 router = APIRouter()
 
-
 class RefreshRequest(BaseModel):
     refresh_token: str
-
 
 class CreateUserRequest(BaseModel):
     first_name: Annotated[str,Field(max_length=20,min_length=3)]
@@ -39,6 +37,7 @@ class CreateSchema(BaseModel):
     id: int
     full_name: Annotated[str,Field(default=None,max_length=40,min_length=5)]
     gmail: EmailStr
+    account_type: str = "Regular"
     create_at: Annotated[datetime,Field(default_factory=lambda:datetime.now(timezone.utc))]
     is_active:Annotated[bool,Field(default=True)]
     role: Annotated[str,Field(default="user")]
@@ -101,7 +100,8 @@ async def Create_User(
     
     result_response = CreateSchema(
         id=add_user_db.id,
-        full_name=add_user_db.username,
+        full_name=add_user_db.username.title(),
+        account_type= add_user_db.account_type,
         gmail=add_user_db.gmail,
         create_at=add_user_db.create_at,
         is_active=add_user_db.is_active,

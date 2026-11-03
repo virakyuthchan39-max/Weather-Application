@@ -13,10 +13,8 @@ google-auth
 requests
 httpx
 sqlalchemy[asyncio]
-aiomysql
-<<<<<<< HEAD
-redis
-=======
+psycopg2-binary
+asyncpg 
 redis
 pycountry
->>>>>>> backend
+

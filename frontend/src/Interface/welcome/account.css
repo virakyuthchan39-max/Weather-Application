@@ -17,24 +17,22 @@
   }
 
 }
-<<<<<<< HEAD
-=======
+ 
+ 
 @keyframes streamPop {
   0%   { opacity: 0; transform: translateY(20px) scale(0.95); }
   100% { opacity: 1; transform: translateY(0)    scale(1);    }
 }
 
 
->>>>>>> backend
-
 
 @keyframes fadeOutView { from {opacity:1} to {opacity:0} }
 @keyframes fadeInView { from {opacity:0} to {opacity:1} }
 .anim-out-welcome { animation: fadeOutView 1.2s ease-in-out forwards; }
 .anim-out-form { animation: fadeOutView 0.9s ease-in-out forwards; }
-<<<<<<< HEAD
+ 
 .anim-in-form { animation: fadeInView 1.5s ease-in-out forwards; }
-=======
+ 
 .anim-in-form { animation: fadeInView 1.5s ease-in-out forwards; }
 
 
@@ -73,4 +71,4 @@
   from{opacity:1;}
   to{opacity:0;}
 }
->>>>>>> backend
+

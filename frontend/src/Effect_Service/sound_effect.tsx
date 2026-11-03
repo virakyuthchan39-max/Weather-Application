@@ -2,10 +2,12 @@
 import React from 'react';
 
 const SFX_PATH = '/Audio/Effect/button/welcome_button.mp3';
-const ANIME_CLICK= '/Audio/Effect/button/animeThankful.mp3'
-<<<<<<< HEAD
-=======
-const DATA_STREAMING= '/Audio/Effect/button/data_streaming.mp3'
+const ANIME_CLICK= '/Audio/Effect/button/animeThankful.mp3';
+ 
+ 
+const DATA_STREAMING= '/Audio/Effect/button/data_streaming.mp3';
+const slideOff = "/Audio/Effect/button/off.mp3";
+const slideOn = "/Audio/Effect/button/on.mp3";
 
 export  const playDataStreamingEffect = ()=>{
   const audio = new Audio(DATA_STREAMING)
@@ -14,7 +16,7 @@ export  const playDataStreamingEffect = ()=>{
   audio.play().catch(()=>{})
 }
 
->>>>>>> backend
+
 
 export const playAnimeClick =() =>{
         const audio = new Audio(ANIME_CLICK);
@@ -30,19 +32,25 @@ export const playButtonSound = () => {
   audio.volume = 0.7
   audio.play().catch(() => {});
 };
+export const playSlideOn = () => {
+  const audio = new Audio(slideOn);
+  audio.currentTime = 0;
+  audio.volume = 0.7
+  audio.play().catch(() => {});
+};
+
+export const playSlideOff = () =>{
+  const audio = new Audio(slideOff);
+  audio.currentTime =0;
+  audio.volume = 0.7;
+  audio.play().catch(() =>[]);
+}
+
 
 interface SoundButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
 }
 
-<<<<<<< HEAD
-
-
-
-
-
-=======
->>>>>>> backend
 export const SoundButton: React.FC<SoundButtonProps> = ({ onClick, children, ...props }) => {
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     playButtonSound();
@@ -57,7 +65,29 @@ export const SoundButton: React.FC<SoundButtonProps> = ({ onClick, children, ...
     </button>
   );
 };
-
-
-
 export default {SoundButton};
+
+
+
+// weather sound effect
+let weatherAudio: HTMLAudioElement | null = null;
+
+export function playWeatherSound(soundPath: string) {
+  if (weatherAudio) {
+    weatherAudio.pause();
+    weatherAudio.currentTime = 0;
+  }
+  if (!soundPath) return;
+
+  weatherAudio = new Audio(soundPath);
+  weatherAudio.loop = true;
+  weatherAudio.volume = 0.6; // ដំណើរការសំឡេង 50%
+  weatherAudio.play().catch(() => {});
+}
+
+export function stopWeatherSound() {
+  if (weatherAudio) {
+    weatherAudio.pause();
+    weatherAudio.currentTime = 0;
+  }
+}

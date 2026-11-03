@@ -7,12 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import httpx
 from typing import Annotated, Optional
 from Database.database import get_session
-from Database.model import GithubSignIn
-<<<<<<< HEAD
-=======
+from Database.model_account import GithubSignIn
+ 
+ 
 from Security.Encryption.token import create_access_token
 from Security.Encryption.refresh_token import create_refresh_token
->>>>>>> backend
+
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -26,31 +26,32 @@ GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID", "")
 GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET", "")
 
 class GithubTokenRequest(BaseModel):
-<<<<<<< HEAD
+ 
     token: str  # ទីនេះគឺ GitHub Access Token ដែលទទួលបានពី Frontend
 
 class GithubSchema(BaseModel):
-=======
+ 
     token: str 
 
 class GithubSchema(BaseModel):
     id: int
->>>>>>> backend
-    username: str
+    full_name: str
     password: str = "GithubPassword"
     gmail: EmailStr    
     role: str
+    profile: str
     is_active: bool
+    account_type: str
     create_at: datetime
 
 class GithubSchemaResponse(BaseModel):
     detail: str = "Github user sign in successfully! ✅"
-<<<<<<< HEAD
-=======
+ 
+ 
     access_token: str
     refresh_token: str
     token_type: str = "Bearer"
->>>>>>> backend
+
     user_info: GithubSchema
 
 
@@ -84,7 +85,7 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
             headers = {
                 "Authorization": f"Bearer {access_token}",
                 "Accept": "application/vnd.github+json"
-            }
+            }    
             
             # ទាញយក Profile របស់ User
             user_response = await client.get("https://api.github.com/user", headers=headers)
@@ -93,7 +94,7 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
             
             github_data = user_response.json()
             username = github_data.get("login") # Username របស់ GitHub
-            
+            profile = github_data.get("avatar_url","")
             # GitHub អាចលាក់ Email ដូច្នេះត្រូវស្នើសុំ Emails endpoint បន្ថែមប្រសិនបើ email ស្មើនឹង null
             email = github_data.get("email")
             if not email:
@@ -124,6 +125,7 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
                 username=username,
                 gmail=email,
                 is_active=True,
+                profile=profile,
                 role="user",
                 create_at=current_time,
                 password="GithubPassword"
@@ -132,25 +134,18 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
             await db.commit()
             await db.refresh(user)
 
-<<<<<<< HEAD
-        # 3. រៀបចំ Response ត្រលប់ទៅវិញ
-        result_response = GithubSchema(
-=======
        
         result_response = GithubSchema(
             id=user.id,
->>>>>>> backend
-            username=user.username,
+            full_name=user.username,
             gmail=user.gmail,
             role=user.role,
+            profile= profile,
             is_active=user.is_active,
+            account_type=user.account_type,
             create_at=user.create_at
         )
-<<<<<<< HEAD
-        
-        return GithubSchemaResponse(
-            detail="Github user sign in successfully! ✅",
-=======
+ 
         dicts = {
                         "sub": str(user.id),
                         "gmail": user.gmail,
@@ -163,7 +158,7 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
             access_token= token,
             refresh_token=refresh_token,
             token_type="Bearer",
->>>>>>> backend
+
             user_info=result_response
         )
         

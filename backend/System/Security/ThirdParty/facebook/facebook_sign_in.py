@@ -7,12 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import httpx
 from typing import Annotated
 from Database.database import get_session
-from Database.model import FacebookSignIn
-<<<<<<< HEAD
-=======
+from Database.model_account import FacebookSignIn
+ 
+ 
 from Security.Encryption.token import create_access_token
 from Security.Encryption.refresh_token import create_refresh_token
->>>>>>> backend
+
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -30,25 +30,24 @@ class FacebookTokenRequest(BaseModel):
     token: str  # Facebook Access Token ផ្ញើមកពី Frontend
 
 class FacebookSchema(BaseModel):
-<<<<<<< HEAD
-=======
     id: int
->>>>>>> backend
-    username: str
+    full_name: str
     password: str = "FacebookPassword"
     gmail: EmailStr    
     role: str
+    profile: str
     is_active: bool
+    account_type: str
     create_at: datetime
 
 class FacebookSchemaResponse(BaseModel):
     detail: str = "Facebook user sign in successfully! ✅"
-<<<<<<< HEAD
-=======
+ 
+ 
     access_token: str
     refresh_token: str
     token_type: str = "Bearer"
->>>>>>> backend
+
     user_info: FacebookSchema
 
 @router.post("/Facebook_signin", response_model=FacebookSchemaResponse)
@@ -56,7 +55,7 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
     try:
     
         async with httpx.AsyncClient() as client:
-            graph_url = f"https://graph.facebook.com/me?fields=id,name,email&access_token={payload.token}"
+            graph_url = f"https://graph.facebook.com/me?fields=id,name,email,picture&access_token={payload.token}"
             response = await client.get(graph_url)
             
             if response.status_code != status.HTTP_200_OK:
@@ -68,7 +67,7 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
             fb_data = response.json()
             email = fb_data.get("email") or "example@gmail.com"
             name = fb_data.get("name", "Facebook User")
-      
+            profile = fb_data["picture"].get("url","")
 
         if not email:
             raise HTTPException(
@@ -90,6 +89,7 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
                 gmail=email,
                 is_active=True,
                 role="user",
+                profile=profile,
                 create_at=current_time,
                 password="FacebookPassword"
             )
@@ -99,21 +99,18 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
 
         # 3. រៀបចំ Response ត្រលប់ទៅវិញ
         result_response = FacebookSchema(
-<<<<<<< HEAD
-=======
             id = user.id,
->>>>>>> backend
-            username=user.username,
+            full_name=user.username,
             gmail=user.gmail,
+            profile=profile,
             role=user.role,
             is_active=user.is_active,
+            account_type= user.account_type,
             create_at=user.create_at
         )
-<<<<<<< HEAD
-        
-        return FacebookSchemaResponse(
-            detail="Facebook user sign in successfully! ✅",
-=======
+ 
+
+ 
         dicts = {
                 "sub": str(user.id),
                 "gmail": user.gmail,
@@ -126,7 +123,7 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
             access_token=token,
             refresh_token = refresh_token,
             token_type="Bearer",
->>>>>>> backend
+
             user_info=result_response
         )
         

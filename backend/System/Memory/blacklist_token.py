@@ -10,7 +10,7 @@ root_dir = Path(__file__).resolve().parents[0]
 env_path = root_dir / "DevOp" / ".env.service"
 load_dotenv(dotenv_path=env_path)
 
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+REDIS_URL = os.getenv("REDIS_CONTAINER_URL","redis://localhost:6379/0")
 SECRET_KEY = os.getenv("SECRET_KEY", "")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 
@@ -35,4 +35,8 @@ async def blacklist_token(token: str) -> None:
 
 
 async def is_blacklisted(token: str) -> bool:
-    return await redis_client.exists(f"blacklist:{token}") == 1
+    try: 
+        await redis_client.exists(f"blacklist:{token}") == 1
+    except Exception as e:
+        print("Error: ",e)
+        return    

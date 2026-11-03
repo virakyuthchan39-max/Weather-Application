@@ -7,31 +7,28 @@ declare global {
   }
 }
 
-<<<<<<< HEAD
-=======
+ 
 export interface FacebookUserInfo {
+
   id: number;
-  username: string;
+  full_name: string;
   gmail: string;
   role: string;
   is_active: boolean;
+  profile: string;
+  account_type:string
   create_at: string;
+
 }
 
->>>>>>> backend
 export interface FacebookAuthResponse {
   detail: string;
   access_token: string;
-  token_type: string;
-<<<<<<< HEAD
-  user_info: Record<string, unknown>;
-}
-
-=======
+  token_type: string; 
   refresh_token:string;
   user_info: FacebookUserInfo;
 }
->>>>>>> backend
+
 /* ---------- ចាប់ផ្តើម FB SDK ---------- */
 function initFacebookSdk(): Promise<void> {
   return new Promise((resolve, reject) => {

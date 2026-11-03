@@ -8,12 +8,12 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from typing import Annotated, Optional
 from Database.database import get_session
-from Database.model import GoogleSignIn, UserGoogleLogin
-<<<<<<< HEAD
-=======
+from Database.model_account import GoogleSignIn, UserGoogleLogin
+ 
+ 
 from Security.Encryption.refresh_token import create_refresh_token
 from Security.Encryption.token import create_access_token
->>>>>>> backend
+
 from pathlib import Path
 from dotenv import load_dotenv
 import asyncio
@@ -31,21 +31,21 @@ class GoogleTokenRequest(BaseModel):
 
 class GoogleSchema(BaseModel):
     id: int
-    username: str
+    full_name: str
     password: str = "GooglePassword"
     gmail: str    
     role: str
     is_active: bool 
+    account_type: str
+    profile: str
     login_at: datetime
 
 class GoogleSchemaResponse(BaseModel):
     detail: str = "Google'user login successfully!✅"
-<<<<<<< HEAD
-=======
     access_token: str
     refresh_token: str
     token_type: str = "Bearer"
->>>>>>> backend
+
     user_info: GoogleSchema
 
 @router.post("/google_login", response_model=GoogleSchemaResponse)
@@ -59,18 +59,14 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
         )
 
         email = idinfo.get("email")
-<<<<<<< HEAD
+        profile=idinfo.get("picture","")
         name = idinfo.get("name", "Google User")
-=======
-
->>>>>>> backend
-
         if not email:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, 
                 detail="This email not found in our application! Please go to signing up here !."
             )
-
+  
         # Check if user exists in database
         statement = select(GoogleSignIn).where(GoogleSignIn.gmail == email)
         result = await db.scalars(statement)
@@ -81,22 +77,12 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="This Google's account didn't sign in yet !"
             )
-
-        if not user.is_active:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="User account is deactivated."
-            )
-
-        
         current_time = datetime.now(timezone.utc)
         query = await db.scalars(select(UserGoogleLogin).where(UserGoogleLogin.gmail == email))
         final_query = query.first()
-<<<<<<< HEAD
+ 
         # ✅ ត្រូវ
-=======
-        
->>>>>>> backend
+ 
         if final_query:
             final_query.login_at = current_time
             db.add(final_query)
@@ -106,18 +92,13 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
                 login_at=current_time,
                 username=user.username.title(),
                 gmail=user.gmail,
+                profile=profile,
                 role=user.role,
                 is_active=user.is_active,
             )
             db.add(add_google_user)
         await asyncio.sleep(0.4)    
-        await db.commit()
-<<<<<<< HEAD
-        
-
-=======
-
-        
+        await db.commit()   
         dicts = {
                    "sub": str(user.id),
                    "gmail": user.gmail,
@@ -125,25 +106,27 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
                }
         token = create_access_token(dicts)
         refresh_token = create_refresh_token(dicts)
->>>>>>> backend
+
      
         result_response = GoogleSchema(
             id=user.id,
-            username=user.username.title(),
+            full_name=user.username.title(),
             gmail=user.gmail,
             role=user.role,        
+            profile=profile,
             is_active=user.is_active, 
+            account_type= user.account_type,
             login_at=current_time
         )
         
         return GoogleSchemaResponse(
             detail="Google'user login successfully!✅",
-<<<<<<< HEAD
-=======
+ 
+ 
             access_token = token,
             refresh_token=refresh_token,
             token_type="Bearer",
->>>>>>> backend
+
             user_info=result_response
         )
         

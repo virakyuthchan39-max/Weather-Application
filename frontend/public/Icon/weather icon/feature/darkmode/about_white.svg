@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none">
+  <!-- Main Book Cover Outline & Spine -->
+  <path d="M4 19.5C4 18.1193 5.11929 17 6.5 17H20V4C20 2.89543 19.1046 2 18 2H6.5C5.11929 2 4 3.11929 4 4.5V19.5ZM4 19.5C4 20.8807 5.11929 22 6.5 22H20V17" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- Text Lines inside Book -->
+  <path d="M9 7H15M9 11H15" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+</svg>
