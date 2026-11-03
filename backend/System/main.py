@@ -56,6 +56,7 @@ app = FastAPI(
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://weather-application-t633.onrender.com",
  
 ]
 
@@ -63,8 +64,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],  # អនុញ្ញាតគ្រប់ Method (GET, POST, etc.)
-    allow_headers=["*"],  # អនុញ្ញាតគ្រប់ Headers
+    allow_methods=["*"], 
+    allow_headers=["*"], 
 )
 
  
