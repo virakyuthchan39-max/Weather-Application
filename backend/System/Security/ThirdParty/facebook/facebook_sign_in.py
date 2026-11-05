@@ -38,7 +38,7 @@ class FacebookSchema(BaseModel):
     profile: str
     is_active: bool
     account_type: str
-    create_at: datetime
+    create_at: str
 
 class FacebookSchemaResponse(BaseModel):
     detail: str = "Facebook user sign in successfully! ✅"
@@ -80,7 +80,7 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
         user = result.first()
         if user:
             raise HTTPException(detail="This Facebook's email had used!",status_code = status.HTTP_400_BAD_REQUEST)
-        current_time = datetime.now(timezone.utc)
+        current_time = datetime.now(timezone.utc).strftime("%Y %m %d (%I:%M %p)")
 
         if not user:
             # បើមិនទាន់មាន ធ្វើការ Register ใหม่อัตโนมัติ

@@ -38,7 +38,7 @@ class GoogleSchema(BaseModel):
     is_active: bool 
     account_type: str
     profile: str
-    login_at: datetime
+    login_at: str
 
 class GoogleSchemaResponse(BaseModel):
     detail: str = "Google'user login successfully!✅"
@@ -77,7 +77,8 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="This Google's account didn't sign in yet !"
             )
-        current_time = datetime.now(timezone.utc)
+        current_time_local = datetime.now(timezone.utc)
+        current_time = current_time_local.strftime("%Y %m %d (%I:%M %p)")
         query = await db.scalars(select(UserGoogleLogin).where(UserGoogleLogin.gmail == email))
         final_query = query.first()
  

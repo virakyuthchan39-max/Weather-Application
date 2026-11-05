@@ -29,9 +29,6 @@ class GithubTokenRequest(BaseModel):
  
     token: str  # ទីនេះគឺ GitHub Access Token ដែលទទួលបានពី Frontend
 
-class GithubSchema(BaseModel):
- 
-    token: str 
 
 class GithubSchema(BaseModel):
     id: int
@@ -42,7 +39,7 @@ class GithubSchema(BaseModel):
     profile: str
     is_active: bool
     account_type: str
-    create_at: datetime
+    create_at: str
 
 class GithubSchemaResponse(BaseModel):
     detail: str = "Github user sign in successfully! ✅"
@@ -116,11 +113,12 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
         result = await db.scalars(statement)
         user = result.first()
 
-        current_time = datetime.now(timezone.utc)
+        current_time_local = datetime.now(timezone.utc)
+        current_time = current_time_local.strftime("%Y %m %d (%I:%M %p)")
         if user:
             raise HTTPException(detail="This Github's email had been used!",status_code=status.HTTP_400_BAD_REQUEST)
         if not user:
-            # បើមិនទាន់មាន ធ្វើការ Register ថ្មី
+         
             user = GithubSignIn(
                 username=username,
                 gmail=email,

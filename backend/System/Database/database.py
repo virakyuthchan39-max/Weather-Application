@@ -31,7 +31,7 @@ if not DATABASE_URL:
     DATABASE_HOST = os.getenv("DATABASE_HOST", "127.0.0.1")
     DATABASE_PORT = os.getenv("DATABASE_PORT", "5432")
     DATABASE_NAME = os.getenv("DATABASE_NAME", "")
-    
+
     DATABASE_URL = f"postgresql+asyncpg://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"
 
 # 🛠️ แก้ไข Format របស់ Render URL ឱ្យត្រូវជាមួយ asyncpg (เพราะ Render ມักផ្ដល់មកជា postgres:// ឬ postgresql://)
@@ -39,7 +39,7 @@ if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
 elif DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
-
+print(DATABASE_URL)
 # ==========================================
 # 3. DATABASE ENGINE & SESSION SETUP
 # ==========================================
@@ -59,8 +59,6 @@ get_role = get_session
 # 4. CREATE TABLES FUNCTION
 # ==========================================
 async def create_table():
-    """បង្កើត Tables ទាំងអស់ក្នុង PostgreSQL Database តែមួយ"""
     async with engine.begin() as conn:
-        # run_sync នឹងបង្កើត Table ទាំងអស់ដែល inherits ពី SQLModel ក្នុងពេលតែមួយយ៉ាងងាយស្រួល
         await conn.run_sync(SQLModel.metadata.create_all)
     print("Database tables created successfully in PostgreSQL!")

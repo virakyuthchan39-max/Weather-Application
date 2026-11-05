@@ -6,8 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from uvicorn import run
- 
- 
+
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
 from Router.OpenWeather.open_weather import limiter
@@ -48,7 +47,8 @@ async def lifespan(app: FastAPI):
         await engine.dispose()
 app = FastAPI(
     title="Weather Application ~ Oragnization/Operation",
-    lifespan=lifespan,)
+    lifespan=lifespan
+)
 
 
 
