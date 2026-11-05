@@ -39,7 +39,7 @@ class GithubSchema(BaseModel):
     is_active: bool
     account_type: str
     profile: str
-    create_at: datetime
+    create_at: str
 
 class GithubSchemaResponse(BaseModel):
     detail: str = "Github user sign in successfully! ✅"
@@ -94,7 +94,8 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
         if not user:
             raise HTTPException(detail="This Github's account didn't sign in yet!",status_code =status.HTTP_400_BAD_REQUEST)
 
-        current_time = datetime.now(timezone.utc)
+        current_time_local = datetime.now(timezone.utc)
+        current_time = current_time_local.strftime("%Y %m %d (%I:%M %p)")
 
         query = await db.scalars(select(UserGithubLogin).where(UserGithubLogin.gmail == email))
         final_query = query.first()

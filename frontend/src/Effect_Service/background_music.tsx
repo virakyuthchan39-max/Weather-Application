@@ -63,17 +63,20 @@ export default BackgroundMusic;
 interface WeatherMusic {
   play: boolean;
   track: string;
+  volume: number;
   loop: boolean;
   random: boolean;
   tracks: string[];
   onNext: (path: string) => void;
+  audioRef?: React.MutableRefObject<HTMLAudioElement | null>
 }
 
 export const WeatherMusicPlay: React.FC<WeatherMusic> = ({
-  play, track, loop, random, tracks, onNext,
+  play, track, loop, random, tracks, onNext,volume,audioRef: sharedRef
 }) => {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
+  
+  const internalRef = useRef<HTMLAudioElement | null>(null)
+  const audioRef = sharedRef ?? internalRef
   // latest config, read inside handleEnded (avoids stale closures)
   const configRef = useRef({ loop, random, tracks, onNext });
   useEffect(() => {
@@ -83,12 +86,13 @@ export const WeatherMusicPlay: React.FC<WeatherMusic> = ({
   // create audio when track changes
   useEffect(() => {
     audioRef.current?.pause();
-
+    
     const audio = new Audio(track);
-    audio.volume = 0.2;
+   
+   
+   
     audio.loop = configRef.current.loop;
     audioRef.current = audio;
-
     const handleEnded = () => {
       const { loop, random, tracks, onNext } = configRef.current;
       if (loop) return;                
@@ -108,20 +112,23 @@ export const WeatherMusicPlay: React.FC<WeatherMusic> = ({
     return () => {
       audio.removeEventListener('ended', handleEnded);
       audio.pause();
+      if (audioRef.current === audio) audioRef.current = null;
     };
-  }, [track]);
+  }, [track,audioRef]);
 
   // loop toggle — no audio recreation, just flip the flag
   useEffect(() => {
+    if(audioRef.current) {audioRef.current.volume = volume/100}
     if (audioRef.current) audioRef.current.loop = loop;
-  }, [loop]);
+  }, [loop,volume,audioRef]);
 
   // play/pause
   useEffect(() => {
     if (!audioRef.current) return;
+
     if (play) audioRef.current.play().catch(() => {});
     else audioRef.current.pause();
-  }, [play]);
+  }, [play,audioRef]);
 
   return null;
 };

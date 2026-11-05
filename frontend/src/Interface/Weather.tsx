@@ -38,7 +38,8 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
   const account_type = user.account_type;
   const username = user.full_name;
   const profile_user = user.profile
-  
+  // share the music
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const {
     Coord,
     cloneCity,
@@ -699,7 +700,11 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
     if (color) setNotifPingColor(color);
   }, []);
 
-
+    const [volume,setVolume] = useState<number>(50)
+    const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>)=>{
+        // playSlideOn()
+        setVolume(Number(e.target.value));
+      }
 
 
 
@@ -877,7 +882,18 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
                     <div className = {`absolute h-9 w-17 rounded-full  from-cyan-400 to-blue-500 drop-shadow-lg/90 shadow-md transition-transform duration-500 ease-in-out ${isMusicStart ? "-translate-x-8 bg-linear-to-r":"translate-x-8 bg-linear-to-l"}`}/>
                     <div className = {`relative left-3 z-10 flex w-0.5  items-center justify-center text-[0.95rem] py-2.5 font-bold transition-colors ${isMusicStart? "text-white":"text-gray-400 text-shadow-lg/80"}`}>ON</div>
                     <div className={`relative left-6 z-10 flex w-1/2  items-center ml-5 text-[0.95rem] justify-center py-2 font-bold transition-colors  ${!isMusicStart ? 'text-white' : 'text-gray-400 text-shadow-gray-900 text-shadow-lg/80 '}`}>OFF</div>
-                    <WeatherMusicPlay play={isMusicStart} random={random} track={currentMusic} loop={Loop} tracks={ALL_TRACKS.map((t) => t.path)} onNext={setCurrentMusic} />
+                    <WeatherMusicPlay
+                      volume={volume}
+                      play={isMusicStart}
+                      random={random}
+                      track={currentMusic}
+                      loop={Loop}
+                      tracks={ALL_TRACKS.map((t) => t.path)
+
+                      }
+                       onNext={setCurrentMusic} 
+                       audioRef = {audioRef}
+                       />
                 </div>
             <span className = {` font-bold flex ${!isDarkMode ? "text-white":"text-black"} `}>Sound Effects
                     <img 
@@ -1249,6 +1265,8 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
         </div>
       )}
           <MusicList 
+          volume={volume}
+          volumeSlide={(e) => handleVolumeChange(e)}
             isOpen={showMusicModal} 
             isDarkMode={isDarkMode}
             loop ={Loop}
@@ -1259,6 +1277,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
             onClose={() => setShowMusicModal(false)} 
             currentTrack={currentMusic}
             onSelect={(path) => setCurrentMusic(path)}
+            audioRef={audioRef}
           />
           <FavoriteHistory
         error={error}

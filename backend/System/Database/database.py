@@ -59,8 +59,6 @@ get_role = get_session
 # 4. CREATE TABLES FUNCTION
 # ==========================================
 async def create_table():
-    """បង្កើត Tables ទាំងអស់ក្នុង PostgreSQL Database តែមួយ"""
     async with engine.begin() as conn:
-        # run_sync នឹងបង្កើត Table ទាំងអស់ដែល inherits ពី SQLModel ក្នុងពេលតែមួយយ៉ាងងាយស្រួល
         await conn.run_sync(SQLModel.metadata.create_all)
     print("Database tables created successfully in PostgreSQL!")

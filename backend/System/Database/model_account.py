@@ -13,7 +13,7 @@ class FacebookSignIn(SQLModel, table=True, ):
     gmail: Annotated[Optional[str], Field(default=None, unique=True)] 
     username: Annotated[Optional[str], Field(default=None, index=True)]
     password: Annotated[str, Field(default="FacebookPassword")]
-    create_at: Annotated[datetime, Field(default_factory=lambda: datetime.now(timezone.utc))]
+    create_at: Annotated[str, Field(default_factory=lambda: str(datetime.now(timezone.utc).strftime("%Y %m %d (%I:%M %p)")))]
     is_active: Annotated[bool, Field(default=True)]
     role: Annotated[str, Field(default="user")]
     account_type: Annotated[str, Field(default="Facebook")]
@@ -29,7 +29,7 @@ class UserFacebookLogin(SQLModel, table=True, ):
     username: Annotated[Optional[str], Field(default=None, index=True)]
     password: Annotated[str, Field(default="FacebookPassword")]
 
-    login_at: Annotated[datetime, Field(default_factory=lambda: datetime.now(timezone.utc))]
+    login_at: Annotated[str, Field(default_factory=lambda: str(datetime.now(timezone.utc).strftime("%Y %m %d (%I:%M %p)")))]
     is_active: Annotated[bool, Field(default=True)]
     role: Annotated[str, Field(default="user")]
     account_type: Annotated[str, Field(default="Facebook")]
@@ -46,7 +46,7 @@ class GithubSignIn(SQLModel,table=True,):
     username: Annotated[str,Field(default=None,index = True)]
     password: Annotated[str,Field(default = "GithubPassword")]
     profile: Annotated[str,Field(default=None)]
-    create_at: Annotated[datetime, Field(default_factory=lambda: datetime.now(timezone.utc))]
+    create_at: Annotated[str, Field(default_factory=lambda: str(datetime.now(timezone.utc).strftime("%Y %m %d (%I:%M %p)")))]
     is_active: Annotated[bool ,Field(default=True)]
     role: Annotated[str,Field(default="user")]
     account_type: Annotated[str,Field(default= "Github")]
@@ -61,7 +61,7 @@ class UserGithubLogin(SQLModel, table=True,):
     username: Annotated[str,Field(default=None,index = True)]
     password: Annotated[str,Field(default = "GithubPassword")]
     profile: Annotated[str,Field(default=None)]
-    login_at: Annotated[datetime, Field(default_factory=lambda: datetime.now(timezone.utc))]
+    login_at: Annotated[str, Field(default_factory=lambda: str(datetime.now(timezone.utc).strftime("%Y %m %d (%I:%M %p)")))]
     is_active: Annotated[bool ,Field(default=True)]
     role: Annotated[str,Field(default="user")]
     account_type: Annotated[str,Field(default= "Github")]
@@ -78,7 +78,7 @@ class GoogleSignIn(SQLModel, table=True,):
     username: Annotated[str, Field(default=None, index=True)]
     profile: Annotated[str,Field(default=None)]
     password: Annotated[str, Field(default="GooglePassword")]
-    create_at: Annotated[datetime, Field(default_factory=lambda: datetime.now(timezone.utc))]
+    create_at: Annotated[str, Field(default_factory=lambda: str(datetime.now(timezone.utc).strftime("%Y %m %d (%I:%M %p)")))]
     is_active: Annotated[bool, Field(default=True)]
     role: Annotated[str, Field(default="user")]
     account_type: Annotated[str,Field(default= "Google")]
@@ -94,7 +94,7 @@ class UserGoogleLogin(SQLModel, table=True,):
     gmail: Annotated[str, Field(default=None,unique=True)]
     username: Annotated[str, Field(default=None, index=True)]
     password: Annotated[str, Field(default="GooglePassword",max_length=72)]
-    login_at: Annotated[datetime, Field(default_factory=lambda: datetime.now(timezone.utc))]
+    login_at: Annotated[str, Field(default_factory=lambda: str(datetime.now(timezone.utc)).strftime("%Y %m %d (%I:%M %p)"))]
     is_active: Annotated[bool, Field(default=True)]
     profile: Annotated[str,Field(default=None)]
     role: Annotated[str, Field(default="user")]
@@ -113,7 +113,7 @@ class UserLogin(SQLModel, table=True,):
     id: Optional[int] = Field(default=None, primary_key=True, index=True)
     gmail: str = Field(default=None,unique=True)
     username: Optional[str] = Field(default=None, index=True)
-    login_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    login_at: str = Field(default_factory=lambda: str(datetime.now(timezone.utc).strftime("%Y %m %d (%I:%M %p)")))
     is_active: bool = Field(default=True)
     role: str = Field(default="user")
     account_type: Annotated[str,Field(default= "Regular")]
@@ -130,7 +130,7 @@ class UserLogout(SQLModel, table=True, ):
     id: Optional[int] = Field(default=None, primary_key=True, index=True)
     gmail: Annotated[Optional[str], Field(default=None)]
     username: Annotated[Optional[str], Field(default=None, index=True)]
-    logout_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    logout_at: str = Field(default_factory=lambda: str(datetime.now(timezone.utc).strftime("%Y %m %d (%I:%M %p)")))
     is_active: bool = Field(default=True)
     role: str = Field(default="user")
     
@@ -161,7 +161,7 @@ class UserSignIn(SQLModel, table=True, ):
     gmail: str = Field(unique=True) # មិនត្រូវការ default=None ទេ ព្រោះវាជា Required Field
     username: Optional[str] = Field(default=None, index=True)
     password: str
-    create_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    create_at: str = Field(default_factory=lambda: str(datetime.now(timezone.utc).strftime("%Y %m %d (%I:%M %p)")))
     is_active: bool = Field(default=True)
     role: str = Field(default="user")
     profile: Annotated[str,Field(default="")]
