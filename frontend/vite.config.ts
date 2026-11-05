@@ -8,9 +8,8 @@ export default defineConfig({
   server:{
     allowedHosts:[
       "vividly-greyhound-coffee.ngrok-free.dev",
-      'weather-application-qg3s.onrender.com',
+      'https://weather-application-t633.onrender.com',
       '.onrender.com'
     ]
   },
 })
-// https://weather-application-t633.onrender.com

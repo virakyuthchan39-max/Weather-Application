@@ -639,7 +639,6 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
                     offset: res.datetime.offset,
                   }
                 }
-     
           return fav;
         })
       );
@@ -831,17 +830,13 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
                     to-blue-500  shadow-md drop-shadow-lg/90 transition-transform duration-500 ease-in-out ${islocalHour ? "-translate-x-8 bg-linear-to-r":"translate-x-8 bg-linear-to-l"}`}/>
                   <div className = {`relative left-3 z-10 flex w-0.5  items-center justify-center py-2 font-bold transition-colors  ${islocalHour ? "text-white":"text-gray-400 text-shadow-gray-900 text-shadow-lg/80"}`}>24H</div>
                   <div className={`relative left-6 z-10 flex w-1/2 items-center ml-5 justify-center py-2 font-bold transition-colors  ${!islocalHour ? 'text-white' : 'text-gray-400 text-shadow-gray-900 text-shadow-lg/80'}`}>12H</div>
-             </div>
-           
-         
-        
+             </div>    
           <span className = {` font-bold flex ${!isDarkMode ? "text-white":"text-black"} `}>Mode
                <img
                alt = "Sunlight icon"
                src = {!isDarkMode ? "/Icon/weather icon/feature/darkmode/light_white.svg":"/Icon/weather icon/feature/daymode/light_black.svg"}
               className = {`${isDarkMode ? "w-10 h-10 pb-3 ml-1":"w-7 h-7 ml-2"}  `}/>
-          </span>
-          
+          </span>     
            <div onClick={handleModeClick} className= "relative flex cursor-pointer w-35 my-5 p-3 items-center justify-center rounded-full bg-gray-600  shadow-inner">
                   <div className = {`absolute h-9 w-17 rounded-full  
                      shadow-md drop-shadow-lg/90 p-5 transition-transform duration-500 ease-in-out 
@@ -850,9 +845,6 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
                     <img src ={isDarkMode ? "/Icon/weather icon/feature/darkmode/light_white.svg":"/Icon/weather icon/feature/daymode/light_black.svg"} className = "w-7 h-7 z-20 mr-8"/>
                     <img src = {isDarkMode ? "/Icon/weather icon/feature/daymode/darkmoon.svg":"/Icon/weather icon/feature/darkmode/whitemoon.svg"} className = "w-7 h-7 z-20"/>
             </div>
-          
-        
-
           <span className ={` font-bold flex  my-10 ${!isDarkMode ? "text-white":"text-black"} `}>Favorite
                <img
                alt= "Yellow Star"
@@ -865,9 +857,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
                     active:scale-90 hover:scale-95
                     max-[400px]:left-10`}/>
                 </button>
-          </span>
-    
-           
+          </span>   
              <span className ={` font-bold flex ${!isDarkMode ? "text-white":"text-black"} `}>Music
                   <img
                   alt = "Music icon"

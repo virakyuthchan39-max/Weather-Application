@@ -63,15 +63,15 @@ services:
         container_name: ${DATABASE_CONTAINER_NAME}
         restart: always
         ports:
-            - "5432:5432"  # ផ្លាស់ប្តូរ Port ពី 3307:3306 មកជា PostgreSQL port (5432)
+            - "5432:5432"  
         environment:
-            POSTGRES_USER: ${DATABASE_USERNAME}  # ឈ្មោះ User របស់ Postgres (defaults ជា postgres)
-            POSTGRES_PASSWORD: ${DATABASE_PASSWORD}        # Password របស់អ្នក
-            POSTGRES_DB: ${DATABASE_NAME}          # ឈ្មោះ Database ដំបូង
+            POSTGRES_USER: ${DATABASE_USERNAME}  
+            POSTGRES_PASSWORD: ${DATABASE_PASSWORD}    
+            POSTGRES_DB: ${DATABASE_NAME}         
         volumes:
-            - postgres_data:/var/lib/postgresql/data       # ផ្លាស់ប្តូរ Volume path ឱ្យត្រូវជាមួយ Postgres
+            - postgres_data:/var/lib/postgresql/data     
         healthcheck:
-            test: ["CMD-SHELL", "pg_isready -U ${DATABASE_NAME}"]  # ប្រើ pg_isready ជំនួស mysqladmin ping
+            test: ["CMD-SHELL", "pg_isready -U ${DATABASE_NAME}"] 
             interval: 5s
             timeout: 5s
             retries: 10
