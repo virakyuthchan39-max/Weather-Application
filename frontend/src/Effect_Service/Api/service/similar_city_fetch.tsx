@@ -1,6 +1,6 @@
 import { DateTimeInfo } from "./open_weather";
 
-const BASE_URL = 'http://127.0.0.1:8000';
+const BASE_URL = "https://weather-application-backend-5fb0.onrender.com";
 
 
 export interface SimilarSchemes{
