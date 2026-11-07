@@ -20,14 +20,11 @@ from Security.Encryption.refresh_token import (
     blacklist_token,
     bearer_scheme,
 )
-
-
 router = APIRouter()
 
 class LogoutUserRequest(BaseModel):
     gmail: EmailStr
-
-
+    
 class LogoutSchema(BaseModel):
     id: int
     full_name: Annotated[str, Field(default=None, max_length=40, min_length=5)]
@@ -92,7 +89,7 @@ async def Logout_User(
     
     if final_query_logout:
         # ✅ កែត្រង់នេះ៖ ត្រូវ Update ម៉ោង និងកំណត់ is_active=False
-        final_query_logout.logout_at = datetime.now(timezone.utc)
+        final_query_logout.logout_at = datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)")
         final_query_logout.is_active = False 
         db.add(final_query_logout)
     else:
@@ -102,7 +99,7 @@ async def Logout_User(
             login_id=final_query_Login.id if final_query_Login else None, # បើគ្មាន Login ទេ ទុក None
             signin_id=final_query.id, # ✅ បន្ថែម signin_id
             gmail=final_query.gmail,
-            logout_at=datetime.now(timezone.utc),
+            logout_at=datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)"),
             is_active=False,
             role=final_query.role,
         )
@@ -113,7 +110,7 @@ async def Logout_User(
 
     result_response = LogoutSchema(
         id=final_query.id,
-        full_name=final_query.username,
+        full_name=final_query.username.title(),
         gmail=final_query.gmail,
         logout_at=datetime.now(timezone.utc),
         is_active=target_user.is_active,

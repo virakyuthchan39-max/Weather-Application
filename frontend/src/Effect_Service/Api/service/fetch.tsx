@@ -1,4 +1,4 @@
-const BASE_URL = "http://127.0.0.1:8000";
+const BASE_URL = "https://weather-application-backend-5fb0.onrender.com";
 
 /* ---------- Request / Response types ---------- */
 export interface CreateUserRequest {
@@ -21,6 +21,7 @@ export interface UserInfo {
   role: string;
   create_at?: string;
   account_type: string;
+  country:string;
   login_at?: string;
 }
 
@@ -184,3 +185,25 @@ export const getUserInfo = (): UserInfo | null => {
   return data ? JSON.parse(data) : null;
 };
 export const clearUserInfo = () => localStorage.removeItem("user_info");
+
+
+// delete account
+// ...existing imports/exports...
+
+export interface DeleteAccountRequest {
+  gmail: string;
+  account_type: string;
+}
+
+export async function deleteAccount(data: DeleteAccountRequest): Promise<any> {
+  const res = await fetch(`${BASE_URL}/deleteAccount`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${localStorage.getItem("access_token") || ""}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to delete account");
+  return res.json();
+}

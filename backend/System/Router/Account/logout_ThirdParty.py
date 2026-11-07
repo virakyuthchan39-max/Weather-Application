@@ -26,7 +26,7 @@ class LogoutSchema(BaseModel):
     id: int
     full_name: Annotated[str, Field(default=None, max_length=40, min_length=5)]
     gmail: EmailStr
-    logout_at: Annotated[datetime, Field(default_factory=lambda: datetime.now(timezone.utc))]
+    logout_at: Annotated[str, Field(default_factory=lambda: datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)"))]
     is_active: Annotated[bool, Field(default=True)]
     role: Annotated[str, Field(default="user")]
 
@@ -78,7 +78,7 @@ async def Logout_Google_User(
     final_query_logout = query_logout.first()
     
     if final_query_logout:
-        final_query_logout.logout_at = datetime.now(timezone.utc)
+        final_query_logout.logout_at = datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)")
         final_query_logout.is_active = False 
         db.add(final_query_logout)
     else:
@@ -88,7 +88,7 @@ async def Logout_Google_User(
             google_signin_id=final_query.id,
             google_login_id=final_query_Login.id if final_query_Login else None,
             gmail=final_query.gmail,
-            logout_at=datetime.now(timezone.utc),
+            logout_at=datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)"),
             is_active=False,
             role=final_query.role
         )
@@ -100,7 +100,7 @@ async def Logout_Google_User(
         id=final_query.id, 
         full_name=final_query.username, 
         gmail=final_query.gmail, 
-        logout_at=datetime.now(timezone.utc), 
+        logout_at=datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)"), 
         is_active=False, 
         role=final_query.role
     )
@@ -135,7 +135,7 @@ async def Logout_Github_User(
     final_query_logout = query_logout.first()
     
     if final_query_logout:
-        final_query_logout.logout_at = datetime.now(timezone.utc)
+        final_query_logout.logout_at = datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)")
         final_query_logout.is_active = False 
         db.add(final_query_logout)
     else:     
@@ -145,7 +145,7 @@ async def Logout_Github_User(
             github_signin_id=final_query.id,
             github_login_id=final_query_Login.id if final_query_Login else None,
             gmail=final_query.gmail,
-            logout_at=datetime.now(timezone.utc),
+            logout_at=datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)"),
             is_active=False,
             role=final_query.role
         )
@@ -157,7 +157,7 @@ async def Logout_Github_User(
         id=final_query.id, 
         full_name=final_query.username, 
         gmail=final_query.gmail, 
-        logout_at=datetime.now(timezone.utc), 
+        logout_at=datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)"), 
         is_active=False, 
         role=final_query.role
     )
@@ -192,7 +192,7 @@ async def Logout_Facebook_User(
     final_query_logout = query_logout.first()
     
     if final_query_logout:
-        final_query_logout.logout_at = datetime.now(timezone.utc)
+        final_query_logout.logout_at = datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)")
         final_query_logout.is_active = False
         db.add(final_query_logout)
     else:    
@@ -202,7 +202,7 @@ async def Logout_Facebook_User(
             facebook_signin_id=final_query.id,
             facebook_login_id=final_query_Login.id if final_query_Login else None,
             gmail=final_query.gmail,
-            logout_at=datetime.now(timezone.utc),
+            logout_at=datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)"),
             is_active=False,
             role=final_query.role
         )
@@ -214,7 +214,7 @@ async def Logout_Facebook_User(
         id=final_query.id, 
         full_name=final_query.username, 
         gmail=final_query.gmail, 
-        logout_at=datetime.now(timezone.utc), 
+        logout_at=datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)"), 
         is_active=False, 
         role=final_query.role
     )

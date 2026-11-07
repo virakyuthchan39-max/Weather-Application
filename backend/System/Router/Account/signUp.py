@@ -38,7 +38,7 @@ class CreateSchema(BaseModel):
     full_name: Annotated[str,Field(default=None,max_length=40,min_length=5)]
     gmail: EmailStr
     account_type: str = "Regular"
-    create_at: Annotated[datetime,Field(default_factory=lambda:datetime.now(timezone.utc))]
+    create_at: Annotated[str,Field(default_factory=lambda:datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)"))]
     is_active:Annotated[bool,Field(default=True)]
     role: Annotated[str,Field(default="user")]
 
@@ -77,12 +77,12 @@ async def Create_User(
 
     hashed_pwd = hash_password(userAccount.password)
     username = full_name(userAccount.first_name, userAccount.last_name)
-
+    current_time = datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)")
     add_user_db = UserSignIn(
-        username=username,
+        username=username.title(),
         password=hashed_pwd,
         gmail=userAccount.gmail,
-        create_at=datetime.now(timezone.utc),
+        create_at=current_time,
         is_active=True,
         role="user",
     )
@@ -100,7 +100,7 @@ async def Create_User(
     
     result_response = CreateSchema(
         id=add_user_db.id,
-        full_name=add_user_db.username.title(),
+        full_name=add_user_db.username,
         account_type= add_user_db.account_type,
         gmail=add_user_db.gmail,
         create_at=add_user_db.create_at,

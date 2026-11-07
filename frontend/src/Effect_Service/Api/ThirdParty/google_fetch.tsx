@@ -1,4 +1,4 @@
-const BASE_URL = "http://127.0.0.1:8000";
+const BASE_URL = "https://weather-application-backend-5fb0.onrender.com";
 
 
 export interface GoogleUserInfo {
@@ -8,6 +8,7 @@ export interface GoogleUserInfo {
   role: string;
   is_active: boolean;
   account_type: string; 
+  country:string
   profile: string;
   create_at: string;
 }
@@ -64,4 +65,23 @@ export function requestGoogleIdToken(): Promise<string> {
     });
     window.google.accounts.id.prompt();
   });
+}
+
+// delete account
+export interface DeleteUserRequest {
+  gmail: string;
+  account_type: string;
+}
+
+export async function deleteGoogleAccount(data: DeleteUserRequest): Promise<any> {
+  const res = await fetch(`${BASE_URL}/delete_google`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${localStorage.getItem("access_token") || ""}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to delete google account");
+  return res.json();
 }

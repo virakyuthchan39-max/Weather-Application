@@ -10,7 +10,8 @@ export const useWeatherService = () => {
   const [daytime, setDaytime] = useState("");
   const [cloneCity, setClone] = useState("");
   const [Coord,setCoord] = useState({lat:0,lon:0})
-
+  const [locationUser,SetUserLocation] = useState({city:"",country:""})
+  
   // ១. កែឱ្យ country ក្លាយជា Optional (មាន ឬគ្មានក៏បាន)
     const fetchCityWeather = async (
     targetCity: string, 
@@ -66,7 +67,9 @@ export const useWeatherService = () => {
         const res = await fetchDefaultLocation();
         setCity(res.location.city);
         setCoord({lat:res.location.lat,lon:res.location.lon})
+        SetUserLocation({city:res.location.city,country:res.location.country})
         fetchCityWeather(res.location.city, res.location.country || "");
+        
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to load default location"
@@ -97,6 +100,7 @@ export const useWeatherService = () => {
     setLoading,
     error,
     setError,
+    locationUser,
     loading,
     handleSearch,
     fetchCityWeather, 

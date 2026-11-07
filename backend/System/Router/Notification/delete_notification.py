@@ -92,8 +92,8 @@ async def delete_all_notifications(
     await return_username(db_user, user_id, gmail, account_type)
 
     # Bulk delete all notifications matching the user's gmail
-    stmt = delete(NotificationUser).where(NotificationUser.gmail == gmail)
-    await db.execute(stmt)
+    stmt = (await db.scalars(select(NotificationUser).where(NotificationUser.gmail == gmail))).all()
+    for item in stmt: await db.delete(item) 
     await db.commit()
 
     return DeleteResponse(detail=f"All notifications for {gmail} have been deleted successfully✅ !")

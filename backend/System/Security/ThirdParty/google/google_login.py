@@ -78,7 +78,7 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
                 detail="This Google's account didn't sign in yet !"
             )
         current_time_local = datetime.now(timezone.utc)
-        current_time = current_time_local.strftime("%Y %m %d (%I:%M %p)")
+        current_time = current_time_local.strftime("%d %b %Y (%I:%M %p)")
         query = await db.scalars(select(UserGoogleLogin).where(UserGoogleLogin.gmail == email))
         final_query = query.first()
  

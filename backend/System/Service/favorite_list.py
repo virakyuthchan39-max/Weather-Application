@@ -72,9 +72,10 @@ async def verify_user(db: AsyncSession, user_id: int, email: str, account_type: 
         raise HTTPException(detail="Invalid account type!", status_code=status.HTTP_400_BAD_REQUEST)
 
     result = await db.scalars(stmt)
-    if not result.first():
+    user = result.first()
+    if not user:
         raise HTTPException(detail=f"This {account_type} account isn't found!", status_code=status.HTTP_404_NOT_FOUND)
-
+    return user
 
 def map_to_schema(db_fav: FavoriteCity) -> FavoriteSchemes:
     return FavoriteSchemes(

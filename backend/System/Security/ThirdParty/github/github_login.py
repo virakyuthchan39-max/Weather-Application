@@ -95,7 +95,7 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
             raise HTTPException(detail="This Github's account didn't sign in yet!",status_code =status.HTTP_400_BAD_REQUEST)
 
         current_time_local = datetime.now(timezone.utc)
-        current_time = current_time_local.strftime("%Y %m %d (%I:%M %p)")
+        current_time = current_time_local.strftime("%d %b %Y (%I:%M %p)")
 
         query = await db.scalars(select(UserGithubLogin).where(UserGithubLogin.gmail == email))
         final_query = query.first()
@@ -106,7 +106,7 @@ async def Github_auth(payload: GithubTokenRequest, db: Annotated[AsyncSession, D
             await db.commit()
         else:
             new_login = UserGithubLogin(
-                username=username,
+                username=username.title(),
                 gmail=email,
                 is_active=True,
                 role="user",

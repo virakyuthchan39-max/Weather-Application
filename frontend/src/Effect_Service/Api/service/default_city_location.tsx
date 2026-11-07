@@ -1,4 +1,4 @@
-const BASE_URL="http://127.0.0.1:8000"
+const BASE_URL="https://weather-application-backend-5fb0.onrender.com"
 
 export interface DefaultLocationResponse {
   location: {
@@ -18,7 +18,7 @@ export async function fetchDefaultLocation(): Promise<DefaultLocationResponse> {
     });
 
     const data = await res.json();
-
+   
     if (!res.ok) {
       throw new Error(data?.detail ?? `Request failed (${res.status})`);
     }

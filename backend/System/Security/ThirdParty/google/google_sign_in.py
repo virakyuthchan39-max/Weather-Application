@@ -73,7 +73,7 @@ async def google_auth(payload: GoogleTokenRequest, db: Annotated[AsyncSession, D
             raise HTTPException(detail="This Google's gmail had used !",status_code=status.HTTP_400_BAD_REQUEST)
 
     
-        add_google_user = GoogleSignIn(username=str(name).title(),profile=profile,gmail=email,is_active=True,role="user",create_at=datetime.now(timezone.utc).strftime("%Y %m %d (%I:%M %p)"),password="GooglePassword")    
+        add_google_user = GoogleSignIn(username=str(name).title(),profile=profile,gmail=email,is_active=True,role="user",create_at=datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)"),password="GooglePassword")    
         db.add(add_google_user)
         await asyncio.sleep(0.4)
         await db.commit()

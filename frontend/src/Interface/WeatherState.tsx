@@ -88,7 +88,8 @@ const WeatherStats: React.FC<WeatherStatsProps> = ({
   };
 
   return (
-    <div className={`p-4 rounded-xl relative -bottom-10 mt-2 flex flex-col gap-2 w-full ${!isDarkMode ? "text-white":"text-black"}
+    <div className={`p-4 rounded-xl relative bottom-0 mt-2 flex flex-col gap-2 w-full ${!isDarkMode ? "text-white":"text-black"}
+    max-[800px]:-bottom-10
     max-[600px]:w-md
     max-[500px]:w-sm
     max-[400px]:w-xs`}>
@@ -144,7 +145,8 @@ const WeatherStats: React.FC<WeatherStatsProps> = ({
                           src={weather.location.country_code !== "" ? `https://flagcdn.com/w80/${weather.location.country_code.toLowerCase()}.png` : "/Icon/weather icon/feature/antartica_flag.svg"}
                           alt="Country Flag"
                           className="w-7 h-7 drop-shadow-lg/20 bottom-1 ml-2 object-contain rounded-sm relative
-                          max-[500px]:w-9 max-[500px]:h-9 max-[500px]:bottom-2"/>
+                          max-[500px]:w-9 max-[500px]:h-9 max-[500px]:bottom-2
+                          max-[400px]:mx-2.5 max-[400px]:bottom-2 max-[400px]:right-2"/>
           </span>
           {formatWeatherDataTime(weather.datetime.dt, weather.datetime.offset)}
         </span>

@@ -50,7 +50,7 @@ class NotificationUser(SQLModel, table=True, ):
     color: Annotated[str,Field(default=None)]
     account_type: Annotated[str, Field(default=None,index=True)]
     read_at: Optional[str] = Field(default=None)
-    sended_at: Annotated[str, Field(default_factory=lambda: datetime.now(timezone.utc))]
+    sended_at: Annotated[str, Field(default_factory=lambda: str(datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)")))]
     type_msg: Annotated[str, Field(default=None)]
 
 class DonationByUser(SQLModel, table=True, ):
@@ -58,8 +58,26 @@ class DonationByUser(SQLModel, table=True, ):
     id: Optional[int] = Field(default=None, primary_key=True, index=True)
     gmail: Annotated[str, Field(default=None,index=True)]
     account_type: Annotated[str, Field(default=None)]
-    donated_at:  Annotated[str, Field(default_factory=lambda: str(datetime.now(timezone.utc)))]
+    donated_at:  Annotated[str, Field(default_factory=lambda: str(datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)")))]
     description: Annotated[str,Field(default=None)]
     amount: Annotated[str,Field(default=0)]
     pay_by: Annotated[str,Field(default=None)]
     succeed: Annotated[bool,Field(default=None)]
+
+class PersonalInfo(SQLModel, table=True, ):
+    __tablename__ = "personal_info"
+    id: Optional[int] = Field(default=None, primary_key=True, index=True)
+    full_name: Annotated[str, Field(default=None,index=True)]
+    gmail: Annotated[str, Field(default=None,index=True)]
+    account_type: Annotated[str, Field(default=None)]
+    change_at:  Annotated[str, Field(default_factory=lambda: str(datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)")))]
+    profile: Annotated[str,Field(default =None)]
+    bio: Annotated[str,Field(default=None)]
+
+class FeedBackByUser(SQLModel, table=True, ):
+    __tablename__ = "feedback"
+    id: Optional[int] = Field(default=None, primary_key=True, index=True)
+    gmail: Annotated[str, Field(default=None,index=True)]
+    account_type: Annotated[str, Field(default=None)]
+    sended_at:  Annotated[str, Field(default_factory=lambda: str(datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)")))]
+    message: Annotated[str,Field(default=None,max_length=(255))]

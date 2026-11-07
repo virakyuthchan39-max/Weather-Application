@@ -1,4 +1,4 @@
-const BASE_URL = "http://127.0.0.1:8000";
+const BASE_URL = "https://weather-application-backend-5fb0.onrender.com";
 const FACEBOOK_APP_ID = "1435360588551170";
 
 declare global {
@@ -16,6 +16,7 @@ export interface FacebookUserInfo {
   role: string;
   is_active: boolean;
   profile: string;
+  country:string
   account_type:string
   create_at: string;
 
@@ -84,3 +85,26 @@ export const facebookSignIn = (token: string) =>
 
 export const facebookLogin = (token: string) =>
   postFacebook("/auth/Facebook/Facebook_login", token);
+
+
+// delete account
+
+// ...existing imports/exports...
+
+export interface DeleteUserRequest {
+  gmail: string;
+  account_type: string;
+}
+
+export async function deleteFacebookAccount(data: DeleteUserRequest): Promise<any> {
+  const res = await fetch(`${BASE_URL}/delete_facebook`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${localStorage.getItem("access_token") || ""}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to delete facebook account");
+  return res.json();
+}

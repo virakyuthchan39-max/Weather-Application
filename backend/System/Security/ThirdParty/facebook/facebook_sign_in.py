@@ -80,7 +80,7 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
         user = result.first()
         if user:
             raise HTTPException(detail="This Facebook's email had used!",status_code = status.HTTP_400_BAD_REQUEST)
-        current_time = datetime.now(timezone.utc).strftime("%Y %m %d (%I:%M %p)")
+        current_time = datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)")
 
         if not user:
             # បើមិនទាន់មាន ធ្វើការ Register ใหม่อัตโนมัติ

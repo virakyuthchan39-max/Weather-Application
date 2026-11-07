@@ -68,7 +68,7 @@ const DataStreaming: React.FC<DataStreamingProps> = ({ username, onContinue }) =
 export default DataStreaming;
 
 
-const BASE_URL = "http://127.0.0.1:8000";
+const BASE_URL = "https://weather-application-backend-5fb0.onrender.com";
 
 export async function streamMessage(
   username: string,

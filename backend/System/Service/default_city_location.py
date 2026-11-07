@@ -9,7 +9,7 @@ class LocationSchema(BaseModel):
     city: str
     lat:float
     lon: float
-    location: str
+    country: str
 
 class DefaultLocationResponse(BaseModel):
     location: LocationSchema
@@ -35,5 +35,5 @@ async def get_default_location(request: Request):
     except Exception:
         pass
     return DefaultLocationResponse(
-        location=LocationSchema(city=city, lat=lat,lon=lon,location=country)
+        location=LocationSchema(city=city, lat=lat,lon=lon,country=country)
     )

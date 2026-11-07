@@ -28,7 +28,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     DATABASE_USER = os.getenv("DATABASE_USERNAME", "")
     DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD", "")
-    DATABASE_HOST = os.getenv("DATABASE_HOST", "127.0.0.1")
+    DATABASE_HOST = os.getenv("DATABASE_HOST", "")
     DATABASE_PORT = os.getenv("DATABASE_PORT", "5432")
     DATABASE_NAME = os.getenv("DATABASE_NAME", "")
 
@@ -55,9 +55,7 @@ async def get_session():
 get_application = get_session
 get_role = get_session
 
-# ==========================================
-# 4. CREATE TABLES FUNCTION
-# ==========================================
+
 async def create_table():
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)

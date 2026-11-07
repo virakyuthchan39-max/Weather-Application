@@ -76,8 +76,6 @@ async def send_Update_notification(
     color = "green"
     time_live = 7  # Active for 7 days
     
-    query_notif_update = (await db.scalars(select(NotificationUser).where((NotificationUser.gmail == gmail)  & (NotificationUser.account_type == account_type)))).first()
-   
     new_notification = NotificationUser(
             gmail=gmail,
             title=title,
@@ -85,7 +83,7 @@ async def send_Update_notification(
             notification_id=notification_id,
             time_live=time_live,
             account_type=account_type,
-            sended_at=current_time_utc,
+            sended_at=formatted_date_time,
             type_msg=notification_type,
             color=color,  
         )

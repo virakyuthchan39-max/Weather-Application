@@ -32,7 +32,7 @@ class LoginSchema(BaseModel):
     id: int
     full_name: Annotated[str, Field(default=None, max_length=40, min_length=5)]
     gmail: EmailStr
-    login_at: Annotated[datetime, Field(default_factory=lambda: datetime.now(timezone.utc))]
+    login_at: Annotated[str, Field(default_factory=lambda: datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)"))]
     is_active: Annotated[bool, Field(default=True)]
     account_type: Annotated[str,Field(default="Regular")]
     role: Annotated[str, Field(default="user")]
@@ -68,7 +68,7 @@ async def login_User(userAccount: LoginUserRequest,db: Annotated[AsyncSession, D
     final_query.is_active = True
     db.add(final_query)
     target_user = final_query
-    current_time = datetime.now(timezone.utc)
+    current_time = datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)")
 
     query_login = await db.scalars(select(UserLogin).where(UserLogin.gmail == userAccount.gmail))
     final_query_login = query_login.first()
@@ -83,7 +83,7 @@ async def login_User(userAccount: LoginUserRequest,db: Annotated[AsyncSession, D
     else:
      
         add_user_db = UserLogin(
-            username=final_query.username,
+            username=final_query.username.title(),
             register_id=final_query.id,
             gmail=final_query.gmail,
             login_at=current_time,
@@ -111,7 +111,7 @@ async def login_User(userAccount: LoginUserRequest,db: Annotated[AsyncSession, D
  
     result_response = LoginSchema(
         id=final_query.id, 
-        full_name=final_query.username.title(), 
+        full_name=final_query.username, 
         gmail=final_query.gmail, 
         login_at=target_user.login_at, 
         is_active=target_user.is_active, 

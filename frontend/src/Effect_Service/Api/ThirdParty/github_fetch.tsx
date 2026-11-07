@@ -1,4 +1,4 @@
-const BASE_URL = "http://127.0.0.1:8000";
+const BASE_URL = "https://weather-application-backend-5fb0.onrender.com";
 
 const GITHUB_CLIENT_ID = "Ov23liBQknBp1XcqjPs9";
 
@@ -9,6 +9,7 @@ export interface GithubUserInfo {
   full_name: string;
   gmail: string;
   role: string;
+  country:string
   is_active: boolean;
   profile: string;
   account_type:string
@@ -92,3 +93,23 @@ export function clearGithubIntent(): void {
   sessionStorage.removeItem(INTENT_KEY);
 }
 
+// delete account
+// ...existing imports/exports...
+
+export interface DeleteUserRequest {
+  gmail: string;
+  account_type: string;
+}
+
+export async function deleteGithubAccount(data: DeleteUserRequest): Promise<any> {
+  const res = await fetch(`${BASE_URL}/delete_github`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${localStorage.getItem("access_token") || ""}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to delete github account");
+  return res.json();
+}

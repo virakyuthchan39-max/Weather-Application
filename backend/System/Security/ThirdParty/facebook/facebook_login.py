@@ -99,7 +99,7 @@ async def Facebook_auth(payload: FacebookTokenRequest, db: Annotated[AsyncSessio
             final_query.login_at = datetime.now(timezone.utc)
             db.add(final_query)
         else:    
-            add_facebook_user = UserFacebookLogin(facebook_id=user.id, profile=profile,username=user.username,password="FacebookPassword",gmail=email,login_at=datetime.now(timezone.utc).strftime("%Y %m %d (%I:%M %p)"),is_active=user.is_active,role=user.role)
+            add_facebook_user = UserFacebookLogin(facebook_id=user.id, profile=profile,username=user.username.title(),password="FacebookPassword",gmail=email,login_at=datetime.now(timezone.utc).strftime("%d %b %Y (%I:%M %p)"),is_active=user.is_active,role=user.role)
             db.add(add_facebook_user)
         await db.commit()
  

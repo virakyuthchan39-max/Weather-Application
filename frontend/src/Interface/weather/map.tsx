@@ -98,9 +98,9 @@ const WeatherMap: React.FC<WeatherMapProps> = ({isLocalHour,isDarkMode,lat, lon,
       
     </div>
     :
-    <span className = "px-50 py-80 rounded-md relative top-20  bg-white/10 max-[700px]:left-0 max-[700px]:">
-       <span className =" animate-pulse durataion-400 transition-all bg-gray-300 rounded-md p-30 absolute  left-20 top-75 "></span>
-           <span className =" animate-pulse durataion-400 transition-all bg-gray-300 rounded-md px-30 mb-50 py-5 absolute  left-20 top-145 "></span>
+    <span className = {`px-50 py-80 rounded-md relative top-20  ${!isDarkMode ? "bg-gray-300/10":"bg-black/20"} max-[700px]:left-0`}>
+       <span className ={`animate-pulse durataion-400 transition-all  rounded-md p-30 absolute  left-20 top-75 ${!isDarkMode ? "bg-gray-300":"bg-black"}`} />
+           <span className = {`animate-pulse durataion-400 transition-all ${!isDarkMode ? "bg-gray-300":"bg-black"}  rounded-md px-30 mb-50 py-5 absolute  left-20 top-145 `} />
     </span>
 }
     </>

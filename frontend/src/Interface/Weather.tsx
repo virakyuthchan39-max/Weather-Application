@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef,useCallback } from 'react';
 import "./weather.css";
+import "./welcome/account.css"
 import "../Interface/welcome/account.css";
 import Background,{getWeatherIcon} from "./Background";
 import Notification from './Notification.tsx';
@@ -19,6 +20,12 @@ import WeatherMap from './weather/map.tsx';
 // logout called
 import { logoutAccount,   logoutGoogle, logoutGithub, logoutFacebook,  clearToken } from '../Effect_Service/Api/service/fetch';
 
+import { deleteAccount } from '../Effect_Service/Api/service/fetch';
+import { deleteGoogleAccount } from '../Effect_Service/Api/ThirdParty/google_fetch';
+import { deleteGithubAccount } from '../Effect_Service/Api/ThirdParty/github_fetch';
+import { deleteFacebookAccount } from '../Effect_Service/Api/ThirdParty/facebook_fetch';
+import { clearUserInfo } from '../Effect_Service/Api/service/fetch';
+import PersonalInfo from './weather/personal.tsx';
 interface WeatherProps {
   user: {
     id: number;
@@ -27,12 +34,15 @@ interface WeatherProps {
     username?: string;
     full_name?: string;
     profile: string;
+    create_at: string
+    country:string
   };
+  onUserUpdate?: (updated: { profile?: string; bio?: string; full_name?: string }) => void;
   onLogout?: () => void;
   onDetail?: () => void;
 }
 
-const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
+const Weather: React.FC<WeatherProps> = ({ user,onLogout, onUserUpdate,onDetail }) => {
    const user_id = user.id;
   const email = user.gmail;
   const account_type = user.account_type;
@@ -45,6 +55,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
     cloneCity,
     weather,
     daytime,
+    locationUser,
     setError,
     city,
     setCity,
@@ -56,8 +67,10 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
   const [open, setOpen] = useState(false);
   const [settingClick, setSettingClick] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showPersonalInfo, setShowPersonalInfo] = useState(false); // show personal conatiner
   const [logouting,setLogouting] = useState(false);
   const [LevelIcon, setLevelIcon] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const settingsRef = useRef<HTMLDivElement>(null);
 
@@ -143,7 +156,6 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
           hour12: true
         }));
       } else {
-        // ✅ បើជា 24H តែចង់បាន AM/PM ដែរ យើងត្រូវ Format ដោយខ្លួនឯង
         const formatted24H = `${hours.toString().padStart(2, '0')}:${minutes}:${seconds}`;
         setLiveTime(formatted24H);
       }
@@ -590,7 +602,6 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
     if (currentCity) {
       fetchCityWeather(currentCity, currentCountry);
     }
-
     // 2. Refresh ALL favorite cities in the modal
     try {
       const updatedFavs = await Promise.all(
@@ -643,7 +654,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
           return fav;
         })
       );
-      
+    
       // Update the UI with the new data
       setFavList(updatedFavs);
   
@@ -658,7 +669,6 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
     }, 1500);
   };
 
-  // handle countdown the limited request
     const [count, setCount] = useState(60);
     const targetTimeRef = useRef<number | null>(null);
 
@@ -694,7 +704,6 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
     const [hasUnreadNotif, setHasUnreadNotif] = useState(false);
   const [notifPingColor, setNotifPingColor] = useState("green");
 
-  // ✅ Function សម្រាប់ទទួល Status ពី Notification.tsx
   const handleNotifUpdate = useCallback((hasUnread: boolean, color: string) => {
     setHasUnreadNotif(hasUnread);
     if (color) setNotifPingColor(color);
@@ -705,18 +714,50 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
         // playSlideOn()
         setVolume(Number(e.target.value));
       }
+ 
+  // delete account
+  const [showDelete,setShowDelete] = useState(false)
+  const handleShowDelete=()=>{
+      setShowDelete(!showDelete)
+  }
+  const handleDeleteAccount = async () => {
+  playButtonSound();
+  setIsDeleting(true);
 
+    try {
+      if (account_type === "Google") {
+        await deleteGoogleAccount({ gmail: email, account_type: "Google" });
+      } else if (account_type === "Github") {
+        await deleteGithubAccount({ gmail: email, account_type: "Github" });
+      } else if (account_type === "Facebook") {
+        await deleteFacebookAccount({ gmail: email, account_type: "Facebook" });
+      } else {
+        await deleteAccount({ gmail: email, account_type: "Regular" });
+      }
 
+      clearToken();
+      clearUserInfo();
+      localStorage.removeItem("weather_user");
+      localStorage.removeItem("user_notification");
+
+      window.setTimeout(() => {
+        if (onLogout) onLogout();
+      }, 1000);
+    } catch (err) {
+      console.error("Delete failed:", err);
+      setIsDeleting(false);
+    }
+  };
 
 
   return (
-    <div className= {`relative font-weather  overflow-y-auto min-h-screen w-full  font-welcome transition-colors duration-500 ${!isDarkMode ? "bg-black":"bg-white"}`}>      {/* ---------- Hamburger Button ---------- */}
+<div className={`relative font-weather overflow-y-auto min-h-screen w-full font-welcome transition-colors duration-500
+   ${!isDarkMode ? "bg-black":"bg-white"} ${isDeleting ? "anim-fade-page" : ""}`}>
       <Background climate={weather?.weather.climate || "clear_sky"} daytime={daytime} isEffectOn={isEffectOn} />
        <div className={`fixed inset-0   ${!isDarkMode ? "bg-black/15":"bg-white/20"}`} />
 
       <button
         type="button"
-      
         onClick={toggleSidebar}
         className={`fixed top-5 left-5 z-50 flex h-12 w-12 cursor-pointer flex-col items-center justify-center rounded-lg  
           max-[400px]:h-10 max-[400px]:w-10 max-[400px]:top-4
@@ -737,8 +778,6 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
           open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
       />
-
-      {/* ---------- Sidebar ---------- */}
       <aside
         className={`sidebar fixed top-0 left-0 z-40  h-full -backdrop-blur-[1px] w-72 ${!isDarkMode ? "bg-black/50 drop-shadow-lg/20 drop-shadow-gray-500":"bg-white/30 backdrop-blur-[2px]  font-bold text-black  drop-shadow-lg/90"}  p-6  rounded-tr-[5%] rounded-br-[5%] ${
           open ? "translate-x-0" : "-translate-x-full"} 
@@ -769,8 +808,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
                   <div className = {`absolute h-9 w-17 rounded-full  from-cyan-400 to-blue-500  shadow-md drop-shadow-lg/90 transition-transform duration-500 ease-in-out ${isForecastOn ? "-translate-x-8 bg-linear-to-r":"translate-x-8 bg-linear-to-l"}`}/>
                   <div className = {`relative left-3 z-10 flex w-0.5items-center justify-center py-2 font-bold transition-colors  ${isForecastOn ? "text-white":"text-gray-400 text-shadow-gray-900 text-shadow-lg/80"}`}>ON</div>
                   <div className={`relative left-3 z-10 flex w-1/2 items-center ml-5 justify-center py-2 font-bold transition-colors  ${!isForecastOn ? 'text-white' : 'text-gray-400 text-shadow-gray-900 text-shadow-lg/80'}`}>OFF</div>
-            </div>
-          
+          </div>  
           <span className={` font-bold flex ${!isDarkMode ? "text-white":"text-black"} `}>Temperature 
                <img 
                alt= "temperature icon"
@@ -778,31 +816,23 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
               className = {`${isDarkMode ? "w-10 h-10 pb-3 ml-1.5":"w-7 h-7 pb-1 ml-3"}  `}/>
           </span>
          <div onClick={handleTemperatureClick} className="relative flex py-3 cursor-pointer w-40 my-5 items-center justify-between px-2 rounded-full bg-gray-600 shadow-inner">
-
               <div className={`absolute h-9 w-11 rounded-full from-cyan-400 to-blue-500 drop-shadow-lg/90 shadow-md transition-transform duration-500 ease-in-out 
-                ${isCelsius ? "translate-x-0 bg-linear-to-r" : isfarh ? "translate-x-12 bg-linear-to-r" : "translate-x-25 bg-linear-to-r"}`} 
-              />
-              
+                ${isCelsius ? "translate-x-0 bg-linear-to-r" : isfarh ? "translate-x-12 bg-linear-to-r" : "translate-x-25 bg-linear-to-r"}`} />
               {/* អក្សរ C° */}
-              <div className={`relative z-10 w-10 text-center font-bold transition-colors ${isCelsius ? "text-white" : "text-gray-400 text-shadow-lg/80"}`}>°C</div>
-              
+              <div className={`relative z-10 w-10 text-center font-bold transition-colors ${isCelsius ? "text-white" : "text-gray-400 text-shadow-lg/80"}`}>°C</div>            
               {/* អក្សរ F° */}
               <div className={`relative z-10 w-10 text-center font-bold transition-colors ${isfarh ? "text-white" : "text-gray-400 text-shadow-lg/80"}`}>°F</div>
-              
               {/* អក្សរ K */}
               <div className={`relative z-10 w-10 text-center font-bold transition-colors ${isKevin ? "text-white" : "text-gray-400 text-shadow-lg/80"}`}>°K</div>
             </div>
-                <span className={` font-bold flex ${!isDarkMode ? "text-white":"text-black"} `}>Meassure
+              <span className={` font-bold flex ${!isDarkMode ? "text-white":"text-black"} `}>Meassure
                   <img src = {!isDarkMode ? "/Icon/weather icon/feature/darkmode/meassure_white.svg":"/Icon/weather icon/feature/daymode/meassure_black.svg"}
                   className = {`${isDarkMode ? "w-10 h-10 pb-3 ml-1.5":"w-8.5 h-8.5 pb-1.5 ml-2"}  `}/>
               </span>
-         <button onClick={handleMeassureClick} className="relative flex py-3 cursor-pointer w-40 my-5 items-center justify-between px-2 rounded-full bg-gray-600 shadow-inner
-         ">
-
+         <button onClick={handleMeassureClick} className="relative flex py-3 cursor-pointer w-40 my-5 items-center justify-between px-2 rounded-full bg-gray-600 shadow-inner">
               <div className={`absolute h-9 w-11 rounded-full from-cyan-400 to-blue-500 drop-shadow-lg/90 shadow-md transition-transform duration-500 ease-in-out 
                 ${isKm ? "translate-x-0 bg-linear-to-r" : isMeter ? "translate-x-12 bg-linear-to-r" : "translate-x-25 bg-linear-to-r"}`} 
-              />
-              
+              />    
               {/* អក្សរ C° */}
               <div className={`relative z-10 w-10 text-center font-bold transition-colors ml-0.5 ${isKm ? "text-white" : "text-gray-400 text-shadow-lg/80"}`}>Km</div>
               
@@ -828,7 +858,6 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
               <img src = {!isDarkMode ? "/Icon/weather icon/feature/darkmode/time_white.svg":"/Icon/weather icon/feature/daymode/time_black.svg"}
               className = "w-8 h-8 ml-2 pb-1"/>
             </span>
-
 
              <div onClick={handleHourClick} className= "relative flex cursor-pointer w-35 my-5 items-center justify-center rounded-full bg-gray-600  shadow-inner">
                   <div className = {`absolute h-9 w-17 rounded-full  from-cyan-400
@@ -889,7 +918,6 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
                       track={currentMusic}
                       loop={Loop}
                       tracks={ALL_TRACKS.map((t) => t.path)
-
                       }
                        onNext={setCurrentMusic} 
                        audioRef = {audioRef}
@@ -950,17 +978,14 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
                           ${!isDarkMode ? " bg-linear-to-tl from-blue-400 via-cyan-300 border-blue-900 to-blue-600  shadow-lg/50 hover:shadow-blue-600 active:shadow-blue-600 text-black":" shadow-lg/50 hover:shadow-blue-600 active:shadow-blue-600 bg-linear-to-tl from-black/90 via-gray-600 to-black border-gray-900 text-white"} \
                         hover:border-b-7 hover:translate-y-1  \
                         active:border-b-0 active:text-blue-200 active:translate-y-2`}>FeedBack</button>
-                  </div> 
-             
+                  </div>     
         </div>
-        
         {/* User Profile & Settings Container */}
         <div ref={settingsRef} className={`absolute drop-shadow-lg/60 z-100 block px-4 py-4  rounded-[15px] bottom-0 w-65 right-4 text-md ${isDarkMode ? "text-black bg-white":"text-white bg-gray-900"}
         max-[400px]:w-[90%] `}>
           <div className="flex items-center">
             <img
-            
-              src={
+              src={        
               !profile_user ?
             (isDarkMode ? "/Icon/weather icon/feature/daymode/profile_black.svg":"/Icon/weather icon/feature/darkmode/profile_white.svg")
             :
@@ -1004,7 +1029,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
                 <li className="text-red-500 list-none">Logout</li>
               </div>  
               <div 
-                onClick={onDetail} 
+                onClick={(e) => { e.stopPropagation(); setSettingClick(false); setShowPersonalInfo(true); }}
                 className={`flex items-center text-nowrap px-3 py-2 rounded-[10px] ${isDarkMode ? "hover:bg-gray-400 active:bg-gray-400 ":"hover:bg-gray-700 active:bg-gray-700" } cursor-pointer
                 max-[500px]:text-[0.8rem]`}
               >
@@ -1017,14 +1042,11 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
         </div>
       </aside>
 
-      {/* ---------- Main Dashboard Content ---------- */}
     <main className="relative z-10 font-welcome flex min-h-screen items-center justify-center p-8">
-      
         <form onSubmit={handleFormSubmit} className="pointer-events-auto fixed top-5 right-20 z-10 w-full max-w-md  mx-2
         max-[600px]:right-20 max-[600px]:w-80
         max-[500px]:w-65
-        max-[400px]:w-50 max-[400px]:right-15
-        ">
+        max-[400px]:w-50 max-[400px]:right-15">
           <input
             type="text"
             name="search"
@@ -1039,16 +1061,14 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
               }
               max-[600px]:text-sm`}
           />
-          <div
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center justify-center z-10"
-          >
-            <img
-              onClick={playAnimeClick}
-              src={isDarkMode ? "/Icon/weather icon/feature/daymode/search_black.svg" : "/Icon/weather icon/feature/darkmode/search_white.svg"}
-              alt="search icon"
-              className={`h-11 w-11 p-1.5 rounded-full drop-shadow-lg/60 bg-linear-to-bl`}
+          <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center justify-center z-10">
+                <img
+                  onClick={playAnimeClick}
+                  src={isDarkMode ? "/Icon/weather icon/feature/daymode/search_black.svg" : "/Icon/weather icon/feature/darkmode/search_white.svg"}
+                  alt="search icon"
+                  className={`h-11 w-11 p-1.5 rounded-full drop-shadow-lg/60 bg-linear-to-bl`}
             />
-          </div>
+           </div>
            <SimilarCity 
              count={count}
             error={error}
@@ -1068,7 +1088,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
              alt = "Notification button"
              className = {` ${isDarkMode ? "w-13 h-13  max-[600px]:w-11 max-[600px]:h-11 max-[400px]:w-9 max-[400px]:h-9":"w-14 h-14 max-[600px]:w-12 max-[600px]:h-12  max-[400px]:w-9 max-[400px]:h-9"} `}/>
              
-             {/* ✅ បង្ហាញ Ping លុះត្រាតែមាន Notification មិនអាន និងបង្ហាញតាមពណ៌អាទិភាព */}
+
              {hasUnreadNotif && (
                <>
                  <div className={`animate-ping ${notifPingColor === 'red' ? 'bg-red-500' : notifPingColor === 'yellow' ? 'bg-yellow-500' : 'bg-emerald-200'} w-4 h-4 rounded-full absolute right-0 drop-shadow-lg/50 bottom-2`}></div>
@@ -1076,15 +1096,10 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
                </>
              )}
         </button>
-
-  
-        {/* Display Weather Data (Left Side) */}
         <div className={`fixed  left-20 -mt-10  top-1/6  flex flex-col gap-1 font-semibold  text-shadow-lg/20 ${isDarkMode ? "text-slate-900/80 text-shadow-black" : "text-slate-100/80 text-shadow-black"}
         max-[1100px]:left-5
         max-[800px]:absolute max-[800px]:top-30
         max-[500px]:left-15`}>
-      
-
           <h1 className={`text-4xl flex ${isDarkMode ? "text-black" : "text-white"}
           max-[500px]:text-2xl
           max-[600px]: text-3xl
@@ -1094,17 +1109,16 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
              src = {`${isDarkMode ? "/Icon/weather icon/feature/daymode/location_black.svg":"/Icon/weather icon/feature/darkmode/location_white.svg"}`}
               className={` relative ${ isDarkMode ? "w-13 h-13":"w-11 h-11"} mr-3
               max-[800px]:-top-2
-
               max-[400px]:w-6 max-[400px]:h-6 max-[400px]:top-1.5
               `}/>
             <span className = "relative top-3 ">
-               {weather?.location.country_code === "" ? "Antarctica": weather?.location.city || <span className = "px-50 py-1 rounded-sm animate-pulse durataion-400 transition-all bg-white max-[500px]:px-30"></span>}
+               {weather?.location.country_code === "" ? "Antarctica": weather?.location.city || <span className = {` ${!isDarkMode ? "bg-white":"bg-black"} px-50 py-1 rounded-sm animate-pulse durataion-400 transition-allmax-[500px]:px-30`} ></span>}
                     <span className = {` text-4xl py-4.5 flex text-shadow-lg/20 mt-4 ${isDarkMode ? "text-slate-300":"text-slate-300"} font-country \
                 max-[800px]:py-2.5 max-[800px]:text-[1.6rem]
                 max-[600px]:text-[1.15rem] max-[600px]:p-[0.28rem]  max-[600px]:-mx-1`}>
                   {(weather?.location.country.toLocaleUpperCase() === "N/A"? "": (weather?.location.country_code === "" ? "ANTARCTICA":weather?.location.country.toLocaleUpperCase()))
                    ||
-                    <span className = "px-20 mx-4.5  my-2 relative bottom-2.5 right-3 max-[600px]:right-6 rounded-sm animate-pulse durataion-400 transition-all bg-white"></span>}
+                    <span className = {`px-20 mx-4.5  my-2 relative bottom-2.5 right-3 max-[600px]:right-6 rounded-sm animate-pulse durataion-400 transition-all ${!isDarkMode ? "bg-white":"bg-black"}`}></span>}
                     { weather?.location.country !== undefined ?
                       <img src={weather?.location.country_code !== "" ? `https://flagcdn.com/w80/${weather?.location.country_code.toLowerCase()}.png`:"/Icon/weather icon/feature/antartica_flag.svg"}
                      alt="Country Flag" 
@@ -1114,16 +1128,15 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
                         max-[400px]:w-10 max-[400px]:h-10 max-[400px]:-top-2.5" 
                       /> 
                       :
-                       <span className = "px-8 py-5 mb-5 rounded-sm animate-pulse durataion-400 transition-all bg-white"></span>
+                       <span className = {`px-8 py-5 mb-5 rounded-sm animate-pulse durataion-400 transition-all  ${!isDarkMode ? "bg-white":"bg-black"}`}></span>
                     }
                   </span>
             </span>
-
           </h1>
               <p className={`text-3xl pl-15.5 flex ${isDarkMode  ? "text-slate-900" : "text-gray-50"}
                max-[800px]:text-[1.6rem]
               max-[400px]:mb-3 max-[400px]:text-xl  max-[400px]:relative max-[400px]:right-5.5 text-shadow-lg/20  max-[400px]:pl-9.5`}>
-                It's <span className = {`font-bold ml-3 flex ${isDarkMode ? "text-slate-300":"text-slate-300 "}`}>{weather?.weather.climate || <span className = "px-25 py-1 max-[500px]:px-15 rounded-sm animate-pulse durataion-400 transition-all bg-white"></span>}
+                It's <span className = {`font-bold ml-3 flex ${isDarkMode ? "text-slate-300":"text-slate-300 "}`}>{weather?.weather.climate || <span className = {`px-25 py-1 max-[500px]:px-15 rounded-sm animate-pulse durataion-400 transition-all ${!isDarkMode ? "bg-white":"bg-black"}`}></span>}
                  {weather?.weather.climate !==  undefined ?
                   <img 
                   src = {getWeatherIcon(weather?.weather.climate || "",weather?.weather.daytime || "")} 
@@ -1137,23 +1150,22 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
               max-[800px]:text-[1.6rem]
               max-[400px]:mb-3 max-[400px]:text-xl  max-[400px]:relative max-[400px]:right-5.5 text-shadow-lg/20  max-[400px]:pl-9.5`}>
                   <span className ={` mr-2 ${isDarkMode ? "text-black":"text-white"}`}>Level: </span>
-                  { weather?.level || <span className = "px-20 py-1 rounded-sm animate-pulse durataion-400 transition-all bg-white"></span>}
+                  { weather?.level || <span className = {`px-20 py-1 rounded-sm animate-pulse durataion-400 transition-all ${!isDarkMode ? "bg-white":"bg-black"}`}></span>}
                 {LevelIcon &&  (<img src={LevelIcon}  alt = "level status icon" className = "ml-2.5  w-8 h-8 drop-shadow-lg/40 max-[400px]:pb-1 "/>)}
                 
                 </span>
-            
-              
-        
           <h1 className={`text-[9rem] px-5 relative -top-15 mx-7 mb-15 mt-10 flex text-nowrap 
-           max-[1100px]:text-[7rem]
-            max-[1000px]:text-[6rem]
-            max-[800px]:text-[5rem]
-            max-[400px]:text-[4.2rem] max-[400px]:m-2 max-[400px]:-top-8 max-[400px]:right-5`}>
-               { isCelsius ? (weather?.temperature.celsius === undefined ? (<span className = "px-30 py-15 m-5 rounded-sm animate-pulse durataion-400 transition-all bg-white"></span>):weather?.temperature.celsius.toFixed(1) + " " + "°C")
-               :
-               weather?.temperature.fahrenheit === undefined ? (<span className = "p-10 rounded-sm animate-pulse durataion-400 transition-all bg-white"></span>):(isfarh ? weather?.temperature.fahrenheit.toFixed(1) + " " + "°F"
-               : 
-               weather?.temperature.kelvin.toFixed(1) + " °K")}
+                  max-[1100px]:text-[7rem]
+                  max-[1000px]:text-[6rem]
+                  max-[800px]:text-[5rem]
+                  max-[400px]:text-[4.2rem] max-[400px]:m-2 max-[400px]:-top-8 max-[400px]:right-5`}>
+                    {isCelsius ? (weather?.temperature.celsius === undefined ? (<span className = {`px-30 py-15 m-5 rounded-sm animate-pulse durataion-400 transition-all ${!isDarkMode ? "bg-white":"bg-black"}`} />):weather?.temperature.celsius.toFixed(1) + " " + "°C")
+                    :
+                    weather?.temperature.fahrenheit === undefined ? (<span className = {`px-30 py-15 m-5 rounded-sm animate-pulse durataion-400 transition-all ${!isDarkMode ? "bg-white":"bg-black"}`} />)
+                    :
+                    (isfarh ? weather?.temperature.fahrenheit.toFixed(1) + " " + "°F"
+                    :
+                    weather?.temperature.kelvin.toFixed(1) + " °K")}
           </h1>
          <div className= "block px-15 relative text-3xl -top-30 \
          max-[400px]:px-0 max-[400px]:-top-10">
@@ -1165,7 +1177,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
               <h1 className={`text-3xl flex  ${isDarkMode ? "text-black" : "text-white"}
               max-[1000px]:text-[1.2rem]
               max-[400px]:text-xl`}>
-                {liveClock || <span className = "px-20 py-1 rounded-sm animate-pulse durataion-400 transition-all bg-white"></span>}
+                {liveClock || <span className = {`px-20 py-1 rounded-sm animate-pulse durataion-400 ${!isDarkMode ? "bg-white":"bg-black"} transition-all `}></span>}
                 <p className = {`text-3xl ml-8 ${isDarkMode  ? "text-black" : "text-gray-50"}
               max-[1000px]:text-[1.2rem]
                max-[400px]:mb-3 max-[400px]:text-xl  text-shadow-lg/20  max-[400px]:pl-1.5`}>{weather?.weather.daytime}
@@ -1181,7 +1193,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
                 max-[500px]:bottom-0.5"
                 alt = "Mode icon"/>
                 : 
-                <span className = "px-10 py-4 rounded-sm animate-pulse durataion-400 transition-all bg-white"/>
+                <span className = {` ${!isDarkMode ? "bg-white":"bg-black"} px-10 py-4 rounded-sm animate-pulse durataion-400 transition-all`}/>
                }
               </h1>
           </div>  
@@ -1206,7 +1218,7 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
         max-[800px]:h-70 max-[800px]:w-130 max-[800px]:relative max-[800px]:top-90
         ${!isForecastOn ? "showForecast cursor-none":"hideForecast"}
       `}>
-            <div className = "relative no-scrollbar overflow-y-auto left-2  mt-2 top-0  pl-5 h-full">
+            <div className = "relative no-scrollbar overflow-y-auto left-2   top-0  pl-5 h-full">
                       <WeatherMap 
                     isLocalHour = {islocalHour}
                     isWindySecond={isWindySecond}
@@ -1302,13 +1314,26 @@ const Weather: React.FC<WeatherProps> = ({ user, onLogout, onDetail }) => {
         onDeleteAll={handleDeleteAllFavorites}
       />
       <Notification
-      
       isOpen={showNotification}
       onClose={() => setShowNotification(false)}
       isDarkMode={isDarkMode}
       user={user}
       onUpdateStatus={handleNotifUpdate}
     />
+  <PersonalInfo
+      isOpen={showPersonalInfo}
+      onClose={() => setShowPersonalInfo(false)}
+      isDarkMode={isDarkMode}
+      user={user}
+      isDelete={isDeleting}
+      location={locationUser}
+      onEdit={() => {}}
+      showDelete={showDelete}
+      onDeleteShow={handleShowDelete}
+      onDelete={() => { setShowPersonalInfo(false); handleDeleteAccount(); }}
+      onUserUpdate={onUserUpdate}  
+  />
+
     </div>
   );
 };
